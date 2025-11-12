@@ -11,7 +11,7 @@ export default function SearchBar() {
   };
 
   return (
-    <div className="relative grow-2">
+    <div className="relative grow-2 order-3 md:order-2">
       <form action={formAction} className="w-full">
         <input
           type="text"
@@ -20,9 +20,9 @@ export default function SearchBar() {
           className="border px-10 py-1 rounded-3xl border-green w-full outline-none focus:ring"
         />
       </form>
-      <CiSearch className="text-2xl text-gray-500 ml-2 absolute top-1/2 transform -translate-y-1/2 left-1" />
+      <CiSearch className="text-2xl text-green ml-2 absolute top-1/2 transform -translate-y-1/2 left-1" />
       <LuSettings2
-        className="text-2xl text-gray-500 ml-2 cursor-pointer absolute top-1/2 transform -translate-y-1/2 right-3"
+        className="text-2xl text-green ml-2 cursor-pointer absolute top-1/2 transform -translate-y-1/2 right-3"
         onClick={handleFilterClick}
       />
     </div>
