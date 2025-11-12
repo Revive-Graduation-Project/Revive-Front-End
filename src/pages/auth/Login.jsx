@@ -109,6 +109,15 @@ function Login() {
                 <img src="/apple.svg" alt="Apple" className="w-5 h-5" />
               </button>
             </div>
+            <div className="mt-4 text-sm text-gray-600 flex items-center gap-2">
+              <span>Don't have an account?</span>
+              <Link
+                to="/auth/signup"
+                className="text-orange font-semibold hover:underline"
+              >
+                Sign Up
+              </Link>
+            </div>
           </div>
         </div>
       </div>
