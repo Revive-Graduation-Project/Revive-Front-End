@@ -1,6 +1,3 @@
-// components/FeaturesSection.jsx
-import React from "react";
-
 export default function FeaturesSection() {
   const features = [
     {
