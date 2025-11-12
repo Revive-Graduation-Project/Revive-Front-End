@@ -24,7 +24,7 @@ function Navbar() {
         <div className="flex justify-center gap-x-3 grow order-2 md:order-3">
           <Cart />
           <Link
-            to="/login"
+            to="/auth/login"
             className="text-green flex items-center gap-x-2 hover:text-green-800 group"
           >
             <FaUserCircle className="text-2xl transform group-hover:rotate-360 duration-500" />
