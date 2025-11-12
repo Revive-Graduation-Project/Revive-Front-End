@@ -1,9 +1,5 @@
 function AuthLayout() {
-    return (
-        <div>
-            {/* login / signup pages layout */}
-        </div>
-    );
+  return <div>{/* login / signup pages layout */}</div>;
 }
 
 export default AuthLayout;
