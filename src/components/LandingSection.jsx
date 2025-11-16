@@ -1,4 +1,3 @@
-
 export default function LandingSection() {
   return (
     <section
@@ -9,8 +8,8 @@ export default function LandingSection() {
         height: "826px",
       }}
     >
-      <div className="absolute top-[350px] left-[116px] max-w-[740px] flex flex-col gap-16">
-        <h1 className="text-[4.5rem] md:text-[4.5rem] font-bold leading-[1.1] tracking-tight">
+      <div className="top-[350px] left-[116px] max-w-[740px] flex flex-col gap-16 p-10 justify-center">
+        <h1 className="text-[3.5rem] md:text-[4.5rem] font-bold leading-[1.1] tracking-tight">
           <span className="text-orange">
             Healthy Food
             <br />
