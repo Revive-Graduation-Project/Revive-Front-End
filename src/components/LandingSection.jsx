@@ -3,19 +3,26 @@ export default function LandingSection() {
     <section
       className="relative bg-cover bg-center flex items-center"
       style={{
-        backgroundImage: `url('/main_image.jpg')`,
-        width: "100%",
-        height: "826px",
+        backgroundImage: "url('/main_image.jpg')",
       }}
     >
-      <div className="top-[350px] left-[116px] max-w-[740px] flex flex-col gap-16 p-10 justify-center">
-        <h1 className="text-[3.5rem] md:text-[4.5rem] font-bold leading-[1.1] tracking-tight">
-          <span className="text-orange">
+      <div className="relative max-w-4xl px-6 md:px-16 py-32 md:py-48 mt-14 md:mt-16">
+        <h1
+          className="
+            font-bold leading-tight tracking-tight 
+            text-white lg:text-black     
+            text-4xl sm:text-5xl md:text-6xl lg:text-7xl 
+          "
+        >
+          <span className="text-orange block">
             Healthy Food
             <br />
             Comes From
           </span>
-          <span className="text-green block mt-15">Healthy Ingredients</span>
+          <span className="text-green block mt-4">
+            Healthy <br />
+            Ingredients
+          </span>
         </h1>
       </div>
     </section>
