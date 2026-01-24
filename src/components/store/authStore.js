@@ -5,10 +5,20 @@ import { create } from "zustand";
   - Manages user login/logout state
   - Extendable to include token management, roles, etc.
 */
-const useAuthStore = create((set) => ({
-  user: null, // store the current logged-in user
-  login: (userData) => set({ user: userData }), // set user on login
-  logout: () => set({ user: null }), // clear user on logout
-}));
+ const useAuthStore = create((set) => ({
+  user: null,                     
+  isAuthenticated: false,        
 
+  login: (data) =>
+    set({ 
+      user: data, 
+      isAuthenticated: true      
+    }),
+
+  logout: () =>
+    set({ 
+      user: null, 
+      isAuthenticated: false     
+    }),
+}));
 export default useAuthStore;
