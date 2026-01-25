@@ -10,6 +10,6 @@ export { default as useUIStore } from "./uiStore";
 export { default as usePaymentStore } from "./paymentStore";
 export { default as useLoyaltyStore } from "./loyaltyStore";
 export { default as useRecommendationStore } from "./recommendationStore";
-// IMPORTANT NOTE:
-// the import must be like : import useAuthStore from "../../components/store/";
+//NOTE:
+// the import must be like : import useAuthStore from "../../store";
 
