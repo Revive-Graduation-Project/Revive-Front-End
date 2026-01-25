@@ -2,14 +2,24 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 /**
+ * ==========================
  * Payment Store
- * ----------------------------------
- * Purpose:
- * - Handle payment lifecycle
- * - Track transactions
- * - Validate payments
- * - Support async payment flows
+ * ==========================
+ * Responsibilities:
+ * - Manage payment transactions
+ * - Validate transaction data
+ * - Track status (pending, success, failed)
+ * - Persist data
  */
+
+const isValidPayment = (payment) =>
+  payment &&
+  payment.id &&
+  typeof payment.amount === "number" &&
+  payment.amount > 0 &&
+  ["pending", "success", "failed"].includes(payment.status);
+
+const MAX_HISTORY_LENGTH = 20;
 
 const usePaymentStore = create(
   persist(
@@ -17,10 +27,8 @@ const usePaymentStore = create(
       /* =====================
          STATE
       ====================== */
-
-      payments: [], // payment history
-      currentPayment: null, // active transaction
-      isProcessing: false,
+      payments: [],
+      loading: false,
       error: null,
 
       /* =====================
@@ -28,81 +36,77 @@ const usePaymentStore = create(
       ====================== */
 
       /**
-       * Start a payment transaction
-       * Used before redirecting to payment gateway
+       * Add a payment transaction
        */
-      startPayment: ({ amount, method }) => {
-        if (!amount || amount <= 0) {
-          return set({ error: "Invalid payment amount" });
+      addPayment: (payment) => {
+        if (!isValidPayment(payment)) {
+          set({ error: "Invalid payment data" });
+          return;
         }
 
-        if (!method) {
-          return set({ error: "Payment method is required" });
+        const state = get();
+        
+        // Idempotency: Duplicate check
+        if (state.payments.some(p => p.id === payment.id)) {
+           // Optionally update existing or just ignore. 
+           // Ignoring to prevent duplicate entries for same ID.
+           return;
         }
+
+        const newPayments = [...state.payments, payment].slice(-MAX_HISTORY_LENGTH);
 
         set({
-          isProcessing: true,
+          payments: newPayments,
           error: null,
-          currentPayment: {
-            id: Date.now(),
-            amount,
-            method,
-            status: "pending",
-            createdAt: new Date().toISOString(),
-          },
         });
       },
 
       /**
-       * Mark payment as successful
-       * Called after gateway confirmation
+       * Update payment status
        */
-      completePayment: () => {
-        const payment = get().currentPayment;
-        if (!payment) return;
+      updatePaymentStatus: (id, status) => {
+        if (!["pending", "success", "failed"].includes(status)) {
+          set({ error: "Invalid status" });
+          return;
+        }
 
-        const completedPayment = {
-          ...payment,
-          status: "success",
-          completedAt: new Date().toISOString(),
-        };
+        const paymentExists = get().payments.find((p) => p.id === id);
+        if (!paymentExists) {
+          set({ error: "Payment not found" });
+          return;
+        }
 
-        set({
-          payments: [...get().payments, completedPayment],
-          currentPayment: null,
-          isProcessing: false,
-        });
+        set((state) => ({
+          payments: state.payments.map((p) =>
+            p.id === id ? { ...p, status } : p
+          ),
+          error: null,
+        }));
       },
 
       /**
-       * Mark payment as failed
+       * Remove a payment transaction
        */
-      failPayment: (reason = "Payment failed") => {
-        const payment = get().currentPayment;
-        if (!payment) return;
-
-        const failedPayment = {
-          ...payment,
-          status: "failed",
-          error: reason,
-          failedAt: new Date().toISOString(),
-        };
-
-        set({
-          payments: [...get().payments, failedPayment],
-          currentPayment: null,
-          isProcessing: false,
-          error: reason,
-        });
+      removePayment: (id) => {
+        const paymentExists = get().payments.find((p) => p.id === id);
+        if (!paymentExists) {
+          set({ error: "Payment not found" });
+          return;
+        }
+        set((state) => ({
+          payments: state.payments.filter((p) => p.id !== id),
+          error: null,
+        }));
       },
 
       /**
-       * Clear payment error manually
+       * Clear error state
        */
       clearError: () => set({ error: null }),
     }),
     {
       name: "revive-payment-store",
+      partialize: (state) => ({ payments: state.payments }),
     }
   )
 );

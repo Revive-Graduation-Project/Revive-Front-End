@@ -2,12 +2,28 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 /**
+ * ==========================
  * Restaurant Store
- * ----------------------------------
- * Purpose:
- * - Manage restaurants & menus
- * - Provide safe meal data for orders & AI
+ * ==========================
+ * Responsibilities:
+ * - Manage restaurants and meals
+ * - Validate restaurant & meal structures
+ * - Handle selection and error states
+ * - Persist data
  */
+
+const isValidMeal = (meal) =>
+  meal &&
+  meal.id &&
+  typeof meal.name === "string" &&
+  typeof meal.price === "number" &&
+  typeof meal.category === "string";
+
+const isValidRestaurant = (restaurant) =>
+  restaurant &&
+  restaurant.id &&
+  typeof restaurant.name === "string" &&
+  Array.isArray(restaurant.meals);
 
 const useRestaurantStore = create(
   persist(
@@ -15,9 +31,9 @@ const useRestaurantStore = create(
       /* =====================
          STATE
       ====================== */
-
-      restaurants: [], // [{ id, name, isOpen, menu: [] }]
-      selectedRestaurantId: null,
+      restaurants: [],
+      selectedRestaurantId: null, // Store ID only to prevent data desync
+      loading: false,
       error: null,
 
       /* =====================
@@ -25,91 +41,124 @@ const useRestaurantStore = create(
       ====================== */
 
       /**
-       * Add a new restaurant
+       * Select a restaurant by id
+       */
+      selectRestaurant: (id) => {
+        const restaurant = get().restaurants.find((r) => r.id === id);
+        if (!restaurant) {
+          set({ error: "Restaurant not found" });
+          return;
+        }
+        set({ selectedRestaurantId: id, error: null });
+      },
+
+      /**
+       * Get current selected restaurant (Computed)
+       */
+      getSelectedRestaurant: () => {
+        const state = get();
+        return state.restaurants.find((r) => r.id === state.selectedRestaurantId) || null;
+      },
+
+      /**
+       * Add a restaurant
        */
       addRestaurant: (restaurant) => {
-        if (!restaurant?.id || !restaurant?.name) return;
-
+        if (!isValidRestaurant(restaurant)) {
+          set({ error: "Invalid restaurant data" });
+          return;
+        }
         set((state) => ({
-          restaurants: [...state.restaurants, { ...restaurant, menu: [] }],
+          restaurants: [...state.restaurants, restaurant],
+          error: null,
         }));
       },
 
       /**
-       * Select restaurant
+       * Add a meal to selected restaurant
        */
-      selectRestaurant: (restaurantId) => {
-        const exists = get().restaurants.some(r => r.id === restaurantId);
-        if (!exists) return;
+      addMeal: (meal) => {
+        if (!isValidMeal(meal)) {
+          set({ error: "Invalid meal data" });
+          return;
+        }
+        
+        const state = get();
+        const selectedId = state.selectedRestaurantId;
+        
+        if (!selectedId) {
+          set({ error: "No restaurant selected" });
+          return;
+        }
 
-        set({ selectedRestaurantId: restaurantId });
-      },
+        const restaurant = state.restaurants.find(r => r.id === selectedId);
+        if (!restaurant) {
+             set({ error: "Selected restaurant not found in list" });
+             return;
+        }
 
-      /**
-       * Add meal to restaurant menu
-       */
-      addMeal: (restaurantId, meal) => {
-        if (!meal?.id || !meal?.name || meal.price <= 0) return;
+        if (restaurant.meals.find((m) => m.id === meal.id)) {
+          set({ error: "Meal already exists" });
+          return;
+        }
 
         set((state) => ({
           restaurants: state.restaurants.map((r) =>
-            r.id === restaurantId
-              ? { ...r, menu: [...r.menu, { ...meal, available: true }] }
+            r.id === selectedId
+              ? { ...r, meals: [...r.meals, meal] }
               : r
           ),
+          error: null,
         }));
       },
 
       /**
-       * Update meal availability
+       * Remove a meal from selected restaurant
        */
-      toggleMealAvailability: (restaurantId, mealId) => {
+      removeMeal: (mealId) => {
+        const state = get();
+        const selectedId = state.selectedRestaurantId;
+
+        if (!selectedId) {
+          set({ error: "No restaurant selected" });
+          return;
+        }
+
+        const restaurant = state.restaurants.find(r => r.id === selectedId);
+         if (!restaurant) {
+             set({ error: "Selected restaurant not found" });
+             return;
+        }
+
+        if (!restaurant.meals.find((m) => m.id === mealId)) {
+          set({ error: "Meal not found" });
+          return;
+        }
+
         set((state) => ({
           restaurants: state.restaurants.map((r) =>
-            r.id === restaurantId
+            r.id === selectedId
               ? {
                   ...r,
-                  menu: r.menu.map((m) =>
-                    m.id === mealId
-                      ? { ...m, available: !m.available }
-                      : m
-                  ),
+                  meals: r.meals.filter((m) => m.id !== mealId),
                 }
               : r
           ),
+          error: null,
         }));
       },
 
       /**
-       * Remove meal safely
+       * Clear error
        */
-      removeMeal: (restaurantId, mealId) => {
-        set((state) => ({
-          restaurants: state.restaurants.map((r) =>
-            r.id === restaurantId
-              ? { ...r, menu: r.menu.filter((m) => m.id !== mealId) }
-              : r
-          ),
-        }));
-      },
-
-      /**
-       * Update restaurant status
-       */
-      toggleRestaurantStatus: (restaurantId) => {
-        set((state) => ({
-          restaurants: state.restaurants.map((r) =>
-            r.id === restaurantId
-              ? { ...r, isOpen: !r.isOpen }
-              : r
-          ),
-        }));
-      },
-
       clearError: () => set({ error: null }),
     }),
     {
       name: "revive-restaurant-store",
+      partialize: (state) => ({
+        restaurants: state.restaurants,
+        // Don't persist selectedRestaurantId -> force fresh selection on load
+      }),
     }
   )
 );

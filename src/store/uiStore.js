@@ -2,11 +2,16 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 /**
+ * ==========================
  * UI Store
- * ----------------------------------
- * Purpose:
- * - Centralize global UI behavior
- * - Control modals, loaders, toasts, theme
+ * ==========================
+ * Responsibilities:
+ * - Global UI state management
+ * - Theme (light/dark)
+ * - Notifications queue
+ * - Modal control
+ * - Loading & error state
+ * - Persist theme
  */
 
 const useUIStore = create(
@@ -15,68 +20,62 @@ const useUIStore = create(
       /* =====================
          STATE
       ====================== */
-
-      isLoading: false,
-      globalError: null,
-
-      // Modals
-      activeModal: null, // "login" | "signup" | "checkout" | null
-      modalData: null,
-
-      // Notifications
-      toasts: [], // [{ id, type, message }]
-
-      // Theme
-      theme: "light", // "light" | "dark"
+      theme: "light", // light / dark
+      notifications: [], // [{id, type, message}]
+      modal: { isOpen: false, type: null, data: null },
+      loading: false,
+      error: null,
 
       /* =====================
          ACTIONS
       ====================== */
 
-      /* Loading */
-      startLoading: () => set({ isLoading: true }),
-      stopLoading: () => set({ isLoading: false }),
-
-      /* Errors */
-      setError: (message) => {
-        if (!message) return;
-        set({ globalError: message });
-      },
-      clearError: () => set({ globalError: null }),
-
-      /* Modals */
-      openModal: (name, data = null) =>
-        set({ activeModal: name, modalData: data }),
-
-      closeModal: () =>
-        set({ activeModal: null, modalData: null }),
-
-      /* Toasts */
-      showToast: (message, type = "info") => {
-        const id = Date.now();
-        set((state) => ({
-          toasts: [...state.toasts, { id, type, message }],
-        }));
-
-        // Auto remove toast
-        setTimeout(() => {
-          get().removeToast(id);
-        }, 3000);
-      },
-
-      removeToast: (id) =>
-        set((state) => ({
-          toasts: state.toasts.filter((t) => t.id !== id),
-        })),
-
-      /* Theme */
+      // Theme management
       toggleTheme: () =>
         set((state) => ({
           theme: state.theme === "light" ? "dark" : "light",
         })),
+      setTheme: (theme) => {
+        if (["light", "dark"].includes(theme)) set({ theme });
+      },
+
+      // Notifications queue
+      addNotification: (notification) => {
+        if (!notification) return;
+
+        // Auto-generate ID if missing
+        const newNotification = {
+          ...notification,
+          id: notification.id || Date.now() + Math.random(),
+        };
+
+        if (!newNotification.type) return;
+
+        set((state) => ({
+          // Cap at last 5 notifications
+          notifications: [...state.notifications, newNotification].slice(-5),
+        }));
+      },
+      removeNotification: (id) => {
+        set((state) => ({
+          notifications: state.notifications.filter((n) => n.id !== id),
+        }));
+      },
+
+      // Modal control
+      openModal: (type, data = null) =>
+        set({ modal: { isOpen: true, type, data } }),
+      closeModal: () =>
+        set({ modal: { isOpen: false, type: null, data: null } }),
+
+      // Loading & error
+      setLoading: (val) => set({ loading: !!val }),
+      setError: (msg) => set({ error: msg }),
+      clearError: () => set({ error: null }),
     }),
     {
-      name: "revive-ui-store",
+      name: "revive-ui-store", // persist theme & UI preferences
+      partialize: (state) => ({ theme: state.theme }),
     }
   )
 );

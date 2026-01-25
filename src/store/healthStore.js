@@ -2,13 +2,22 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 /**
+ * ==========================
  * Health Store
- * ----------------------------------
- * Purpose:
+ * ==========================
+ * Responsibilities:
  * - Manage user health profile
- * - Support AI-based food recommendations
- * - Prevent unsafe food selections
+ * - Validate profile fields
+ * - Handle allergies safely
+ * - Persist data across refresh
  */
+
+const VALID_GENDERS = ["male", "female", "other"];
+
+const isValidAge = (age) => !isNaN(age) && age > 0 && age < 150;
+const isValidWeight = (weight) => !isNaN(weight) && weight > 0;
+const isValidHeight = (height) => !isNaN(height) && height > 0;
+const isValidGender = (gender) => VALID_GENDERS.includes(gender?.toLowerCase());
 
 const useHealthStore = create(
   persist(
@@ -16,20 +25,14 @@ const useHealthStore = create(
       /* =====================
          STATE
       ====================== */
-
       profile: {
         age: null,
         weight: null,
         height: null,
         gender: null,
       },
-
       allergies: [],
-      dietaryPreferences: [], // vegetarian, keto, vegan...
-      healthGoals: [], // weight-loss, muscle-gain, diabetes-control
-
-      riskLevel: "unknown", // low | medium | high
-      lastUpdated: null,
+      loading: false,
       error: null,
 
       /* =====================
@@ -37,97 +40,100 @@ const useHealthStore = create(
       ====================== */
 
       /**
-       * Update health profile
+       * Update Health Profile
+       */
+      /**
+       * Update Health Profile
+       * Supports partial updates
        */
       updateProfile: (data) => {
-        set((state) => ({
-          profile: { ...state.profile, ...data },
-          lastUpdated: new Date().toISOString(),
+        // 1. Partial Merge Calculation
+        const current = get().profile;
+        const next = { ...current, ...data };
+
+        // 2. Normalization & Type Safety
+        if (next.gender) next.gender = next.gender.toLowerCase();
+        if (next.age !== undefined && next.age !== null) next.age = Number(next.age);
+        if (next.weight !== undefined && next.weight !== null) next.weight = Number(next.weight);
+        if (next.height !== undefined && next.height !== null) next.height = Number(next.height);
+
+        // 3. Validation (Check only if value is present/non-null)
+        if (next.age !== null && !isValidAge(next.age)) {
+          set({ error: "Invalid age (must be 0-150)" });
+          return;
+        }
+        if (next.weight !== null && !isValidWeight(next.weight)) {
+          set({ error: "Invalid weight (must be positive)" });
+          return;
+        }
+        if (next.height !== null && !isValidHeight(next.height)) {
+          set({ error: "Invalid height (must be positive)" });
+          return;
+        }
+        if (next.gender !== null && !isValidGender(next.gender)) {
+          set({ error: "Invalid gender (male, female, other)" });
+          return;
+        }
+
+        set({
+          profile: next,
           error: null,
-        }));
+        });
       },
 
       /**
-       * Add allergy
+       * Add allergy safely
+       */
+      /**
+       * Add allergy safely
        */
       addAllergy: (allergy) => {
-        if (!allergy || get().allergies.includes(allergy)) return;
+        if (!allergy || typeof allergy !== 'string') {
+          set({ error: "Allergy cannot be empty" });
+          return;
+        }
 
-        set((state) => ({
-          allergies: [...state.allergies, allergy],
-          lastUpdated: new Date().toISOString(),
-        }));
+        const normalizedAllergy = allergy.trim().toLowerCase();
+
+        set((state) => {
+          if (state.allergies.includes(normalizedAllergy)) {
+            return { error: "Allergy already added" };
+          }
+
+          return { allergies: [...state.allergies, normalizedAllergy], error: null };
+        });
       },
 
       /**
        * Remove allergy
        */
       removeAllergy: (allergy) => {
-        set((state) => ({
-          allergies: state.allergies.filter((a) => a !== allergy),
-          lastUpdated: new Date().toISOString(),
-        }));
-      },
+        if (!allergy) return;
+        const normalizedAllergy = allergy.trim().toLowerCase();
+        
+        set((state) => {
+          if (!state.allergies.includes(normalizedAllergy)) {
+            return { error: "Allergy not found" };
+          }
 
-      /**
-       * Set dietary preferences
-       */
-      setDietaryPreferences: (preferences) => {
-        set({
-          dietaryPreferences: preferences,
-          lastUpdated: new Date().toISOString(),
+          return {
+            allergies: state.allergies.filter((a) => a !== normalizedAllergy),
+            error: null,
+          };
         });
       },
 
       /**
-       * Set health goals
+       * Clear error
        */
-      setHealthGoals: (goals) => {
-        set({
-          healthGoals: goals,
-          lastUpdated: new Date().toISOString(),
-        });
-      },
-
-      /**
-       * Calculate health risk level
-       * (Can be replaced by AI Model *Youseff* later)
-       */
-      calculateRiskLevel: () => {
-        const { allergies, healthGoals } = get();
-
-        let risk = "low";
-
-        if (allergies.length > 2) risk = "medium";
-        if (healthGoals.includes("diabetes-control")) risk = "high";
-
-        set({ riskLevel: risk });
-      },
-
-      /**
-       * Reset health data (logout case)
-       */
-      resetHealth: () => {
-        set({
-          profile: {
-            age: null,
-            weight: null,
-            height: null,
-            gender: null,
-          },
-          allergies: [],
-          dietaryPreferences: [],
-          healthGoals: [],
-          riskLevel: "unknown",
-          lastUpdated: null,
-          error: null,
-        });
-      },
-
       clearError: () => set({ error: null }),
     }),
     {
       name: "revive-health-store",
+      partialize: (state) => ({
+        profile: state.profile,
+        allergies: state.allergies,
+      }),
     }
   )
 );
