@@ -126,12 +126,12 @@ const useAuthStore = create(
       clearError: () => {
         set({ error: null });
       },
-      
+
       // Accessor methods for api.js
       setAccessToken: (token) => set({ token }),
-      
+
       getAccessToken: () => get().token,
-      
+
     }),
     {
       name: "revive-auth-store",
@@ -139,11 +139,20 @@ const useAuthStore = create(
       /**
        * Persist only essential data
        * Avoid persisting UI states like loading/error
-       * isAuthenticated should be derived from token validity on load
+       * 
+       * SECURITY NOTE:
+       * - token is NOT persisted to localStorage (XSS vulnerability)
+       * - Access token lives in Zustand in-memory state only
+       * - Refresh token is in httpOnly cookie (backend-managed)
+       * - On page refresh, token will be null - call /auth/refresh to restore
+       * 
+       * What IS persisted:
+       * - user: Profile data (not sensitive)
+       * - expiresAt: For UX (show session expiry warnings)
        */
       partialize: (state) => ({
         user: state.user,
-        token: state.token,
+        // token: deliberately excluded for security - in-memory only
         expiresAt: state.expiresAt,
       }),
     }

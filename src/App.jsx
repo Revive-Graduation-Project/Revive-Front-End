@@ -3,8 +3,11 @@ import { AppLayout, AuthLayout } from "./Layout";
 import Home from "./pages/home";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
+import { useAuthInit } from "./hooks/useAuthInit";
 
 export default function App() {
+  useAuthInit();
+
   return (
     <Routes>
       <Route path="/" element={<AppLayout />}>
