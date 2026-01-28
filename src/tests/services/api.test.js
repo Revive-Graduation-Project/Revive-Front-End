@@ -1,15 +1,18 @@
 // api.test.js
 import { describe, test, expect, beforeEach, afterEach } from 'vitest'; // Vitest testing framework
 import AxiosMockAdapter from 'axios-mock-adapter'; // Axios mock adapter for simulating API responses
-import { api, setAccessToken , getAccessToken } from '../../services/api'; // Import the Axios instance with interceptors 
+import { api } from '../../services/api'; // Import the Axios instance with interceptors 
+import { useAuthStore } from '../../store';// Import token store functions
  
 // Test Suite for Axios Interceptors 
 // Focused on token attachment, auto-refresh, and queuing logic
 describe('Axios Interceptors - Simple Tests', () => {
   let mock;
+  const { setAccessToken, getAccessToken } = useAuthStore.getState();
   // Setup mock adapter before each test
   beforeEach(() => {
     mock = new AxiosMockAdapter(api , {onNoMatch: 'throwException'});
+    setAccessToken(null); // Ensure no token at start of each test
   });
   // Reset mock adapter after each test
   afterEach(() => {
@@ -104,7 +107,7 @@ test('Calls refresh endpoint when getting 401', async () => {
 
   // TEST 5: Does it handle normal errors (not 401)?
   test('Normal errors pass through without refresh', async () => {
-    
+
     mock.onGet('/user/profile').reply(500, { error: 'Server error' });
 
     try {

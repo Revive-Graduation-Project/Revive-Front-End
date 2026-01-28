@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useAuthStore } from "../store";
 
 // Create an Axios instance with configurations
 export const api =  axios.create({
@@ -9,27 +10,29 @@ export const api =  axios.create({
   }
 })
 
-let accessToken = null; // in-memory access token for higher security against XSS attacks
+const { getAccessToken, setAccessToken , logout } = useAuthStore.getState(); // Accessor methods for token management
 let isRefreshing = false; // flag to indicate if token refresh is in progress
 const refreshQueue = []; // queue to hold requests while token is being refreshed
 
 // Attach access token to every outgoing request
 api.interceptors.request.use(config => {
-  accessToken && (config.headers['Authorization'] = `Bearer ${accessToken}`);
+  getAccessToken() && (config.headers['Authorization'] = `Bearer ${getAccessToken()}`);
   return config;
 }, error => Promise.reject(error));
 
 // Handle 401 errors and automatic token refresh
 api.interceptors.response.use(response => response , async error => {
     const originalRequest = error.config;
-    
+    console.log(originalRequest)
     // If refresh endpoint fails, refresh token expired - user must re-login
     if(originalRequest.url.includes('/auth/refresh')) {
-        accessToken = null; 
+        setAccessToken(null); 
         isRefreshing = false;
         refreshQueue.forEach(promise => promise.reject(new Error('Session expired')));
         refreshQueue.length = 0;
-        return Promise.reject(error);  // TODO: Redirect to /auth/login here
+        logout();
+        window.location.href = '/auth/login'; // Redirect to login page ,  useNavigate cannot be used outside react components
+        return Promise.reject(error); 
     } 
 
     // If any endpoint returns 401 (unauthorized), attempt to refresh the access token
@@ -52,14 +55,14 @@ api.interceptors.response.use(response => response , async error => {
       try {
             //await to refresh token
             const res = await api.post('/auth/refresh');
-            accessToken = res.data.token;
+            setAccessToken(res.data.token); // Update token in store
             isRefreshing = false;
 
             // Update header for current request
-            originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
+            originalRequest.headers['Authorization'] = `Bearer ${getAccessToken()}`;
 
             // Process the queue
-            refreshQueue.forEach(promise => promise.resolve(accessToken));
+            refreshQueue.forEach(promise => promise.resolve());
             refreshQueue.length = 0; // Clear the queue to avoid memory leaks
 
             // Return the actual call to api()
@@ -68,16 +71,10 @@ api.interceptors.response.use(response => response , async error => {
             isRefreshing = false;
             refreshQueue.forEach(promise => promise.reject(err));
             refreshQueue.length = 0;
+            logout();
+            window.location.href = '/auth/login';
             return Promise.reject(err);
         }
     }
     return Promise.reject(error);
 });
-
-// Function to set the access token after login
-export const setAccessToken = (token) => {
-  accessToken = token; 
-};
-
-// Function to get the current access token for testing purposes
-export const getAccessToken = () => accessToken;

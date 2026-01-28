@@ -5,7 +5,7 @@ import App from "./App.jsx";
 import { BrowserRouter } from "react-router";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-// Create a QueryClient instance with default options
+// Create a QueryClient instance with default configurations
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -13,7 +13,7 @@ const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000, // 5 minutes
 
       // How long inactive cache data stays in memory before garbage collection
-      cacheTime: 30 * 60 * 1000, // 30 minutes
+      gcTime: 30 * 60 * 1000, // 30 minutes
 
       // Prevent automatic refetch when window regains focus
       refetchOnWindowFocus: false,

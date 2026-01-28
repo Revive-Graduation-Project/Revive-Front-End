@@ -126,6 +126,12 @@ const useAuthStore = create(
       clearError: () => {
         set({ error: null });
       },
+      
+      // Accessor methods for api.js
+      setAccessToken: (token) => set({ token }),
+      
+      getAccessToken: () => get().token,
+      
     }),
     {
       name: "revive-auth-store",
