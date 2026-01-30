@@ -1,21 +1,14 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router";
-import { useAuthStore } from "../store/authStore";
+import  useAuthStore  from "../store/authStore";
 
 /**
  * Custom hook to handle session restoration on application mount.
- * Delegates the logic to restoreSession action and handles navigation on failure.
+ * Delegates the logic to restoreSession action in authStore.js
  */
 export const useAuthInit = () => {
-    const navigate = useNavigate();
-
-    const { restoreSession } = useAuthStore.getState();
+    const restoreSession = useAuthStore((state) => state.restoreSession);
 
     useEffect(() => {
-
-       restoreSession().catch(() => {
-          navigate('/auth/login' , {replace: true}); // Redirect to login on session restore failure with replace to avoid back navigation
-       })
-
-    }, [navigate]);
+       restoreSession();
+    }, []);
 };

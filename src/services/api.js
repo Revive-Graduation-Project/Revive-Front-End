@@ -10,12 +10,12 @@ export const api =  axios.create({
   }
 })
 
-const { getAccessToken, setAccessToken , logout } = useAuthStore.getState(); // Accessor methods for token management
 let isRefreshing = false; // flag to indicate if token refresh is in progress
 const refreshQueue = []; // queue to hold requests while token is being refreshed
 
 // Attach access token to every outgoing request
 api.interceptors.request.use(config => {
+  const { getAccessToken} = useAuthStore.getState(); // Accessor methods for token management
   getAccessToken() && (config.headers['Authorization'] = `Bearer ${getAccessToken()}`);
   return config;
 }, error => Promise.reject(error));
@@ -23,6 +23,8 @@ api.interceptors.request.use(config => {
 // Handle 401 errors and automatic token refresh
 api.interceptors.response.use(response => response , async error => {
     const originalRequest = error.config;
+    const { getAccessToken, setAccessToken , logout } = useAuthStore.getState(); // Accessor methods for token management
+
     // If refresh endpoint fails, refresh token expired - user must re-login
     if(originalRequest.url.includes('/auth/refresh')) {
         isRefreshing = false;

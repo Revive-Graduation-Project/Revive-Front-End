@@ -147,12 +147,11 @@ const useAuthStore = create(
                     return data.token;
                } catch (error) {
                    // Refresh failed (cookie expired, invalid, etc.)
+                   set({ error });
                    logout(); // Clear everything
-                   throw error; // Let caller handle redirect
-               } finally{
-                    set({ loading: false });
                }
             }
+            set({ loading: false });
             // user and token are valid, no action needed
             return null;
       },
