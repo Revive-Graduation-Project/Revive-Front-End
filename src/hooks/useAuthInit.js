@@ -10,11 +10,11 @@ export const useAuthInit = () => {
     const navigate = useNavigate();
 
     const { restoreSession } = useAuthStore.getState();
-    
+
     useEffect(() => {
 
        restoreSession().catch(() => {
-          navigate('/auth/login' , {replace: true}); // Redirect to login on session restore failure
+          navigate('/auth/login' , {replace: true}); // Redirect to login on session restore failure with replace to avoid back navigation
        })
 
     }, [navigate]);

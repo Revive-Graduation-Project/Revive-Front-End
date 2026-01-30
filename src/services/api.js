@@ -10,7 +10,7 @@ export const api =  axios.create({
   }
 })
 
-const { getAccessToken, setAccessToken , setAuth } = useAuthStore.getState(); // Accessor methods for token management
+const { getAccessToken, setAccessToken , logout } = useAuthStore.getState(); // Accessor methods for token management
 let isRefreshing = false; // flag to indicate if token refresh is in progress
 const refreshQueue = []; // queue to hold requests while token is being refreshed
 
@@ -28,7 +28,7 @@ api.interceptors.response.use(response => response , async error => {
         isRefreshing = false;
         refreshQueue.forEach(promise => promise.reject(new Error('Session expired')));
         refreshQueue.length = 0;
-        setAuth(false); // Mark session as expired to trigger logout flow
+        logout(); // Clear session data and trigger logout flow
         return Promise.reject(error);
     } 
 
@@ -53,7 +53,6 @@ api.interceptors.response.use(response => response , async error => {
             //await to refresh token
             const res = await restoreSessionService();
             setAccessToken(res.data.token , res.data.expiresAt); // Update token in store
-            setAuth(true); // Mark session as active
             isRefreshing = false;
 
             // Update header for current request
@@ -69,7 +68,7 @@ api.interceptors.response.use(response => response , async error => {
             isRefreshing = false;
             refreshQueue.forEach(promise => promise.reject(err));
             refreshQueue.length = 0;
-            setAuth(false); // Mark auth as false to trigger logout flow
+            logout(); // Clear session data and trigger logout flow
             return Promise.reject(err);
         }
     }

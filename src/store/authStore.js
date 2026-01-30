@@ -169,10 +169,7 @@ const useAuthStore = create(
       setAccessToken: (token, expiresAt) => set({ token, expiresAt }),
 
       getAccessToken: () => get().token,
-
-      setAuth: (isAuthenticated) => set({ isAuthenticated }),
      
-
 
     }),
     {
