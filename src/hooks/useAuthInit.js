@@ -5,7 +5,7 @@ import { useAuthStore } from '../stores/authStore';
 
 export const useAuthInit = () => {
   const navigate = useNavigate();
-  const { sessionStatus , restoreSession , logout } = useAuthStore();
+  const { isAuthenticated , restoreSession , logout } = useAuthStore();
 
   // 1 Bootstrap effect — run once on app mount
   useEffect(() => {
@@ -17,9 +17,9 @@ export const useAuthInit = () => {
 
   // 2 Reactive effect — run whenever session expires during runtime
   useEffect(() => {
-    if (sessionStatus === 'expired') {
+    if (isAuthenticated === false) {
       logout();  
       navigate('/auth/login', { replace: true });
     }
-  }, [sessionStatus, navigate]);
+  }, [isAuthenticated, navigate]);
 };

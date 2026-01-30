@@ -40,7 +40,6 @@ const useAuthStore = create(
       user: null,
       token: null,
       expiresAt: null,
-      sessionStatus: 'idle', // 'idle' | 'active' | 'expired'
 
       isAuthenticated: false,
       loading: false,
@@ -93,7 +92,6 @@ const useAuthStore = create(
           expiresAt: sessionExpiry,
           isAuthenticated: true,
           loading: false,
-          sessionStatus: 'active',
         });
       },
 
@@ -123,7 +121,6 @@ const useAuthStore = create(
           isAuthenticated: false,
           error: null,
           loading: false,
-          sessionStatus: 'expired',
         });
       },
 
@@ -146,12 +143,10 @@ const useAuthStore = create(
                      token: data.token,
                      isAuthenticated: true, 
                      expiresAt: data.expiresAt ,
-                     sessionStatus: 'active',
                     });
                     return data.token;
                } catch (error) {
                    // Refresh failed (cookie expired, invalid, etc.)
-                   console.error("Session restoration failed:", error);
                    logout(); // Clear everything
                    throw error; // Let caller handle redirect
                } finally{
@@ -175,7 +170,7 @@ const useAuthStore = create(
 
       getAccessToken: () => get().token,
 
-      setSessionStatus: (status) => set({ sessionStatus: status }),
+      setAuth: (isAuthenticated) => set({ isAuthenticated }),
      
 
 
@@ -201,7 +196,6 @@ const useAuthStore = create(
         user: state.user,
         // token: deliberately excluded for security - in-memory only
         expiresAt: state.expiresAt,
-        sessionStatus: state.sessionStatus,
       }),
     }
   )

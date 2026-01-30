@@ -94,7 +94,7 @@ test('Calls refresh endpoint when getting 401', async () => {
 
     // Should throw error
     try {
-      console.log(await api.get('/user/profile'));
+       await api.get('/user/profile');
     } catch (error) {
       expect(error.response.status).toBe(401);
     }

@@ -6,7 +6,7 @@ import useAuthStore from '../../store/authStore';
 // Test Suite for Session Restoration & Security
 describe('Session Logic & Security Tests', () => {
     let mock;
-        const { restoreSession , login , getAccessToken } = useAuthStore.getState();
+    const { restoreSession , login , getAccessToken } = useAuthStore.getState();
     beforeEach(() => {
         // Reset Zustand store state
         useAuthStore.setState({
@@ -60,7 +60,7 @@ describe('Session Logic & Security Tests', () => {
 
         const newToken = 'new_refreshed_token';
         mock.onPost('/auth/refresh').reply(200, { token: newToken });
-
+  
         // Call restoreSession
         const restoredToken = await restoreSession();
 
@@ -68,7 +68,7 @@ describe('Session Logic & Security Tests', () => {
         expect(mock.history.post.length).toBe(1); // API called
         expect(restoredToken).toBe(newToken);     // Returned correct token
         expect(useAuthStore.getState().token).toBe(newToken); // Updated store
-
+        expect(useAuthStore.getState().isAuthenticated).toBe(true); // Authenticated
         console.log('✅ restoreSession Success Test Passed!');
     });
 
