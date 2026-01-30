@@ -1,13 +1,12 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import AxiosMockAdapter from 'axios-mock-adapter';
 import { api } from '../../services/api';
-import { restoreSession } from '../../services/auth.service';
 import useAuthStore from '../../store/authStore';
 
 // Test Suite for Session Restoration & Security
 describe('Session Logic & Security Tests', () => {
     let mock;
-
+        const { restoreSession , login , getAccessToken } = useAuthStore.getState();
     beforeEach(() => {
         // Reset Zustand store state
         useAuthStore.setState({
@@ -28,17 +27,20 @@ describe('Session Logic & Security Tests', () => {
     });
 
     // TEST 1: Security - Ensure token is NOT persisted
-    test('SECURITY: Token should NOT be persisted to localStorage', () => {
-        const { login } = useAuthStore.getState();
+    test('SECURITY: Token should NOT be persisted to localStorage', async () => {
         const fakeUser = { id: 1, email: 'test@test.com' };
         const fakeToken = 'secret_access_token';
         const fakeExpiry = Date.now() + 10000;
-
+        mock.onPost('/auth/login').reply(200, {
+            user: fakeUser,
+            token: fakeToken,
+            expiresAt: fakeExpiry
+        });
         // Login (updates store)
-        login({ user: fakeUser, token: fakeToken, expiresAt: fakeExpiry });
+        await login({ user: fakeUser, token: fakeToken, expiresAt: fakeExpiry });
 
         // Verify In-Memory State have token
-        expect(useAuthStore.getState().token).toBe(fakeToken);
+        expect(getAccessToken()).toBe(fakeToken);
 
         // Verify LocalStorage - Should ONLY have user and expiresAt
         const storedData = JSON.parse(localStorage.getItem('revive-auth-store'));

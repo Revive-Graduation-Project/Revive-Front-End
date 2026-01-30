@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useAuthStore } from "../store";
-
+import { restoreSessionService } from "./auth.service";
 // Create an Axios instance with configurations
 export const api =  axios.create({
   baseURL: 'https://api.example.com', // Replace with API base URL when available
@@ -10,7 +10,7 @@ export const api =  axios.create({
   }
 })
 
-const { getAccessToken, setAccessToken , logout } = useAuthStore.getState(); // Accessor methods for token management
+const { getAccessToken, setAccessToken , setSessionStatus } = useAuthStore.getState(); // Accessor methods for token management
 let isRefreshing = false; // flag to indicate if token refresh is in progress
 const refreshQueue = []; // queue to hold requests while token is being refreshed
 
@@ -23,16 +23,13 @@ api.interceptors.request.use(config => {
 // Handle 401 errors and automatic token refresh
 api.interceptors.response.use(response => response , async error => {
     const originalRequest = error.config;
-    console.log(originalRequest)
     // If refresh endpoint fails, refresh token expired - user must re-login
     if(originalRequest.url.includes('/auth/refresh')) {
-        setAccessToken(null); 
         isRefreshing = false;
         refreshQueue.forEach(promise => promise.reject(new Error('Session expired')));
         refreshQueue.length = 0;
-        logout();
-        window.location.href = '/auth/login'; // Redirect to login page ,  useNavigate cannot be used outside react components
-        return Promise.reject(error); 
+        setSessionStatus('expired'); // Mark session as expired to trigger logout flow
+        return Promise.reject(error);
     } 
 
     // If any endpoint returns 401 (unauthorized), attempt to refresh the access token
@@ -54,15 +51,15 @@ api.interceptors.response.use(response => response , async error => {
         
       try {
             //await to refresh token
-            const res = await api.post('/auth/refresh');
-            setAccessToken(res.data.token); // Update token in store
+            const res = await restoreSessionService();
+            setAccessToken(res.data.token , res.data.expiresAt); // Update token in store
             isRefreshing = false;
 
             // Update header for current request
             originalRequest.headers['Authorization'] = `Bearer ${getAccessToken()}`;
 
             // Process the queue
-            refreshQueue.forEach(promise => promise.resolve());
+            refreshQueue.forEach(promise => promise.resolve(getAccessToken()));
             refreshQueue.length = 0; // Clear the queue to avoid memory leaks
 
             // Return the actual call to api()
@@ -71,8 +68,7 @@ api.interceptors.response.use(response => response , async error => {
             isRefreshing = false;
             refreshQueue.forEach(promise => promise.reject(err));
             refreshQueue.length = 0;
-            logout();
-            window.location.href = '/auth/login';
+            setSessionStatus('expired');
             return Promise.reject(err);
         }
     }
