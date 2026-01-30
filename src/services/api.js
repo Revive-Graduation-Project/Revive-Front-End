@@ -53,6 +53,7 @@ api.interceptors.response.use(response => response , async error => {
             //await to refresh token
             const res = await restoreSessionService();
             setAccessToken(res.data.token , res.data.expiresAt); // Update token in store
+            setAuth(true); // Mark session as active
             isRefreshing = false;
 
             // Update header for current request
