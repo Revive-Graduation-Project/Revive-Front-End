@@ -1,0 +1,57 @@
+/**
+ * Mock Restaurants, Meals & Ingredients
+ */
+
+export const mockRestaurants = [
+  {
+    id: 1,
+    name: "Healthy Bites",
+    location: "Downtown",
+    rating: 4.8,
+  },
+  {
+    id: 2,
+    name: "Green Bowl",
+    location: "Uptown",
+    rating: 4.5,
+  }
+];
+
+export const mockIngredients = [
+  { id: 1, name: "Chicken Breast", calories: 165, protein: 31, fat: 3.6, carbs: 0 },
+  { id: 2, name: "Brown Rice", calories: 111, protein: 2.6, fat: 0.9, carbs: 23 },
+  { id: 3, name: "Avocado", calories: 160, protein: 2, fat: 15, carbs: 9 },
+  { id: 4, name: "Quinoa", calories: 120, protein: 4.1, fat: 1.9, carbs: 21 },
+  { id: 5, name: "Salmon", calories: 208, protein: 20, fat: 13, carbs: 0 },
+];
+
+export const mockMeals = [
+  {
+    id: 1,
+    name: "Chicken Protein Bowl",
+    description: "Grilled chicken with brown rice and veggies",
+    price: 15.99,
+    restaurantId: 1,
+    imageUrl: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
+    calories: 450,
+    protein: 45,
+    carbs: 35,
+    fat: 12,
+    ingredients: [1, 2], // referencing ingredient IDs
+    isAvailable: true,
+  },
+  {
+    id: 2,
+    name: "Salmon Quinoa Salad",
+    description: "Fresh salmon served over quinoa and avocado",
+    price: 18.50,
+    restaurantId: 2,
+    imageUrl: "https://images.unsplash.com/photo-1467003909585-2f8a7270028d",
+    calories: 520,
+    protein: 38,
+    carbs: 40,
+    fat: 22,
+    ingredients: [4, 5, 3],
+    isAvailable: true,
+  }
+];
