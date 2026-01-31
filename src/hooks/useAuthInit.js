@@ -1,24 +1,14 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router";
-import { restoreSession } from "../services/auth.service";
+import  useAuthStore  from "../store/authStore";
 
 /**
  * Custom hook to handle session restoration on application mount.
- * Delegates the logic to auth.service and handles navigation on failure.
+ * Delegates the logic to restoreSession action in authStore.js
  */
 export const useAuthInit = () => {
-    const navigate = useNavigate();
+    const restoreSession = useAuthStore((state) => state.restoreSession);
 
     useEffect(() => {
-        const initAuth = async () => {
-            try {
-                await restoreSession();
-            } catch (error) {
-                // If restoreSession throws, it means refresh failed
-                navigate('/auth/login');
-            }
-        };
-
-        initAuth();
-    }, [navigate]);
+       restoreSession();
+    }, []);
 };

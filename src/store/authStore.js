@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
+import { loginService , logoutService, restoreSessionService } from "../services/auth.service";
 /**
  * ==============================
  * Auth Store (Production Ready)
@@ -56,18 +56,30 @@ const useAuthStore = create(
        * @param {String} payload.token
        * @param {Number} [payload.expiresAt] - Optional absolute timestamp
        */
-      login: ({ user, token, expiresAt }) => {
+      login: async (credentials) => {
         // Reset previous errors
-        set({ error: null });
+        set({ error: null , loading: true });
+
+        let response ;
+        try {
+               response = await loginService(credentials);
+        } catch (error) {
+               // user is not registered
+               console.error("Login failed:", error);
+               set({ error });
+               return;
+        }
+
+        const {user , token, expiresAt } = response.data;
 
         // Validation
-        if (!isValidUser(user)) {
-          set({ error: "Invalid user object" });
+        if (!isValidToken(token)) {
+          set({ error: "Invalid authentication token" });
           return;
         }
 
-        if (!isValidToken(token)) {
-          set({ error: "Invalid authentication token" });
+        if (!isValidUser(user)) {
+          set({ error: "Invalid user object" });
           return;
         }
 
@@ -87,7 +99,21 @@ const useAuthStore = create(
        * Logout User
        * Clears all auth-related data
        */
-      logout: () => {
+      logout: async (manualLogout = false) => {
+        // Reset previous errors
+        set({ error: null , loading: true });
+        
+        // If manual logout, call logout service to invalidate token on server
+        if (manualLogout) {
+
+            try {
+             await logoutService();
+            } catch (error) {
+               // Logout request failed , no return here as we want to clear client state anyway
+               set({ error });
+            }
+       }
+      
         set({
           user: null,
           token: null,
@@ -99,24 +125,35 @@ const useAuthStore = create(
       },
 
       /**
-       * Check Authentication Status
+       * restore session validity
        * Called on app startup
        */
-      checkAuth: () => {
-        const { token, expiresAt } = get();
+      restoreSession: async () => {
+         // Get fresh state
+          const { user, token, logout , expiresAt} = get(); 
+          set({ error: null , loading: true });
 
-        if (!token || !expiresAt) {
-          set({ isAuthenticated: false });
-          return;
-        }
-
-        // Token expired
-        if (Date.now() > expiresAt) {
-          get().logout();
-          return;
-        }
-
-        set({ isAuthenticated: true });
+           // If we have a user (persisted) but no token (lost in memory due to refresh)
+           const expiredToken = expiresAt && Date.now() > expiresAt;
+           if (user && (!token || expiredToken)) {
+               try {
+                   // Attempt to get a new access token using the httpOnly cookie
+                   const { data } = await restoreSessionService();
+                   set({
+                     token: data.token,
+                     isAuthenticated: true, 
+                     expiresAt: data.expiresAt ,
+                    });
+                    return data.token;
+               } catch (error) {
+                   // Refresh failed (cookie expired, invalid, etc.)
+                   set({ error });
+                   logout(); // Clear everything
+               }
+            }
+            set({ loading: false });
+            // user and token are valid, no action needed
+            return null;
       },
 
       /**
@@ -127,10 +164,11 @@ const useAuthStore = create(
         set({ error: null });
       },
 
-      // Accessor methods for api.js
-      setAccessToken: (token) => set({ token }),
+      // Accessor methods for token management
+      setAccessToken: (token, expiresAt) => set({ token, expiresAt }),
 
       getAccessToken: () => get().token,
+     
 
     }),
     {
