@@ -1,27 +1,27 @@
-import { useRef } from "react";
 import { FiShoppingCart } from "react-icons/fi";
+import { useOrderStore } from "../store";
+import SideCartDrawer from "./OrderFlow/SideCartDrawer";
+
 function Cart() {
-  const tooltip = useRef(null);
+  const openCartDrawer = useOrderStore((state) => state.openCartDrawer);
+  const totalItems = useOrderStore((state) => state.totalItems);
+
   return (
+    
     <div className="relative">
+        <SideCartDrawer />
       <button
-        className="text-2xl text-green-600 hover:text-green-800 cursor-pointer align-middle"
-        onClick={() => {
-          tooltip.current.classList.toggle("opacity-0");
-        }}
+        className="text-2xl text-green-600 hover:text-green-800 cursor-pointer relative"
+        onClick={openCartDrawer}
+        aria-label="Open cart"
       >
         <FiShoppingCart />
+        {totalItems > 0 && (
+          <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+            {totalItems}
+          </span>
+        )}
       </button>
-
-      <div
-        ref={tooltip}
-        className="absolute -left-2 top-full bg-white p-4 rounded-lg shadow-md max-w-sm mt-3
-      before:content-[''] before:absolute before:-top-2 before:left-4 
-      before:border-l-8 before:border-r-8 before:border-b-8
-      before:border-l-transparent before:border-r-transparent before:border-b-white opacity-0 transition-opacity duration-300"
-      >
-        Cart Products will be shown here
-      </div>
     </div>
   );
 }

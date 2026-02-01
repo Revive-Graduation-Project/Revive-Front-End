@@ -5,53 +5,129 @@
 export const mockRestaurants = [
   {
     id: 1,
-    name: "Healthy Bites",
+    name: "Revive Kitchen",
     location: "Downtown",
     rating: 4.8,
-  },
-  {
-    id: 2,
-    name: "Green Bowl",
-    location: "Uptown",
-    rating: 4.5,
   }
 ];
 
 export const mockIngredients = [
-  { id: 1, name: "Chicken Breast", calories: 165, protein: 31, fat: 3.6, carbs: 0 },
-  { id: 2, name: "Brown Rice", calories: 111, protein: 2.6, fat: 0.9, carbs: 23 },
-  { id: 3, name: "Avocado", calories: 160, protein: 2, fat: 15, carbs: 9 },
-  { id: 4, name: "Quinoa", calories: 120, protein: 4.1, fat: 1.9, carbs: 21 },
-  { id: 5, name: "Salmon", calories: 208, protein: 20, fat: 13, carbs: 0 },
+  { name: "Chicken", icon: "🍗" },
+  { name: "Rice", icon: "🍚" },
+  { name: "Carrot", icon: "🥕" },
+  { name: "Lettuce", icon: "🥬" },
+  { name: "Tomato", icon: "🍅" },
+  { name: "Cucumber", icon: "🥒" },
+  { name: "Beef", icon: "🥩" },
+  { name: "Potato", icon: "🥔" },
+  { name: "Salmon", icon: "🐟" },
+  { name: "Lemon", icon: "🍋" }
 ];
 
 export const mockMeals = [
   {
     id: 1,
-    name: "Chicken Protein Bowl",
-    description: "Grilled chicken with brown rice and veggies",
-    price: 15.99,
+    name: "Chicken cold cut",
+    category: "Chicken",
+    description: "Hot chicken breasts with rice, served with fresh vegetables.",
+    price: 120.0,
     restaurantId: 1,
-    imageUrl: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
-    calories: 450,
-    protein: 45,
-    carbs: 35,
-    fat: 12,
-    ingredients: [1, 2], // referencing ingredient IDs
+    imageUrl: "/meals images/chicken-cold-cut.jpg",
+    location: "Downtown",
+    calories: 250,
+    protein: 31,
+    fat: 18,
+    carbs: 25,
+    ingredients: [
+      { name: "Chicken", icon: "🍗" },
+      { name: "Carrot", icon: "🥕" }
+    ],
     isAvailable: true,
   },
   {
     id: 2,
-    name: "Salmon Quinoa Salad",
-    description: "Fresh salmon served over quinoa and avocado",
-    price: 18.50,
-    restaurantId: 2,
-    imageUrl: "https://images.unsplash.com/photo-1467003909585-2f8a7270028d",
-    calories: 520,
-    protein: 38,
-    carbs: 40,
-    fat: 22,
-    ingredients: [4, 5, 3],
+    name: "Green salad",
+    category: "Vegetarian",
+    description: "Fresh green salad with farm-fresh vegetables and vinaigrette.",
+    price: 140.0,
+    restaurantId: 1,
+    imageUrl: "/meals images/green-salad.jpg",
+    location: "Downtown",
+    calories: 78,
+    protein: 2,
+    fat: 5,
+    carbs: 8,
+    ingredients: [
+      { name: "Lettuce", icon: "🥬" },
+      { name: "Tomato", icon: "🍅" },
+      { name: "Cucumber", icon: "🥒" }
+    ],
+    isAvailable: true,
+  },
+  {
+    id: 3,
+    name: "Beef steak",
+    category: "Beef",
+    description: "Grilled beef steak with mashed potatoes and gravy.",
+    price: 180.0,
+    restaurantId: 1,
+    imageUrl: "/meals images/beef-steak.jpg",
+    location: "Downtown",
+    calories: 350,
+    protein: 45,
+    fat: 25,
+    carbs: 15,
+    ingredients: [
+      { name: "Beef", icon: "🥩" },
+      { name: "Potato", icon: "🥔" }
+    ],
+    isAvailable: true,
+  },
+  {
+    id: 4,
+    name: "Salmon fillet",
+    category: "Salmon",
+    description: "Fresh Atlantic salmon fillet with herbs and lemon.",
+    price: 200.0,
+    restaurantId: 1,
+    imageUrl: "/meals images/salmon.jpg",
+    location: "Downtown",
+    calories: 280,
+    protein: 34,
+    fat: 15,
+    carbs: 0,
+    ingredients: [
+      { name: "Salmon", icon: "🐟" },
+      { name: "Lemon", icon: "🍋" }
+    ],
+    isAvailable: true,
+  },
+  {
+    id: 5,
+    name: "Mix protein bowl",
+    category: "Chicken",
+    description: "The ultimate power bowl with chicken, beef, and rice.",
+    price: 160.0,
+    restaurantId: 1,
+    imageUrl: "/meals images/mix-protein.jpg",
+    location: "Downtown",
+    calories: 450,
+    protein: 55,
+    fat: 20,
+    carbs: 45,
+    ingredients: [
+      { name: "Chicken", icon: "🍗" },
+      { name: "Beef", icon: "🥩" },
+      { name: "Rice", icon: "🍚" }
+    ],
     isAvailable: true,
   }
+];
+
+export const categories = [
+  "All",
+  "Chicken",
+  "Beef",
+  "Salmon",
+  "Vegetarian"
 ];

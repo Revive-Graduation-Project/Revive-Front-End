@@ -8,7 +8,7 @@ import { useState } from "react";
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   return (
-    <nav className="bg-[#FFFBF4CC] fixed inset-x-0 z-10 flex flex-wrap p-3 gap-y-3">
+    <nav className="bg-gray-50 fixed inset-x-0 z-10 flex flex-wrap p-3 gap-y-3">
       <div className="w-full flex flex-wrap p-3 gap-y-2 justify-around items-center">
         <h1 className="grow text-center">
           <Link to="/home">
