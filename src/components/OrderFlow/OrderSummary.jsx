@@ -62,7 +62,7 @@ export default function OrderSummary({
             <div className="space-y-3 mb-4 pb-4 border-b border-gray-200">
               {items.map((item) => (
                 <div key={item.id} className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-orange-500 flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-orange-500 shrink-0">
                     <img 
                       src={item.imageUrl || item.image} 
                       alt={item.name}
@@ -100,12 +100,19 @@ export default function OrderSummary({
       </div>
 
       {/* Action Button */}
-      <button
-        onClick={() => navigate(buttonLink)}
-        className="cursor-pointer w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 rounded-lg transition-colors"
-      >
-        {buttonText}
-      </button>
+      {buttonLink && (
+        <button
+          onClick={() => items && items.length > 0 && navigate(buttonLink)}
+          disabled={!items || items.length === 0}
+          className={`w-full py-3 rounded-lg font-medium transition-colors ${
+            !items || items.length === 0 
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed" 
+              : "cursor-pointer bg-orange-500 hover:bg-orange-600 text-white"
+          }`}
+        >
+          {buttonText}
+        </button>
+      )}
 
       {/* Secure Checkout Indicator */}
       <div className="flex items-center justify-center gap-2 mt-4 text-xs text-gray-500">

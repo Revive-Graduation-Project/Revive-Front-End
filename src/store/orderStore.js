@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import usePaymentStore from "./paymentStore";
 
 /**
  * ==============================
@@ -10,6 +11,7 @@ import { persist } from "zustand/middleware";
  * - Handle quantities correctly
  * - Centralize cart calculations
  * - Persist cart across refresh
+ * - Handle Order Submission & Payment Integration
  */
 
 const isValidItem = (item) =>
@@ -67,6 +69,13 @@ const useOrderStore = create(
         address: "",
         zipCode: ""
       },
+
+      // Payment Details
+      paymentMethod: "cash", // 'credit_card' | 'cash'
+      savedCard: null,       // Masked card details { cardNumber: '**** 1234', ... }
+      
+      // Last Confirmed Order (for Thanks Page)
+      lastOrder: null,
 
       loading: false,
       error: null,
@@ -231,6 +240,16 @@ const useOrderStore = create(
       })),
 
       /**
+       * Set Payment Method
+       */
+      setPaymentMethod: (method) => set({ paymentMethod: method }),
+
+      /**
+       * Save Card Details (Masked)
+       */
+      saveCard: (cardDetails) => set({ savedCard: cardDetails }),
+
+      /**
        * Get delivery fee (free if cart is empty, otherwise $5)
        * @returns {number} Delivery fee amount
        */
@@ -254,27 +273,60 @@ const useOrderStore = create(
       clearError: () => set({ error: null }),
 
       /**
-       * Submit Order (Async Mock)
-       * Simulates an API call to place the order.
+       * Submit Order
+       * Simulates API call, updates PaymentStore, and persists order.
        * @returns {Promise<boolean>} success
        */
       submitOrder: async () => {
         set({ loading: true, error: null });
 
         try {
+          const state = get();
+          
+          if (state.items.length === 0) {
+             throw new Error("Cart is empty");
+          }
+
           // Simulate API network delay
           await new Promise((resolve) => setTimeout(resolve, 2000));
 
-          // Mock Success
-          // In real app: const response = await api.post('/orders', { ...get().items, ...get().customerDetails });
+          // 1. Generate Order Data
+          const orderId = Math.floor(10000 + Math.random() * 90000).toString();
+          const totalWithDelivery = state.getTotalWithDelivery();
           
-          set({ loading: false });
+          const newOrder = {
+             id: orderId,
+             date: new Date().toISOString(),
+             items: state.items,
+             totalAmount: state.totalAmount,
+             deliveryFee: state.getDeliveryFee(),
+             finalTotal: totalWithDelivery,
+             customerDetails: state.customerDetails,
+             paymentMethod: state.paymentMethod,
+             cardDetails: state.savedCard
+          };
+
+          // 2. Log Transaction to PaymentStore
+          usePaymentStore.getState().addTransaction({
+             id: orderId, // Using Order ID as Transaction ID for simplicity
+             amount: totalWithDelivery,
+             status: 'success'
+          });
+
+          // 3. Save as Last Order & Clear Cart
+          set({ 
+             lastOrder: newOrder,
+             loading: false 
+          });
+          
+          get().clearCart();
+
           return true;
         } catch (err) {
           console.error("Order submission failed:", err);
           set({ 
             loading: false, 
-            error: "Failed to place order. Please try again." 
+            error: err.message || "Failed to place order. Please try again." 
           });
           return false;
         }
@@ -284,29 +336,26 @@ const useOrderStore = create(
       name: "revive-order-store",
 
       /**
-       * Persist items and note.
-       * Totals are derived metadata.
+       * Persist items, note, customer, payment details, and lastOrder.
        */
       partialize: (state) => ({
         items: state.items,
         note: state.note,
         customerDetails: state.customerDetails,
+        paymentMethod: state.paymentMethod,
+        savedCard: state.savedCard,
+        lastOrder: state.lastOrder,
       }),
 
       /**
-       * Hydrate logic: Recalculate totals from items
-       * to ensure single source of truth.
+       * Hydrate logic
        */
       merge: (persistedState, currentState) => {
         const items = persistedState?.items || [];
-        const note = persistedState?.note || "";
-        const customerDetails = persistedState?.customerDetails || {};
         const totals = calculateTotals(items);
         return {
           ...currentState,
-          items,
-          note,
-          customerDetails,
+          ...persistedState,
           ...totals,
         };
       },

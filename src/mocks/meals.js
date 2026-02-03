@@ -38,6 +38,7 @@ export const mockMeals = [
     protein: 31,
     fat: 18,
     carbs: 25,
+    sugar: 12,
     ingredients: [
       { name: "Chicken", icon: "🍗" },
       { name: "Carrot", icon: "🥕" }
@@ -57,6 +58,7 @@ export const mockMeals = [
     protein: 2,
     fat: 5,
     carbs: 8,
+    sugar: 4,
     ingredients: [
       { name: "Lettuce", icon: "🥬" },
       { name: "Tomato", icon: "🍅" },
@@ -77,6 +79,7 @@ export const mockMeals = [
     protein: 45,
     fat: 25,
     carbs: 15,
+    sugar: 2,
     ingredients: [
       { name: "Beef", icon: "🥩" },
       { name: "Potato", icon: "🥔" }
@@ -96,6 +99,7 @@ export const mockMeals = [
     protein: 34,
     fat: 15,
     carbs: 0,
+    sugar: 1,
     ingredients: [
       { name: "Salmon", icon: "🐟" },
       { name: "Lemon", icon: "🍋" }
@@ -115,6 +119,7 @@ export const mockMeals = [
     protein: 55,
     fat: 20,
     carbs: 45,
+    sugar: 8,
     ingredients: [
       { name: "Chicken", icon: "🍗" },
       { name: "Beef", icon: "🥩" },

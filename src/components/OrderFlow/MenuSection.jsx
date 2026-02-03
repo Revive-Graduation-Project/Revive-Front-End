@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { FiHeart } from "react-icons/fi";
 import { mockMeals, categories } from "../../mocks/meals";
+import { useFavoritesStore } from "../../store";
 
 /**
  * MenuSection Component
@@ -9,10 +10,21 @@ import { mockMeals, categories } from "../../mocks/meals";
  */
 export default function MenuSection({ onProductClick }) {
   const [selectedCategory, setSelectedCategory] = useState("All");
+  
+  // Favorites Logic
+  const favorites = useFavoritesStore((state) => state.favorites);
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
+
+  const isFavorite = (id) => favorites.some((item) => item.id === id);
 
   const filteredProducts = selectedCategory === "All" 
     ? mockMeals 
     : mockMeals.filter(meal => meal.category === selectedCategory);
+
+  const handleFavoriteClick = (e, product) => {
+    e.stopPropagation();
+    toggleFavorite(product);
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-4 md:py-8">
@@ -39,11 +51,23 @@ export default function MenuSection({ onProductClick }) {
           <div
             key={product.id}
             onClick={() => onProductClick(product)}
-            className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-shadow"
+            className="group bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-shadow relative"
           >
+             {/* Favorite Button (Absolute Top Right) */}
+             <button
+                onClick={(e) => handleFavoriteClick(e, product)}
+                className="absolute top-3 right-3 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-all transform active:scale-90"
+              >
+                <FiHeart 
+                  className={`text-xl transition-colors ${
+                    isFavorite(product.id) ? "fill-red-500 text-red-500" : "text-gray-400"
+                  }`} 
+                />
+              </button>
+
             {/* Product Image */}
-            <div className="w-full aspect-square bg-orange-500 flex items-center justify-center">
-              <div className="w-40 h-40 rounded-full overflow-hidden bg-orange-600">
+            <div className="w-full aspect-square bg-orange-500 flex items-center justify-center relative overflow-hidden">
+              <div className="w-40 h-40 rounded-full overflow-hidden bg-orange-600 transition-transform group-hover:scale-110">
                 <img
                   src={product.imageUrl}
                   alt={product.name}
@@ -54,7 +78,7 @@ export default function MenuSection({ onProductClick }) {
 
             {/* Product Info */}
             <div className="p-4">
-              <h3 className="font-semibold text-gray-800 text-lg mb-2">
+              <h3 className="font-semibold text-gray-800 text-lg mb-2 line-clamp-1">
                 {product.name}
               </h3>
               <div className="flex items-center justify-between">

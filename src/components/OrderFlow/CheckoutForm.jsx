@@ -1,79 +1,88 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { FiMail, FiUser, FiPhone, FiMapPin, FiHash, FiFlag } from "react-icons/fi";
 import { useOrderStore } from "../../store";
-import OrderSuccessModal from "./OrderSuccessModal";
 import FormInput from "../UI/FormInput";
 import FormSelect from "../UI/FormSelect";
 
 /**
+ * Validation Schema for Checkout
+ * Ensures all required delivery and contact info is present.
+ */
+const checkoutSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  firstName: z.string().min(2, "First name is too short"),
+  lastName: z.string().min(2, "Last name is too short"),
+  phone: z.string().min(10, "Phone number is invalid"),
+  region: z.string().min(1, "Region is required"),
+  city: z.string().min(2, "City is required"),
+  address: z.string().min(5, "Address is too short"),
+  zipCode: z.string().min(4, "Invalid Zip Code"),
+});
+
+/**
  * CheckoutForm Component
- * Handles user input for shipping/billing details and order submission.
- * Uses `orderStore` for state management and submission logic.
+ * Collects user shipping and billing details.
+ * 
+ * Features:
+ * - Auto-persistence: Syncs with orderStore immediately on change.
+ * - Validation: Prevents navigation if data is invalid.
  */
 export default function CheckoutForm() {
   const navigate = useNavigate();
-  
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  // Use store for state access
+  // Store access
   const customerDetails = useOrderStore((state) => state.customerDetails);
   const setCustomerDetails = useOrderStore((state) => state.setCustomerDetails);
-  const clearCart = useOrderStore((state) => state.clearCart);
-  
-  // New actions for API submission
-  const submitOrder = useOrderStore((state) => state.submitOrder);
-  const loading = useOrderStore((state) => state.loading);
-  const error = useOrderStore((state) => state.error);
 
-  /**
-   * Handle input changes and persist to store
-   */
-  const handleChange = (e) => {
-    setCustomerDetails({
-      [e.target.name]: e.target.value
+  // Initialize form
+  const { 
+    register, 
+    handleSubmit, 
+    watch,
+    formState: { errors } 
+  } = useForm({
+    resolver: zodResolver(checkoutSchema),
+    defaultValues: customerDetails
+  });
+
+  // Sync form changes to store (Persistence)
+  useEffect(() => {
+    const subscription = watch((value) => {
+      setCustomerDetails(value);
     });
-  };
+    return () => subscription.unsubscribe();
+  }, [watch, setCustomerDetails]);
 
-  /**
-   * Handle form submission
-   * Calls the async submitOrder action from store
-   */
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // Call async submit order
-    const success = await submitOrder();
-    
-    if (success) {
-       // Show success modal instead of alert
-       setShowSuccessModal(true);
-    }
-  };
-
-  const handleModalClose = () => {
-    setShowSuccessModal(false);
-    clearCart();
-    navigate("/");
+  const onSubmit = (data) => {
+    // Final sync and navigate
+    setCustomerDetails(data);
+    navigate("/payment");
   };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-lg shadow-md p-6">
         {/* Customer Details */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Customer details</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <FiUser className="text-orange-500" />
+            Customer details
+          </h2>
           
           <div className="space-y-4">
             {/* Email */}
             <FormInput
               label="Email"
               id="email"
-              name="email"
               type="email"
-              value={customerDetails.email}
-              onChange={handleChange}
               placeholder="Enter your email"
-              required
+              icon={FiMail}
+              error={errors.email?.message}
+              {...register("email")}
             />
 
             {/* First and Last Name */}
@@ -81,21 +90,19 @@ export default function CheckoutForm() {
               <FormInput
                 label="First name"
                 id="firstName"
-                name="firstName"
-                value={customerDetails.firstName}
-                onChange={handleChange}
                 placeholder="First name"
-                required
+                icon={FiUser}
+                error={errors.firstName?.message}
+                {...register("firstName")}
               />
               
               <FormInput
                 label="Last name"
                 id="lastName"
-                name="lastName"
-                value={customerDetails.lastName}
-                onChange={handleChange}
                 placeholder="Last name"
-                required
+                icon={FiUser}
+                error={errors.lastName?.message}
+                {...register("lastName")}
               />
             </div>
 
@@ -103,29 +110,29 @@ export default function CheckoutForm() {
             <FormInput
               label="Phone"
               id="phone"
-              name="phone"
               type="tel"
-              value={customerDetails.phone}
-              onChange={handleChange}
               placeholder="Enter phone number"
-              required
+              icon={FiPhone}
+              error={errors.phone?.message}
+              {...register("phone")}
             />
           </div>
         </div>
 
         {/* Delivery Details */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Delivery details</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <FiMapPin className="text-orange-500" />
+            Delivery details
+          </h2>
           
           <div className="space-y-4">
             {/* Region */}
             <FormSelect
               label="Region"
               id="region"
-              name="region"
-              value={customerDetails.region}
-              onChange={handleChange}
-              required
+              error={errors.region?.message}
+              {...register("region")}
             >
               <option value="">Select region</option>
               <option value="cairo">Cairo</option>
@@ -137,70 +144,43 @@ export default function CheckoutForm() {
             <FormInput
               label="City"
               id="city"
-              name="city"
-              value={customerDetails.city}
-              onChange={handleChange}
               placeholder="Enter city"
-              required
+              icon={FiFlag}
+              error={errors.city?.message}
+              {...register("city")}
             />
 
             {/* Address */}
             <FormInput
               label="Address"
               id="address"
-              name="address"
-              value={customerDetails.address}
-              onChange={handleChange}
               placeholder="Enter your address"
-              required
+              icon={FiMapPin}
+              error={errors.address?.message}
+              {...register("address")}
             />
 
             {/* Zip/Postal Code */}
             <FormInput
               label="Zip / Postal code"
               id="zipCode"
-              name="zipCode"
-              value={customerDetails.zipCode}
-              onChange={handleChange}
               placeholder="Enter zip code"
-              required
+              icon={FiHash}
+              error={errors.zipCode?.message}
+              {...register("zipCode")}
             />
           </div>
         </div>
 
-        {/* Error Message */}
-        {error && (
-            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-                {error}
-            </div>
-        )}
-
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={loading}
-          className={`w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 rounded-lg transition-colors flex justify-center items-center ${
-            loading ? "opacity-70 cursor-not-allowed" : "cursor-pointer"
-          }`}
+          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 rounded-lg transition-colors flex justify-center items-center cursor-pointer shadow-sm"
         >
-          {loading ? (
-             <span className="flex items-center gap-2">
-               <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-               </svg>
-               Processing...
-             </span>
-          ) : (
-            "Continue"
-          )}
+            Continue to Payment
         </button>
       </form>
-      
-      <OrderSuccessModal 
-        isOpen={showSuccessModal} 
-        onClose={handleModalClose} 
-      />
     </div>
   );
 }
+

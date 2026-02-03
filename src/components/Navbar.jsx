@@ -2,6 +2,7 @@ import { Link, NavLink } from "react-router";
 import Cart from "./Cart";
 import SearchBar from "./SearchBar";
 import { FaUserCircle } from "react-icons/fa";
+import { FiHeart } from "react-icons/fi";
 import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 import { useState } from "react";
 
@@ -74,9 +75,9 @@ function Navbar() {
                 isActive ? "active-navlink" : ""
               } hover:text-green p-2 self-start`
             }
-            to="/contact"
+            to="/Favorites"
           >
-            Contact Us
+            Favorites
           </NavLink>
           <NavLink
             className={({ isActive }) =>

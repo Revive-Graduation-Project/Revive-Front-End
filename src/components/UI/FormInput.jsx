@@ -1,46 +1,48 @@
-import React from "react";
+import React, { forwardRef } from "react";
 
 /**
  * FormInput Component
  * Reusable input field with consistent styling and label.
- * @param {string} label - Input label text
- * @param {string} id - Input ID
- * @param {string} name - Input name attribute
- * @param {string} type - Input type (text, email, tel, etc.)
- * @param {string} value - Controlled input value
- * @param {Function} onChange - Change handler
- * @param {string} placeholder - Placeholder text
- * @param {boolean} required - Whether input is required
- * @param {string} className - Additional classes
+ * Supports React Hook Form via forwardRef.
  */
-export default function FormInput({
+const FormInput = forwardRef(({
   label,
   id,
   name,
   type = "text",
-  value,
-  onChange,
-  placeholder,
-  required = false,
+  error,
+  icon: Icon,
   className = "",
   ...props
-}) {
+}, ref) => {
   return (
     <div className={className}>
       <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">
         {label}
       </label>
-      <input
-        type={type}
-        id={id}
-        name={name}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        required={required}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
-        {...props}
-      />
+      <div className="relative">
+        {Icon && (
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Icon className="h-5 w-5 text-gray-400" />
+          </div>
+        )}
+        <input
+          ref={ref}
+          type={type}
+          id={id}
+          name={name}
+          className={`w-full ${Icon ? 'pl-10' : 'px-4'} py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
+            error ? "border-red-500 focus:ring-red-500 bg-red-50" : "border-gray-300"
+          }`}
+          {...props}
+        />
+      </div>
+      {error && (
+        <p className="mt-1 text-xs text-red-500 font-medium">{error}</p>
+      )}
     </div>
   );
-}
+});
+
+FormInput.displayName = "FormInput";
+export default FormInput;

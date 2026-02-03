@@ -1,6 +1,6 @@
 import { Route, Routes, Navigate } from "react-router";
 import { AppLayout, AuthLayout } from "./Layout";
-import { Home, Login, Signup, Menu, Cart, Checkout } from "./pages";
+import { Home, Login, Signup, Menu, Cart, Checkout, Payment, Thanks, Favorites } from "./pages";
 import { useAuthInit } from "./hooks/useAuthInit";
 import { useAuthStore } from "./store";
 import { LoadingSpinner } from "./components";
@@ -34,8 +34,11 @@ export default function App() {
         >
           <Route index element={<Home />} />
           <Route path="menu" element={<Menu />} />
+          <Route path="favorites" element={<Favorites />} />
           <Route path="cart" element={<Cart />} />
           <Route path="checkout" element={<Checkout />} />
+          <Route path="payment" element={<Payment />} />
+          <Route path="thanks" element={<Thanks />} />
         </Route>
 
         {/* Auth Routes - Always accessible */}
