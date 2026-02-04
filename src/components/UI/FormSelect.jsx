@@ -2,8 +2,10 @@ import React, { forwardRef } from "react";
 
 /**
  * FormSelect Component
- * Reusable select dropdown with consistent styling and label.
- * Supports React Hook Form via forwardRef.
+ * 
+ * A standardized dropdown component with built-in label and error handling.
+ * Ensures consistent styling for all select inputs in the application.
+ * Fully compatible with `react-hook-form` ref forwarding.
  */
 const FormSelect = forwardRef(({
   label,

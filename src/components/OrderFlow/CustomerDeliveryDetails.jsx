@@ -1,13 +1,10 @@
-import React from 'react';
+import { DEFAULT_COUNTRY } from '../../constants';
 
 /**
  * CustomerDeliveryDetails Component
- * A readonly summary card for the Payment page.
- * Shows the user where the items will be shipped.
- *
- * @param {Object} props
- * @param {Object} props.customerDetails - The customer data object
- * @param {Function} props.onEdit - Handler for the edit button
+ * 
+ * A compact, readonly summary card used on the Payment page to remind 
+ * the user of their shipping destination and contact info before purchasing.
  */
 export default function CustomerDeliveryDetails({ customerDetails, onEdit }) {
   if (!customerDetails) return null;
@@ -18,7 +15,7 @@ export default function CustomerDeliveryDetails({ customerDetails, onEdit }) {
          <h2 className="text-xl font-bold text-gray-900">Customer & Delivery details</h2>
          <button 
            onClick={onEdit}
-           className="text-green-600 font-medium hover:text-green-700 text-sm"
+           className="text-green-600 font-medium hover:text-green-700 text-sm cursor-pointer"
          >
            Edit
          </button>
@@ -28,7 +25,7 @@ export default function CustomerDeliveryDetails({ customerDetails, onEdit }) {
          <p>{customerDetails.email}</p>
          <p>{customerDetails.phone}</p>
          <p className="mt-1">{customerDetails.address}, {customerDetails.city}, {customerDetails.region}</p>
-         <p>{customerDetails.zipCode}, Egypt</p>
+         <p>{customerDetails.zipCode}, {DEFAULT_COUNTRY}</p>
       </div>
     </div>
   );

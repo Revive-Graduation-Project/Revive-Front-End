@@ -2,9 +2,9 @@ import { FiCheckCircle } from "react-icons/fi";
 
 /**
  * OrderSuccessModal Component
- * Simple success popup shown after successful order placement.
- * @param {boolean} isOpen - Controls visibility
- * @param {Function} onClose - Handler to close modal and reset flow
+ * 
+ * A high-visibility modal that triggers upon successful order placement.
+ * Features a large checkmark icon and a primary "Back to Home" action.
  */
 export default function OrderSuccessModal({ isOpen, onClose }) {
   if (!isOpen) return null;

@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { FiMail, FiUser, FiPhone, FiMapPin, FiHash, FiFlag } from "react-icons/fi";
 import { useOrderStore } from "../../store";
+import { REGIONS } from "../../constants";
 import FormInput from "../UI/FormInput";
 import FormSelect from "../UI/FormSelect";
 
@@ -25,11 +26,16 @@ const checkoutSchema = z.object({
 
 /**
  * CheckoutForm Component
- * Collects user shipping and billing details.
+ * 
+ * The first step of the checkout process, responsible for gathering and 
+ * validating customer contact and delivery information.
  * 
  * Features:
- * - Auto-persistence: Syncs with orderStore immediately on change.
- * - Validation: Prevents navigation if data is invalid.
+ * - Zod Validation: Strict schema enforcement for emails, phones, and addresses.
+ * - Auto-Persistence: Uses a `watch` subscription to automatically sync 
+ *   form state to the global `orderStore` as the user types, preserving progress 
+ *   across navigation.
+ * - Centralized Options: Geography data (Regions) is pulled from `src/constants.js`.
  */
 export default function CheckoutForm() {
   const navigate = useNavigate();
@@ -135,9 +141,11 @@ export default function CheckoutForm() {
               {...register("region")}
             >
               <option value="">Select region</option>
-              <option value="cairo">Cairo</option>
-              <option value="giza">Giza</option>
-              <option value="alexandria">Alexandria</option>
+              {REGIONS.map((region) => (
+                <option key={region.value} value={region.value}>
+                  {region.label}
+                </option>
+              ))}
             </FormSelect>
 
             {/* City */}

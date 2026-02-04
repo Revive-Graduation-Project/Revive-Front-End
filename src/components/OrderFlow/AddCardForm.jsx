@@ -34,16 +34,15 @@ const cardSchema = z.object({
 
 /**
  * AddCardForm Component
- * A modal form for adding a new credit card.
- * Features:
- * - Live card preview
- * - Auto-formatting for card inputs
- * - Zod validation
- *
- * @param {Object} props
- * @param {Function} props.onCancel - Handler to close modal
- * @param {Function} props.onSubmit - Handler for valid submission
- * @param {boolean} props.loading - Submission loading state
+ * 
+ * A specialized modal form for adding credit card information securely.
+ * 
+ * Key Features:
+ * 1. LIVE PREVIEW: Watches input values to render a visual card banner in real-time.
+ * 2. AUTO-FORMATTING: Automatically inserts spaces in card numbers and slashes in expiry dates.
+ * 3. SECURITY MASKING: Immediately masks the card number and CVV on submission 
+ *    before passing data to the parent, ensuring full card details are never stored.
+ * 4. VALIDATION: Uses Zod for complex rules like expiry date future-checks.
  */
 export default function AddCardForm({ onCancel, onSubmit, loading }) {
   const { 
@@ -102,12 +101,19 @@ export default function AddCardForm({ onCancel, onSubmit, loading }) {
   };
 
   const onSubmitForm = (data) => {
-    // Strip spaces for submission
-    const cleanData = {
+    // SECURITY: Mask the card number immediately. 
+    // Never store the full card number in state or persisted storage.
+    const rawNumber = data.cardNumber.replace(/\s/g, "");
+    const maskedNumber = `**** **** **** ${rawNumber.slice(-4)}`;
+    
+    const secureData = {
       ...data,
-      cardNumber: data.cardNumber.replace(/\s/g, "")
+      cardNumber: maskedNumber,
+      // We don't need CVV in the store either
+      cvv: "***" 
     };
-    onSubmit(cleanData);
+    
+    onSubmit(secureData);
   };
 
   return (

@@ -1,12 +1,19 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { FiHeart } from "react-icons/fi";
 import { mockMeals, categories } from "../../mocks/meals";
 import { useFavoritesStore } from "../../store";
+import { formatCurrency } from "../../utils/formatters";
 
 /**
  * MenuSection Component
- * Displays grid of products with category filtering.
- * @param {Function} onProductClick - Handler for when a product is clicked
+ * 
+ * The primary catalog view for the application.
+ * 
+ * Features:
+ * - Category Filtering: Allows users to sort products by type (e.g., Bowls, Juices).
+ * - Product Grid: Renders a responsive grid of product cards.
+ * - Integration: Interacts with `favoritesStore` for hearting products.
+ * - Mock Data: Currently pulls from `src/mocks/meals.js`.
  */
 export default function MenuSection({ onProductClick }) {
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -15,11 +22,18 @@ export default function MenuSection({ onProductClick }) {
   const favorites = useFavoritesStore((state) => state.favorites);
   const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
 
-  const isFavorite = (id) => favorites.some((item) => item.id === id);
+  /**
+   * Memoized Product Filtering
+   * We wrap this in useMemo so that the .filter() operation only runs
+   * when the selectedCategory or the source mockMeals array changes.
+   */
+  const filteredProducts = useMemo(() => {
+    return selectedCategory === "All" 
+      ? mockMeals 
+      : mockMeals.filter(meal => meal.category === selectedCategory);
+  }, [selectedCategory]);
 
-  const filteredProducts = selectedCategory === "All" 
-    ? mockMeals 
-    : mockMeals.filter(meal => meal.category === selectedCategory);
+  const isFavorite = (id) => favorites.some((item) => item.id === id);
 
   const handleFavoriteClick = (e, product) => {
     e.stopPropagation();
@@ -56,7 +70,7 @@ export default function MenuSection({ onProductClick }) {
              {/* Favorite Button (Absolute Top Right) */}
              <button
                 onClick={(e) => handleFavoriteClick(e, product)}
-                className="absolute top-3 right-3 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-all transform active:scale-90"
+                className="absolute top-3 right-3 z-5 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-all transform active:scale-90"
               >
                 <FiHeart 
                   className={`text-xl transition-colors ${
@@ -84,7 +98,7 @@ export default function MenuSection({ onProductClick }) {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-500">{product.calories} cal</span>
                 <span className="text-orange-500 font-bold text-lg">
-                  ${product.price.toFixed(2)}
+                  {formatCurrency(product.price)}
                 </span>
               </div>
             </div>

@@ -1,122 +1,178 @@
 import { useState } from "react";
 import { useOrderStore } from "../../store";
+import { formatCurrency } from "../../utils/formatters";
+import { MAX_QUANTITY } from "../../constants";
 import QuantityStepper from "./QuantityStepper";
 
 /**
  * ProductDetailsSection Component
- * Modal-like section showing full product info, nutrition, and ingredients.
- * Allows user to choose quantity and add to cart.
- * @param {Object} product - The product object to display
- * @param {Function} onClose - Handler to close the details view
+ * Displays full details of a selected product in a side panel next to the image.
+ * Matches specific layout: Image on circular orange gradient background,
+ * asymmetric grid, and bold nutrition/ingredients badges.
  */
 export default function ProductDetailsSection({ product, onClose }) {
   const [quantity, setQuantity] = useState(1);
   const addItem = useOrderStore((state) => state.addItem);
   const openCartDrawer = useOrderStore((state) => state.openCartDrawer);
+  const error = useOrderStore((state) => state.error);
+  const clearError = useOrderStore((state) => state.clearError);
 
-  if (!product) return null;
+  if (!product) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 text-center h-[600px]">
+        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+          <span className="text-4xl text-gray-400">?</span>
+        </div>
+        <h3 className="text-xl font-bold text-gray-800 mb-2">Product not found</h3>
+        <p className="text-gray-500 mb-6">The product you're looking for doesn't exist.</p>
+        <button 
+          onClick={onClose}
+          className="bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition-colors"
+        >
+          Back to Menu
+        </button>
+      </div>
+    );
+  }
 
   const handleAddToCart = () => {
     addItem(product, quantity);
-    openCartDrawer();
-    onClose();
+    // If there's an error in store (e.g. max qty), it will be shown via the 'error' state
+    // We only close and open drawer if there's no error
+    if (!useOrderStore.getState().error) {
+      openCartDrawer();
+      onClose();
+    }
   };
 
-  // Ingredients are directly embedded in the new data structure
-  const productIngredients = product.ingredients || [];
-
   return (
-    <div className="bg-gray-100 p-6 rounded-lg">
-      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-        <div className="grid md:grid-cols-2 gap-4 md:gap-6 p-4 md:p-6">
-          {/* Product Image */}
-          <div className="flex items-center justify-center">
-            <div className="w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden bg-orange-500 shrink-0">
-              <img
-                src={product.imageUrl}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
+    <div className="relative grid grid-cols-1 md:grid-cols-[1fr_1.2fr] h-full overflow-hidden bg-white rounded-3xl">
+      {/* Close Button (Absolute Top Right for both) */}
+      <button 
+        onClick={onClose}
+        className="absolute top-14 right-6 md:top-6 md:right-6 z-5 w-10 h-10 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:bg-white text-gray-700 transition-all cursor-pointer border border-gray-100"
+        aria-label="Close details"
+      >
+        <span className="text-2xl leading-none">&times;</span>
+      </button>
+
+      {/* Left Column: Image Area */}
+      <div className="relative flex flex-col items-center justify-center p-8 bg-gray-50/50">
+        {/* Circular Background Decor */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 md:w-96 md:h-96 bg-gray-100 rounded-full shadow-lg flex items-center justify-center overflow-hidden">
+             {/* Product Image */}
+            <img
+              src={product.imageUrl}
+              alt={product.name}
+              className="w-full h-full object-cover z-10 hover:scale-105 transition-transform duration-500"
+            />
+        </div>
+        
+        {/* Product Name Below Image */}
+        <div className="mt-80 md:mt-[420px] text-center z-10">
+          <h2 className="text-2xl pt-10 font-bold text-gray-900 drop-shadow-sm">
+            {product.name}
+          </h2>
+        </div>
+      </div>
+
+      {/* Right Column: Details Panel */}
+      <div className="flex flex-col p-8 overflow-y-auto max-h-[85vh] md:max-h-full scrollbar-hide">
+        <div className="space-y-8">
+          {/* Header */}
+          <div>
+            <h1 className="text-2xl font-bold text-[#0A2540] mb-6">
+              Details
+            </h1>
+            <p className="text-gray-600 leading-relaxed text-sm">
+              {product.description}
+            </p>
+          </div>
+
+          {/* Nutrition Info - 2x2 Grid */}
+          <div className="grid grid-cols-2 gap-y-6 gap-x-12">
+            {[
+              { label: "Fat", value: product.fat + " g" },
+              { label: "Pro", value: product.protein + " g" },
+              { label: "Cal", value: product.calories + " kcal" },
+              { label: "Sug", value: product.sugar + " g" },
+            ].map((stat) => (
+              <div key={stat.label} className="flex justify-between items-center group">
+                <span className="text-gray-900 font-extrabold text-sm uppercase">
+                  {stat.label}
+                </span>
+                <span className="text-green-700 font-black text-base">
+                  {stat.value}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Ingredients Section */}
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h3 className="text-sm font-medium text-gray-700">
+                Ingredients
+              </h3>
+              <span className="text-xs text-gray-500">
+                {product.ingredients?.length || 0} ingredients
+              </span>
+            </div>
+            <div className="flex gap-4">
+              {product.ingredients?.map((ing, idx) => (
+                <div key={idx} className="flex flex-col items-center gap-2 group cursor-help">
+                  <div className="w-12 h-12 flex items-center justify-center bg-gray-50 border border-gray-100 rounded-full shadow-sm group-hover:bg-white group-hover:shadow-md group-hover:border-orange-200 transition-all font-bold text-xl">
+                    {ing.icon || "🥗"}
+                  </div>
+                  <span className="text-xs text-gray-600">
+                    {ing.name}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Product Details */}
-          <div className="flex flex-col justify-center">
-            <button
-              onClick={onClose}
-              className="cursor-pointer self-end text-gray-400 hover:text-gray-600 text-2xl mb-4"
-            >
-              ×
-            </button>
-
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">Details</h2>
-
-            <h3 className="text-2xl font-semibold text-gray-700 mb-4">
-              {product.name}
-            </h3>
-
-            <p className="text-gray-600 mb-4">{product.description}</p>
-
-            {/* Nutritional Info */}
-            <div className="flex gap-6 mb-4">
-              <div>
-                <span className="text-gray-500 text-sm">Protein</span>
-                <p className="font-semibold">{product.protein}g</p>
-              </div>
-              <div>
-                <span className="text-gray-500 text-sm">Carbs</span>
-                <p className="font-semibold">{product.carbs}g</p>
-              </div>
-              <div>
-                <span className="text-gray-500 text-sm">Fat</span>
-                <p className="font-semibold">{product.fat}g</p>
-              </div>
-              <div>
-                <span className="text-gray-500 text-sm">Calories</span>
-                <p className="font-semibold">{product.calories}</p>
-              </div>
-            </div>
-
-            {/* Ingredients */}
-            {productIngredients.length > 0 && (
-              <div className="mb-6">
-                <h4 className="text-gray-700 font-medium mb-2">Ingredients</h4>
-                <div className="flex gap-2 flex-wrap">
-                  {productIngredients.map((ingredient) => (
-                    <span key={ingredient.id} className="bg-gray-100 px-3 py-1 rounded-full text-sm text-gray-700">
-                      {ingredient.name}
-                    </span>
-                  ))}
-                </div>
+          {/* Price & Quantity Controls */}
+          <div className="mt-auto pt-6 border-t border-gray-100 flex flex-col gap-6">
+            
+            {/* Error Message */}
+            {error && (
+              <div className="p-2 bg-red-50 text-red-500 text-xs rounded border border-red-100 animate-pulse">
+                {error}
               </div>
             )}
 
-            {/* Price and Quantity */}
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-gray-700 font-medium mb-2">Price</h4>
-                <p className="text-orange-500 font-bold text-2xl">
-                  ${product.price.toFixed(2)}
-                </p>
-              </div>
-
-              <div>
-                <h4 className="text-gray-700 font-medium mb-2">Quantity</h4>
-                <QuantityStepper
-                  quantity={quantity}
-                  onIncrease={() => setQuantity(quantity + 1)}
-                  onDecrease={() => setQuantity(Math.max(1, quantity - 1))}
-                  size="lg"
-                />
-              </div>
-
-              <button
-                onClick={handleAddToCart}
-                className="cursor-pointer w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 rounded-lg transition-colors mt-4"
-              >
-                Add to cart
-              </button>
+            <div className="flex justify-between items-center">
+               <span className="text-lg font-bold text-gray-800">Price</span>
+               <span className="text-xl font-bold text-black">
+                 {formatCurrency(product.price)}
+               </span>
             </div>
+
+            <div className="flex justify-between items-center">
+               <span className="text-lg font-bold text-gray-800">Quantity</span>
+               <QuantityStepper
+                 quantity={quantity}
+                 onIncrease={() => {
+                   if (quantity < MAX_QUANTITY) {
+                     setQuantity(quantity + 1);
+                     clearError();
+                   }
+                 }}
+                 onDecrease={() => {
+                   setQuantity(Math.max(1, quantity - 1));
+                   clearError();
+                 }}
+               />
+            </div>
+
+            {/* Add to Cart Button */}
+            <button
+              onClick={handleAddToCart}
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-full transition-all shadow-md hover:shadow-lg cursor-pointer"
+            >
+              Add to cart
+            </button>
           </div>
         </div>
       </div>

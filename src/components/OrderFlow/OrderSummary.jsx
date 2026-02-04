@@ -1,19 +1,17 @@
 import { useState } from "react";
 import { FiChevronDown, FiLock } from "react-icons/fi";
 import { useNavigate } from "react-router";
+import { formatCurrency } from "../../utils/formatters";
 
 /**
  * OrderSummary Component
- * Sticky sidebar displaying order totals (subtotal, delivery, total).
- * Can optionally show the list of items (collapsible).
- * @param {Array} items - List of items in cart
- * @param {number} subtotal - Subtotal amount
- * @param {number} delivery - Delivery fee
- * @param {number} total - Final total
- * @param {string} buttonText - Text for the main action button
- * @param {string} buttonLink - URL for the main action button
- * @param {boolean} showItems - Whether to allow expanding item list
- * @param {Function} onEdit - Optional handler for "Edit" button
+ * 
+ * An essential sidebar component that provides a real-time price breakdown.
+ * 
+ * Features:
+ * - Sticky Position: Remains visible as the user scrolls through categories or cart items.
+ * - Collapsible Details: Optionally shows an expandable list of cart items.
+ * - Dynamic Action: The primary button disables automatically if the cart is empty.
  */
 export default function OrderSummary({ 
   items, 
@@ -74,7 +72,7 @@ export default function OrderSummary({
                     <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
                   </div>
                   <p className="text-sm font-bold text-orange-500">
-                    ${(item.price * item.quantity).toFixed(2)}
+                    {formatCurrency(item.price * item.quantity)}
                   </p>
                 </div>
               ))}
@@ -87,15 +85,15 @@ export default function OrderSummary({
       <div className="space-y-3 mb-6">
         <div className="flex justify-between text-gray-700">
           <span>Subtotal</span>
-          <span className="font-medium">${subtotal.toFixed(2)}</span>
+          <span className="font-medium">{formatCurrency(subtotal)}</span>
         </div>
         <div className="flex justify-between text-gray-700">
           <span>Delivery</span>
-          <span className="font-medium">${delivery.toFixed(2)}</span>
+          <span className="font-medium">{formatCurrency(delivery)}</span>
         </div>
         <div className="border-t border-gray-200 pt-3 flex justify-between text-lg font-bold">
           <span className="text-green-600">Total</span>
-          <span className="text-orange-500">${total.toFixed(2)}</span>
+          <span className="text-orange-500">{formatCurrency(total)}</span>
         </div>
       </div>
 

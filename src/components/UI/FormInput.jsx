@@ -2,8 +2,14 @@ import React, { forwardRef } from "react";
 
 /**
  * FormInput Component
- * Reusable input field with consistent styling and label.
- * Supports React Hook Form via forwardRef.
+ * 
+ * A standardized, accessible input field used across the application.
+ * 
+ * Features:
+ * - Label Association: Automatically links `label` to `input` via `id`.
+ * - Icon Support: Renders a leading icon if provided.
+ * - Error States: Displays localized error messages in red with a focus ring adjustment.
+ * - Ref Forwarding: Fully compatible with `react-hook-form`.
  */
 const FormInput = forwardRef(({
   label,

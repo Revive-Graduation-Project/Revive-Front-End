@@ -1,14 +1,11 @@
-import React from 'react';
+
 
 /**
  * CustomerInfoSummary Component
- * Displays a 3-column grid of final order details (Delivery, Billing, Payment).
- * Used on the "Thank You" page.
- *
- * @param {Object} props
- * @param {Object} props.customerDetails
- * @param {string} props.paymentMethod
- * @param {Object} props.cardDetails
+ * 
+ * A high-level overview of the final order status, typically displayed 
+ * on success pages. Uses a responsive 3-column grid to show Delivery, 
+ * Billing, and Payment Method summaries side-by-side.
  */
 export default function CustomerInfoSummary({ customerDetails, paymentMethod, cardDetails }) {
   if (!customerDetails) return null;

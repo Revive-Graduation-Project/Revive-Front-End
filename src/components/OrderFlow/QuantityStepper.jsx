@@ -2,45 +2,32 @@ import { FiMinus, FiPlus } from "react-icons/fi";
 
 /**
  * QuantityStepper Component
- * Reusable input for incrementing/decrementing numbers.
- * @param {number} quantity - Current value
- * @param {Function} onIncrease - Increment handler
- * @param {Function} onDecrease - Decrement handler
- * @param {string} size - Size variant ('sm', 'md', 'lg')
+ * 
+ * A minimal, pill-shaped control for managing numeric counts.
+ * Strictly follows accessibility guidelines with dedicated ARIA labels 
+ * for increment and decrement actions.
  */
-export default function QuantityStepper({ quantity, onIncrease, onDecrease, size = "md" }) {
-  const sizeClasses = {
-    sm: "text-sm px-2 py-1",
-    md: "text-base px-3 py-1.5",
-    lg: "text-lg px-4 py-2"
-  };
-
-  const buttonSize = {
-    sm: "w-6 h-6 text-xs",
-    md: "w-8 h-8 text-sm",
-    lg: "w-10 h-10 text-base"
-  };
-
+export default function QuantityStepper({ quantity, onIncrease, onDecrease }) {
   return (
-    <div className="cursor-pointer flex items-center gap-2 border border-gray-300 rounded-lg overflow-hidden bg-white">
+    <div className="inline-flex items-center border border-gray-300 rounded-full overflow-hidden bg-white">
       <button
         onClick={onDecrease}
-        className={`${buttonSize[size]} cursor-pointer flex items-center justify-center hover:bg-gray-100 transition-colors active:bg-gray-200`}
+        className="w-8 h-8 flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer"
         aria-label="Decrease quantity"
       >
-        <FiMinus />
+        <FiMinus className="text-gray-600 text-sm" />
       </button>
       
-      <span className={`${sizeClasses[size]} font-medium min-w-8 text-center`}>
+      <span className="px-3 font-medium text-gray-800 text-sm min-w-8 text-center">
         {quantity}
       </span>
       
       <button
         onClick={onIncrease}
-        className={`${buttonSize[size]} cursor-pointer flex items-center justify-center hover:bg-gray-100 transition-colors active:bg-gray-200`}
+        className="w-8 h-8 flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer"
         aria-label="Increase quantity"
       >
-        <FiPlus />
+        <FiPlus className="text-gray-600 text-sm" />
       </button>
     </div>
   );

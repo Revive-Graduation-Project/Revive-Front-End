@@ -6,17 +6,17 @@ import AddCardForm from "./AddCardForm";
 
 /**
  * PaymentForm Component
- * Handles payment method selection and order submission.
- * Matches the specific design: Vertical options list + Popup for Add Card.
- */
-/**
- * PaymentForm Component
- * Handles the final step of the order process: Method selection and submission.
  * 
- * Logic:
- * - Supports 'cash' and 'credit_card'
- * - If 'credit_card' is selected, enforces that a card must be saved.
- * - Triggers global submitOrder action which handles API simulation and store updates.
+ * The final step of the checkout flow where the user selects a payment method 
+ * and confirms the order.
+ * 
+ * Logic & Orchestration:
+ * - Method Switching: Supports 'cash' and 'credit_card'.
+ * - Modal Orchestration: Automatically triggers the `AddCardForm` modal if 
+ *   'credit_card' is selected without a saved card.
+ * - Conditional Submission: Validates that a payment method is fully configured 
+ *   before allowing the global `submitOrder` action to proceed.
+ * - Navigation: Redirects to the "/thanks" success page upon transaction completion.
  */
 export default function PaymentForm() {
   const navigate = useNavigate();

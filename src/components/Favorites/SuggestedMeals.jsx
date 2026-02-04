@@ -1,19 +1,31 @@
+import { useMemo } from "react";
 import { useFavoritesStore } from "../../store";
 import { mockMeals } from "../../mocks/meals";
 import FavoriteItem from "./FavoriteItem";
 
 /**
  * SuggestedMeals Component
- * Displays random suggestions excluding current favorites.
+ * Displays random suggestions that stay stable even if favorited.
  */
 export default function SuggestedMeals() {
+  // We still subscribe to favorites to update the heart icons
   const favorites = useFavoritesStore((state) => state.favorites);
 
-  // Get 4 random items for suggestions (excluding favorites)
-  // In a real app, this might come from a recommendation API
-  const suggestions = mockMeals
-    .filter(meal => !favorites.some(fav => fav.id === meal.id))
-    .slice(0, 4);
+  /**
+   * Stable Suggestions Logic
+   * We want to pick items that the user doesn't CURRENTLY have in favorites,
+   * but we don't want the list to change or items to "disappear" after they
+   * click favorite (the 'move' behavior).
+   * 
+   * By using an empty dependency array [], we calculate these suggestions
+   * once when the component mounts and keep them stable.
+   */
+  const suggestions = useMemo(() => {
+    const currentFavorites = useFavoritesStore.getState().favorites;
+    return mockMeals
+      .filter(meal => !currentFavorites.some(fav => fav.id === meal.id))
+      .slice(0, 4);
+  }, []); 
 
   if (suggestions.length === 0) return null;
 
