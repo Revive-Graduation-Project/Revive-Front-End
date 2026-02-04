@@ -1,15 +1,12 @@
 import { FiShoppingCart } from "react-icons/fi";
 import { useOrderStore } from "../store";
-import SideCartDrawer from "./OrderFlow/SideCartDrawer";
 
 function Cart() {
   const openCartDrawer = useOrderStore((state) => state.openCartDrawer);
   const totalItems = useOrderStore((state) => state.totalItems);
 
   return (
-    
     <div className="relative">
-        <SideCartDrawer />
       <button
         className="text-2xl text-green-600 hover:text-green-800 cursor-pointer relative"
         onClick={openCartDrawer}
