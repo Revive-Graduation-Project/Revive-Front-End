@@ -1,22 +1,35 @@
 @import "tailwindcss";
 
-@theme {
-  --color-green: #2E7D32;
-  --color-orange: #FF9800;
+:root {
+  --color-green: #2e7d32;
+  --color-orange: #ff9800;
 }
-html{
-    font-family: "open-sans", sans-serif;
-    line-height: 2;
+
+html {
+  font-family: "open-sans", sans-serif;
+  line-height: 2;
 }
 .branding-title {
   font-weight: 700;
   font-style: bold;
-  font-variation-settings:
-    "wdth" 100;
+  font-variation-settings: "wdth" 100;
   letter-spacing: -2px;
 }
 .active-navlink {
-   background-color: white;
-   color: var(--color-green);
-   border-radius: 1rem;
+  background-color: white;
+  color: var(--color-green);
+  border-radius: 1rem;
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    /* Chrome, Safari, Opera */
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    /* Firefox */
+    scrollbar-width: none;
+    /* IE + Edge */
+    -ms-overflow-style: none;
+  }
 }
