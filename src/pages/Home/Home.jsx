@@ -1,6 +1,7 @@
 import Hero from "./Sections/Hero";
 import PopularMenus from "./Sections/PopularMenus";
 import RegularFood from "./Sections/RegularFood";
+import SpecialOffer from "./Sections/SpecialOffer";
 
 export default function Home() {
   return (
@@ -16,6 +17,7 @@ export default function Home() {
         <Hero />
         <PopularMenus />
         <RegularFood />
+        <SpecialOffer />
       </div>
     </div>
   );
