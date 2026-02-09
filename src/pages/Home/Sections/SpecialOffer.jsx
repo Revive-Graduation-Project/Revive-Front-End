@@ -49,11 +49,11 @@ const SpecialOffer = () => {
           />
         </div>
 
-        <div className="absolute -bottom-45 -right-10 animate-float-fast">
+        <div className="absolute -bottom-20 -right-10 animate-float-fast">
           <img
             src="/public/images/bowl.png"
             alt="bowl"
-            className="w-full h-full object-contain "
+            className="w-full h-full object-contain z-50 "
           />
         </div>
       </div>

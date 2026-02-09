@@ -1,3 +1,4 @@
+import Footer from "../components/layout/Footer";
 import Navbar from "../components/layout/Navbar";
 import { Outlet } from "react-router-dom";
 function AppLayout() {
@@ -6,6 +7,7 @@ function AppLayout() {
       <Navbar />
       {/* navbar will only be displayed on app pages */}
       <Outlet /> {/* This is where child routes will be rendered */}
+      <Footer /> {/* footer will only be displayed on app pages */}
     </div>
   );
 }
