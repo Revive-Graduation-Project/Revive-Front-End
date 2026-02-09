@@ -1,5 +1,6 @@
 import Hero from "./Sections/Hero";
 import PopularMenus from "./Sections/PopularMenus";
+import RegularFood from "./Sections/RegularFood";
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
       <div className="py-12 md:py-16 lg:py-20 space-y-16 md:space-y-20 lg:space-y-24">
         <Hero />
         <PopularMenus />
+        <RegularFood />
       </div>
     </div>
   );

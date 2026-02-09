@@ -1,0 +1,127 @@
+const RegularFoodCard = ({ meal }) => {
+  const {
+    name,
+    description,
+    price,
+    discountPercent = 0,
+    imageUrl,
+    calories,
+    protein,
+    fat,
+    sugar = 64,
+  } = meal;
+
+  const hasDiscount = discountPercent > 0;
+
+  const finalPrice = hasDiscount
+    ? Math.round(price * (1 - discountPercent / 100))
+    : Math.round(price);
+
+  const priceColor = hasDiscount
+    ? "text-[var(--color-orange)]"
+    : "text-gray-900";
+
+  return (
+    <div className="group relative bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300">
+      {/* Offer Badge */}
+      {hasDiscount && (
+        <div className="absolute top-3 left-3 z-20 bg-(--color-orange) text-white text-xs font-bold px-3 py-1 rounded-br-lg rounded-tl-lg shadow-sm">
+          Offer {discountPercent}%
+        </div>
+      )}
+
+      {/* Favorite Heart */}
+      <button className="absolute top-3 right-3 z-20 text-gray-400 hover:text-red-500 transition-colors">
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+          />
+        </svg>
+      </button>
+
+      {/* image*/}
+      <div className="relative pt-10 pb-4 px-6 flex justify-center">
+        <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full overflow-hidden border-4 border-orange-100 shadow-lg group-hover:scale-105 transition-transform duration-300">
+          <img
+            src={imageUrl}
+            alt={name}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        </div>
+      </div>
+
+      {/* Content*/}
+      <div className="px-5 pb-6 text-center">
+        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1.5 line-clamp-1">
+          {name}
+        </h3>
+
+        <p className="text-sm text-gray-600 mb-4 line-clamp-2 min-h-12">
+          {description}
+        </p>
+
+        {/* Nutritional Info */}
+        <div className="flex justify-between text-xs text-gray-700 mb-5 px-2">
+          <div className="text-center">
+            <div className="font-semibold">Fat</div>
+            <div className="text-(--color-green)">{fat}g</div>
+          </div>
+          <div className="text-center">
+            <div className="font-semibold">Cal</div>
+            <div className="text-(--color-green)">{calories}</div>
+          </div>
+          <div className="text-center">
+            <div className="font-semibold">Pro</div>
+            <div className="text-(--color-green)">{protein}g</div>
+          </div>
+          <div className="text-center">
+            <div className="font-semibold">Sug</div>
+            <div className="text-(--color-green)">{sugar}g</div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-center gap-5 mb-5">
+          <div className="flex items-baseline gap-2">
+            {hasDiscount && (
+              <span className="text-base text-gray-400 line-through">
+                ${price.toFixed(0)}
+              </span>
+            )}
+            <span
+              className={`text-2xl sm:text-xl font-extrabold  ${priceColor}`}
+            >
+              ${finalPrice}
+            </span>
+          </div>
+          {/* Add to cart */}
+          <button
+            className="
+          w-full 
+          bg-(--color-orange) hover:bg-orange-600 
+          active:bg-orange-700 
+          text-white 
+          font-medium 
+          py-1 
+          rounded-2xl 
+          transition-colors 
+          shadow-sm hover:shadow-md
+        "
+          >
+            Add to cart
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default RegularFoodCard;
