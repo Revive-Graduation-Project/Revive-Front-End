@@ -22,16 +22,16 @@ const RegularFood = () => {
 
         <div
           className="
-          grid 
-          grid-cols-1 
-          sm:grid-cols-2 
-          lg:grid-cols-3 
-          xl:grid-cols-4 
-          gap-6 
-          md:gap-8
-        "
+            grid 
+            grid-cols-1 
+            sm:grid-cols-2 
+            lg:grid-cols-3 
+            xl:grid-cols-4 
+            gap-6 
+            md:gap-8
+          "
         >
-          {meals.map((meal) => (
+          {meals.slice(0, 8).map((meal) => (
             <RegularFoodCard key={meal.id} meal={meal} />
           ))}
         </div>
