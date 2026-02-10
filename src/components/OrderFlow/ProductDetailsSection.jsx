@@ -49,6 +49,7 @@ export default function ProductDetailsSection({ product, onClose }) {
     <div className="relative grid grid-cols-1 md:grid-cols-[1fr_1.2fr] h-full overflow-hidden bg-white rounded-3xl">
       {/* Close Button (Absolute Top Right for both) */}
       <button 
+        type="button"
         onClick={onClose}
         className="absolute top-14 right-6 md:top-6 md:right-6 z-5 w-10 h-10 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:bg-white text-gray-700 transition-all cursor-pointer border border-gray-100"
         aria-label="Close details"
@@ -168,6 +169,7 @@ export default function ProductDetailsSection({ product, onClose }) {
 
             {/* Add to Cart Button */}
             <button
+              type="button"
               onClick={handleAddToCart}
               className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-full transition-all shadow-md hover:shadow-lg cursor-pointer"
             >

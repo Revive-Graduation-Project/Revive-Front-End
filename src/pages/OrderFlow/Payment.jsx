@@ -1,16 +1,25 @@
 import { useOrderStore } from "../../store";
 import { useNavigate } from "react-router";
+import { useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
+import { DELIVERY_FEE } from "../../constants";
 import OrderSummary from "../../components/OrderFlow/OrderSummary";
 import PaymentForm from "../../components/OrderFlow/PaymentForm";
 import CustomerDeliveryDetails from "../../components/OrderFlow/CustomerDeliveryDetails";
 
 export default function Payment() {
   const navigate = useNavigate();
-  const items = useOrderStore((state) => state.items);
-  const totalAmount = useOrderStore((state) => state.totalAmount);
-  const getDeliveryFee = useOrderStore((state) => state.getDeliveryFee);
-  const getTotalWithDelivery = useOrderStore((state) => state.getTotalWithDelivery);
-  const customerDetails = useOrderStore((state) => state.customerDetails);
+  
+  const { items, totalAmount, customerDetails } = useOrderStore(
+    useShallow((state) => ({
+      items: state.items,
+      totalAmount: state.totalAmount,
+      customerDetails: state.customerDetails,
+    }))
+  );
+
+  const deliveryFee = useMemo(() => (items.length > 0 ? DELIVERY_FEE : 0), [items.length]);
+  const totalWithDelivery = useMemo(() => totalAmount + deliveryFee, [totalAmount, deliveryFee]);
 
   return (
     <div className="payment-page bg-gray-50 min-h-screen pt-24 md:pt-32">
@@ -43,8 +52,8 @@ export default function Payment() {
             <OrderSummary
               items={items}
               subtotal={totalAmount}
-              delivery={getDeliveryFee()}
-              total={getTotalWithDelivery()}
+              delivery={deliveryFee}
+              total={totalWithDelivery}
               buttonText="Confirm payment" // This text will likely be managed by PaymentForm now effectively, or hidden
               buttonLink={null}
               showItems={true}

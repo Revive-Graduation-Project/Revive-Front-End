@@ -32,6 +32,7 @@ export default function OrderSummary({
         <h2 className="text-xl font-bold text-gray-800">Order summary</h2>
         {onEdit && (
           <button 
+            type="button"
             onClick={onEdit}
             className="cursor-pointer text-green-600 hover:text-green-700 text-sm font-medium"
           >
@@ -49,6 +50,7 @@ export default function OrderSummary({
       {showItems && items && items.length > 0 && (
         <div className="mb-4">
           <button
+            type="button"
             onClick={() => setIsExpanded(!isExpanded)}
             className="cursor-pointer flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 mb-2"
           >
@@ -100,6 +102,7 @@ export default function OrderSummary({
       {/* Action Button */}
       {buttonLink && (
         <button
+          type="button"
           onClick={() => items && items.length > 0 && navigate(buttonLink)}
           disabled={!items || items.length === 0}
           className={`w-full py-3 rounded-lg font-medium transition-colors ${

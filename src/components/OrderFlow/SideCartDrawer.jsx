@@ -54,6 +54,7 @@ export default function SideCartDrawer() {
             Order ({totalItems} items)
           </h2>
           <button
+            type="button"
             onClick={closeCartDrawer}
             className="cursor-pointer text-white hover:bg-green-700 p-1 rounded transition-colors focus:ring-2 focus:ring-white outline-none"
             aria-label="Close cart"
@@ -95,6 +96,7 @@ export default function SideCartDrawer() {
             </div>
             
             <button
+              type="button"
               onClick={handleViewCart}
               className="cursor-pointer w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 rounded-lg transition-colors"
             >

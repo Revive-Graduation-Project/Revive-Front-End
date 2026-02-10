@@ -2,15 +2,22 @@ import CheckoutForm from "../../components/OrderFlow/CheckoutForm";
 import OrderSummary from "../../components/OrderFlow/OrderSummary";
 import { useOrderStore } from "../../store";
 import { useNavigate } from "react-router";
-
-import { useEffect } from "react";
+import { DELIVERY_FEE } from "../../constants";
+import { useEffect, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 export default function Checkout() {
-  const items = useOrderStore((state) => state.items);
-  const totalAmount = useOrderStore((state) => state.totalAmount);
-  const getDeliveryFee = useOrderStore((state) => state.getDeliveryFee);
-  const getTotalWithDelivery = useOrderStore((state) => state.getTotalWithDelivery);
+  const { items, totalAmount } = useOrderStore(
+    useShallow((state) => ({
+      items: state.items,
+      totalAmount: state.totalAmount,
+    }))
+  );
+  
   const navigate = useNavigate();
+
+  const deliveryFee = useMemo(() => (items.length > 0 ? DELIVERY_FEE : 0), [items.length]);
+  const totalWithDelivery = useMemo(() => totalAmount + deliveryFee, [totalAmount, deliveryFee]);
 
   useEffect(() => {
     if (items.length === 0) {
@@ -32,8 +39,8 @@ export default function Checkout() {
             <OrderSummary
               items={items}
               subtotal={totalAmount}
-              delivery={getDeliveryFee()}
-              total={getTotalWithDelivery()}
+              delivery={deliveryFee}
+              total={totalWithDelivery}
               buttonText="Continue"
               buttonLink="#"
               showItems={true}

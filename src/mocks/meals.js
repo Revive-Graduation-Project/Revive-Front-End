@@ -2,6 +2,14 @@
  * Mock Restaurants, Meals & Ingredients
  */
 
+import {
+  chickenColdCut,
+  greenSalad,
+  beefSteak,
+  salmon,
+  mixProtein
+} from './meal-images';
+
 export const mockRestaurants = [
   {
     id: 1,
@@ -11,18 +19,20 @@ export const mockRestaurants = [
   }
 ];
 
-export const mockIngredients = [
-  { name: "Chicken", icon: "🍗" },
-  { name: "Rice", icon: "🍚" },
-  { name: "Carrot", icon: "🥕" },
-  { name: "Lettuce", icon: "🥬" },
-  { name: "Tomato", icon: "🍅" },
-  { name: "Cucumber", icon: "🥒" },
-  { name: "Beef", icon: "🥩" },
-  { name: "Potato", icon: "🥔" },
-  { name: "Salmon", icon: "🐟" },
-  { name: "Lemon", icon: "🍋" }
-];
+const INGREDIENTS = {
+  Chicken: { name: "Chicken", icon: "🍗" },
+  Rice: { name: "Rice", icon: "🍚" },
+  Carrot: { name: "Carrot", icon: "🥕" },
+  Lettuce: { name: "Lettuce", icon: "🥬" },
+  Tomato: { name: "Tomato", icon: "🍅" },
+  Cucumber: { name: "Cucumber", icon: "🥒" },
+  Beef: { name: "Beef", icon: "🥩" },
+  Potato: { name: "Potato", icon: "🥔" },
+  Salmon: { name: "Salmon", icon: "🐟" },
+  Lemon: { name: "Lemon", icon: "🍋" }
+};
+
+export const mockIngredients = Object.values(INGREDIENTS);
 
 export const mockMeals = [
   {
@@ -32,17 +42,14 @@ export const mockMeals = [
     description: "Hot chicken breasts with rice, served with fresh vegetables.",
     price: 120.0,
     restaurantId: 1,
-    imageUrl: "/meals images/chicken-cold-cut.jpg",
+    imageUrl: chickenColdCut,
     location: "Downtown",
     calories: 250,
     protein: 31,
     fat: 18,
     carbs: 25,
     sugar: 12,
-    ingredients: [
-      { name: "Chicken", icon: "🍗" },
-      { name: "Carrot", icon: "🥕" }
-    ],
+    ingredients: [INGREDIENTS.Chicken, INGREDIENTS.Carrot],
     isAvailable: true,
   },
   {
@@ -52,18 +59,14 @@ export const mockMeals = [
     description: "Fresh green salad with farm-fresh vegetables and vinaigrette.",
     price: 140.0,
     restaurantId: 1,
-    imageUrl: "/meals images/green-salad.jpg",
+    imageUrl: greenSalad,
     location: "Downtown",
     calories: 78,
     protein: 2,
     fat: 5,
     carbs: 8,
     sugar: 4,
-    ingredients: [
-      { name: "Lettuce", icon: "🥬" },
-      { name: "Tomato", icon: "🍅" },
-      { name: "Cucumber", icon: "🥒" }
-    ],
+    ingredients: [INGREDIENTS.Lettuce, INGREDIENTS.Tomato, INGREDIENTS.Cucumber],
     isAvailable: true,
   },
   {
@@ -73,17 +76,14 @@ export const mockMeals = [
     description: "Grilled beef steak with mashed potatoes and gravy.",
     price: 180.0,
     restaurantId: 1,
-    imageUrl: "/meals images/beef-steak.jpg",
+    imageUrl: beefSteak,
     location: "Downtown",
     calories: 350,
     protein: 45,
     fat: 25,
     carbs: 15,
     sugar: 2,
-    ingredients: [
-      { name: "Beef", icon: "🥩" },
-      { name: "Potato", icon: "🥔" }
-    ],
+    ingredients: [INGREDIENTS.Beef, INGREDIENTS.Potato],
     isAvailable: true,
   },
   {
@@ -93,17 +93,14 @@ export const mockMeals = [
     description: "Fresh Atlantic salmon fillet with herbs and lemon.",
     price: 200.0,
     restaurantId: 1,
-    imageUrl: "/meals images/salmon.jpg",
+    imageUrl: salmon,
     location: "Downtown",
     calories: 280,
     protein: 34,
     fat: 15,
     carbs: 0,
     sugar: 1,
-    ingredients: [
-      { name: "Salmon", icon: "🐟" },
-      { name: "Lemon", icon: "🍋" }
-    ],
+    ingredients: [INGREDIENTS.Salmon, INGREDIENTS.Lemon],
     isAvailable: true,
   },
   {
@@ -113,18 +110,14 @@ export const mockMeals = [
     description: "The ultimate power bowl with chicken, beef, and rice.",
     price: 160.0,
     restaurantId: 1,
-    imageUrl: "/meals images/mix-protein.jpg",
+    imageUrl: mixProtein,
     location: "Downtown",
     calories: 450,
     protein: 55,
     fat: 20,
     carbs: 45,
     sugar: 8,
-    ingredients: [
-      { name: "Chicken", icon: "🍗" },
-      { name: "Beef", icon: "🥩" },
-      { name: "Rice", icon: "🍚" }
-    ],
+    ingredients: [INGREDIENTS.Chicken, INGREDIENTS.Beef, INGREDIENTS.Rice],
     isAvailable: true,
   }
 ];

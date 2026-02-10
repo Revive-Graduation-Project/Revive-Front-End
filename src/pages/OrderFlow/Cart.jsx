@@ -1,12 +1,21 @@
+import { useState, useEffect, useMemo } from "react";
+import { FiFileText } from "react-icons/fi";
+import { useShallow } from "zustand/react/shallow";
+import { useOrderStore } from "../../store";
+import { DELIVERY_FEE } from "../../constants";
 import CartSection from "../../components/OrderFlow/CartSection";
 import OrderSummary from "../../components/OrderFlow/OrderSummary";
-import { useOrderStore } from "../../store";
 
 export default function Cart() {
-  const items = useOrderStore((state) => state.items);
-  const totalAmount = useOrderStore((state) => state.totalAmount);
-  const getDeliveryFee = useOrderStore((state) => state.getDeliveryFee);
-  const getTotalWithDelivery = useOrderStore((state) => state.getTotalWithDelivery);
+  const { items, totalAmount } = useOrderStore(
+    useShallow((state) => ({
+      items: state.items,
+      totalAmount: state.totalAmount,
+    }))
+  );
+
+  const deliveryFee = useMemo(() => (items.length > 0 ? DELIVERY_FEE : 0), [items.length]);
+  const totalWithDelivery = useMemo(() => totalAmount + deliveryFee, [totalAmount, deliveryFee]);
 
   return (
     <div className="cart-page bg-gray-50 min-h-screen pt-24 md:pt-32">
@@ -22,8 +31,8 @@ export default function Cart() {
             <OrderSummary
               items={items}
               subtotal={totalAmount}
-              delivery={getDeliveryFee()}
-              total={getTotalWithDelivery()}
+              delivery={deliveryFee}
+              total={totalWithDelivery}
               buttonText="Checkout"
               buttonLink="/checkout"
               showItems={false}

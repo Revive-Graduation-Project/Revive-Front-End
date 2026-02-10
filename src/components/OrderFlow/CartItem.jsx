@@ -59,6 +59,7 @@ export default function CartItem({
         
         {showDelete && (
           <button
+            type="button"
             onClick={() => onRemove(item.id)}
             className="cursor-pointer text-red-500 hover:text-red-700 p-2 transition-colors focus:ring-2 focus:ring-red-500 rounded"
             aria-label={`Remove ${item.name} from cart`}

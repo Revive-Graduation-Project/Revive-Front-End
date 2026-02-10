@@ -11,6 +11,7 @@ export default function QuantityStepper({ quantity, onIncrease, onDecrease }) {
   return (
     <div className="inline-flex items-center border border-gray-300 rounded-full overflow-hidden bg-white">
       <button
+        type="button"
         onClick={onDecrease}
         className="w-8 h-8 flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer"
         aria-label="Decrease quantity"
@@ -23,6 +24,7 @@ export default function QuantityStepper({ quantity, onIncrease, onDecrease }) {
       </span>
       
       <button
+        type="button"
         onClick={onIncrease}
         className="w-8 h-8 flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer"
         aria-label="Increase quantity"
