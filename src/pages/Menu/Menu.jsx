@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMenuStore } from "../../store/menuStore";
+import { useMemo } from "react";
 import MenuFilter from "./Sections/MenuFilter";
 
 import { mockMeals } from "../../mocks/meals";
@@ -6,26 +7,17 @@ import OffersSection from "./Sections/OffersSection";
 import SuggestedMealsSection from "./Sections/SuggestedMealsSection";
 
 export default function Menu() {
-  const [filters, setFilters] = useState({
-    meal: "all",
-    category: "All",
-  });
-
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
-  };
+  const { meal, category } = useMenuStore();
 
   const filteredMenu = useMemo(() => {
     return mockMeals.filter((item) => {
-      const mealMatch =
-        filters.meal === "all" || item.mainCategory === filters.meal;
+      const mealMatch = meal === "all" || item.mainCategory === meal;
 
-      const categoryMatch =
-        filters.category === "All" || item.category === filters.category;
+      const categoryMatch = category === "All" || item.category === category;
 
       return mealMatch && categoryMatch;
     });
-  }, [filters]);
+  }, [meal, category]);
 
   return (
     <div
@@ -38,7 +30,8 @@ export default function Menu() {
       "
     >
       <div className="py-12 md:py-16 lg:py-20 space-y-5 md:space-y-2 lg:space-y-2">
-        <MenuFilter onFilterChange={handleFilterChange} />
+        <MenuFilter />
+
         <OffersSection items={filteredMenu} />
         <SuggestedMealsSection items={filteredMenu} />
       </div>

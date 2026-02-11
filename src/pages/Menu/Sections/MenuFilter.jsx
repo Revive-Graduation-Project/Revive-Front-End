@@ -1,5 +1,5 @@
 // src/components/menu/MenuFilter.jsx
-import { useState } from "react";
+import { useMenuStore } from "../../../store/menuStore";
 
 const meals = [
   { label: "All", value: "all", dataValue: "all" },
@@ -10,38 +10,29 @@ const meals = [
 
 const categories = ["All", "Beef", "Chicken", "Seafood", "mix Protein"];
 
-const MenuFilter = ({ onFilterChange }) => {
-  const [selectedMeal, setSelectedMeal] = useState("all");
-  const [activeCategory, setActiveCategory] = useState("All");
+const MenuFilter = () => {
+  const { meal, category, setMeal, setCategory } = useMenuStore();
 
   const handleMealChange = (e) => {
     const uiValue = e.target.value;
-
     const mealObj = meals.find((m) => m.value === uiValue) || meals[0];
-    const dataValue = mealObj.dataValue;
-
-    setSelectedMeal(uiValue);
-    onFilterChange({ meal: dataValue, category: activeCategory });
+    setMeal(mealObj.dataValue);
   };
 
   const handleCategoryChange = (cat) => {
-    const mealObj = meals.find((m) => m.value === selectedMeal);
-    const dataValue = mealObj.dataValue;
-
-    setActiveCategory(cat);
-    onFilterChange({ meal: dataValue, category: cat });
+    setCategory(cat);
   };
 
   return (
-    <div className="flex items-center gap-6  pt-40 md:pt-20 lg:pt-20 pb-10 ">
+    <div className="flex items-center gap-6 pt-40 md:pt-20 pb-10">
       <select
-        value={selectedMeal}
+        value={meals.find((m) => m.dataValue === meal)?.value || "all"}
         onChange={handleMealChange}
         className="bg-transparent font-medium cursor-pointer"
       >
-        {meals.map((meal) => (
-          <option key={meal.value} value={meal.value}>
-            {meal.label} menu
+        {meals.map((mealItem) => (
+          <option key={mealItem.value} value={mealItem.value}>
+            {mealItem.label} menu
           </option>
         ))}
       </select>
@@ -54,11 +45,11 @@ const MenuFilter = ({ onFilterChange }) => {
             key={cat}
             onClick={() => handleCategoryChange(cat)}
             className={`pb-2 font-medium relative transition-all 
-            ${
-              activeCategory === cat
-                ? "text-orange-500 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-orange-500"
-                : "text-gray-700 hover:text-gray-900"
-            }
+              ${
+                category === cat
+                  ? "text-orange-500 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-orange-500"
+                  : "text-gray-700 hover:text-gray-900"
+              }
             `}
           >
             {cat}

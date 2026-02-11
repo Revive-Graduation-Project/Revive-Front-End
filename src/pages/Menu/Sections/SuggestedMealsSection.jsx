@@ -4,7 +4,6 @@ import RegularFoodCard from "../../../components/ui/RegularFoodCard";
 const SuggestedMealsSection = ({ items = [] }) => {
   const [showAll, setShowAll] = useState(false);
 
-  // الوجبات اللي مفيهاش خصم
   const normalMeals = useMemo(
     () =>
       items.filter(
