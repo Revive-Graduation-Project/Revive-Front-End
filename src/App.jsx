@@ -4,7 +4,6 @@ import {
   Home,
   Login,
   Signup,
-  Menu,
   Cart,
   Checkout,
   Payment,
@@ -42,7 +41,6 @@ export default function App() {
           }
         >
           <Route index element={<Home />} />
-          <Route path="menu" element={<Menu />} />
           <Route path="favorites" element={<Favorites />} />
           <Route path="cart" element={<Cart />} />
           <Route path="checkout" element={<Checkout />} />

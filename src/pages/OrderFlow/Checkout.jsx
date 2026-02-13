@@ -21,7 +21,7 @@ export default function Checkout() {
 
   useEffect(() => {
     if (items.length === 0) {
-      navigate("/menu", { replace: true });
+      navigate("/", { replace: true });
     }
   }, [items, navigate]);
 

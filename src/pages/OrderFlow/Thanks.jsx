@@ -12,7 +12,7 @@ export default function Thanks() {
 
   useEffect(() => {
      if (!lastOrder) {
-        navigate("/menu");
+    navigate("/");
      }
   }, [lastOrder, navigate]);
 
@@ -21,7 +21,7 @@ export default function Thanks() {
   const { items, customerDetails, finalTotal, totalAmount, deliveryFee, id } = lastOrder;
 
   const handleContinue = () => {
-    navigate("/menu");
+    navigate("/");
   };
 
   return (

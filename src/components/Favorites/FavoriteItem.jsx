@@ -1,7 +1,7 @@
 import { FiHeart, FiShoppingCart } from "react-icons/fi";
 import useFavoritesStore from "../../store/favoritesStore";
-import { useOrderStore } from "../../store";
-
+import { formatCurrency } from "../../utils/formatters";
+import useOrderStore from "../../store/orderStore";
 /**
  * FavoriteItem Component
  * A card representing a saved product.
@@ -87,7 +87,7 @@ export default function FavoriteItem({ item, showHeart = true }) {
       {/* Footer: Price & Button */}
       <div className="w-full flex items-center justify-between mt-auto">
         <span className="text-xl font-bold text-gray-900">
-            {item.price.toFixed(0)}$
+            {formatCurrency(item.price)}
         </span>
         
         <button

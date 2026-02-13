@@ -2,27 +2,10 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { FiMail, FiUser, FiPhone, FiMapPin, FiHash, FiFlag } from "react-icons/fi";
 import { useOrderStore } from "../../store";
-import { REGIONS } from "../../constants";
-import FormInput from "../UI/FormInput";
-import FormSelect from "../UI/FormSelect";
-
-/**
- * Validation Schema for Checkout
- * Ensures all required delivery and contact info is present.
- */
-const checkoutSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  firstName: z.string().min(2, "First name is too short"),
-  lastName: z.string().min(2, "Last name is too short"),
-  phone: z.string().min(10, "Phone number is invalid"),
-  region: z.string().min(1, "Region is required"),
-  city: z.string().min(2, "City is required"),
-  address: z.string().min(5, "Address is too short"),
-  zipCode: z.string().min(4, "Invalid Zip Code"),
-});
+import { checkoutSchema } from "./Checkout/checkoutValidation";
+import CustomerDetails from "./Checkout/CustomerDetails";
+import DeliveryDetails from "./Checkout/DeliveryDetails";
 
 /**
  * CheckoutForm Component
@@ -52,7 +35,16 @@ export default function CheckoutForm() {
     formState: { errors } 
   } = useForm({
     resolver: zodResolver(checkoutSchema),
-    defaultValues: customerDetails
+    defaultValues: customerDetails || {
+      email: "",
+      firstName: "",
+      lastName: "",
+      phone: "",
+      region: "",
+      city: "",
+      address: "",
+      zipCode: ""
+    }
   });
 
   // Sync form changes to store (Persistence)
@@ -72,113 +64,10 @@ export default function CheckoutForm() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-lg shadow-md p-6">
-        {/* Customer Details */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-            <FiUser className="text-orange-500" />
-            Customer details
-          </h2>
-          
-          <div className="space-y-4">
-            {/* Email */}
-            <FormInput
-              label="Email"
-              id="email"
-              type="email"
-              placeholder="Enter your email"
-              icon={FiMail}
-              error={errors.email?.message}
-              {...register("email")}
-            />
+        
+        <CustomerDetails register={register} errors={errors} />
 
-            {/* First and Last Name */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormInput
-                label="First name"
-                id="firstName"
-                placeholder="First name"
-                icon={FiUser}
-                error={errors.firstName?.message}
-                {...register("firstName")}
-              />
-              
-              <FormInput
-                label="Last name"
-                id="lastName"
-                placeholder="Last name"
-                icon={FiUser}
-                error={errors.lastName?.message}
-                {...register("lastName")}
-              />
-            </div>
-
-            {/* Phone */}
-            <FormInput
-              label="Phone"
-              id="phone"
-              type="tel"
-              placeholder="Enter phone number"
-              icon={FiPhone}
-              error={errors.phone?.message}
-              {...register("phone")}
-            />
-          </div>
-        </div>
-
-        {/* Delivery Details */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-            <FiMapPin className="text-orange-500" />
-            Delivery details
-          </h2>
-          
-          <div className="space-y-4">
-            {/* Region */}
-            <FormSelect
-              label="Region"
-              id="region"
-              error={errors.region?.message}
-              {...register("region")}
-            >
-              <option value="">Select region</option>
-              {REGIONS.map((region) => (
-                <option key={region.value} value={region.value}>
-                  {region.label}
-                </option>
-              ))}
-            </FormSelect>
-
-            {/* City */}
-            <FormInput
-              label="City"
-              id="city"
-              placeholder="Enter city"
-              icon={FiFlag}
-              error={errors.city?.message}
-              {...register("city")}
-            />
-
-            {/* Address */}
-            <FormInput
-              label="Address"
-              id="address"
-              placeholder="Enter your address"
-              icon={FiMapPin}
-              error={errors.address?.message}
-              {...register("address")}
-            />
-
-            {/* Zip/Postal Code */}
-            <FormInput
-              label="Zip / Postal code"
-              id="zipCode"
-              placeholder="Enter zip code"
-              icon={FiHash}
-              error={errors.zipCode?.message}
-              {...register("zipCode")}
-            />
-          </div>
-        </div>
+        <DeliveryDetails register={register} errors={errors} />
 
         {/* Submit Button */}
         <button
@@ -191,4 +80,3 @@ export default function CheckoutForm() {
     </div>
   );
 }
-

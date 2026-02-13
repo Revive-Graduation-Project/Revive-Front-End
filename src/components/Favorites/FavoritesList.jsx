@@ -20,7 +20,7 @@ export default function FavoritesList() {
           <div className="text-center py-12">
               <p className="text-gray-500 text-lg">You haven't added any favorites yet.</p>
               <button 
-                 onClick={() => navigate("/menu")}
+                 onClick={() => navigate("/")}
                  className="mt-4 text-orange-500 font-semibold hover:underline cursor-pointer"
               >
                  Browse Menu

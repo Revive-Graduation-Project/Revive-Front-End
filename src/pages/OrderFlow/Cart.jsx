@@ -1,18 +1,22 @@
 import { useState, useEffect, useMemo } from "react";
 import { FiFileText } from "react-icons/fi";
 import { useShallow } from "zustand/react/shallow";
-import { useOrderStore } from "../../store";
+import { useOrderStore, useFavoritesStore } from "../../store";
 import { DELIVERY_FEE } from "../../constants";
 import CartSection from "../../components/OrderFlow/CartSection";
+import { mockMeals } from "../../mocks/meals";
 import OrderSummary from "../../components/OrderFlow/OrderSummary";
 
 export default function Cart() {
-  const { items, totalAmount } = useOrderStore(
+  const { items, totalAmount, addItem } = useOrderStore(
     useShallow((state) => ({
       items: state.items,
       totalAmount: state.totalAmount,
+      addItem: state.addItem,
     }))
   );
+
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
 
   const deliveryFee = useMemo(() => (items.length > 0 ? DELIVERY_FEE : 0), [items.length]);
   const totalWithDelivery = useMemo(() => totalAmount + deliveryFee, [totalAmount, deliveryFee]);
@@ -38,6 +42,24 @@ export default function Cart() {
               showItems={false}
             />
           </div>
+          {/* remove when the menu is ready */}
+          {items.length === 0 && (
+            <div className="lg:col-span-3 text-center mt-8">
+              <button
+                onClick={() => addItem(mockMeals[0])}
+                className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition mr-4"
+              >
+                Add Test Item (Dev Only)
+              </button>
+              {/* remove when the menu is ready */}
+              <button
+                onClick={() => toggleFavorite(mockMeals[0])}
+                className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition"
+              >
+                Add Test Favorite (Dev Only)
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
