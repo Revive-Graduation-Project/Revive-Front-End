@@ -2,56 +2,130 @@
  * Mock Restaurants, Meals & Ingredients
  */
 
+import {
+  chickenColdCut,
+  greenSalad,
+  beefSteak,
+  salmon,
+  mixProtein
+} from './meal-images';
+
 export const mockRestaurants = [
   {
     id: 1,
-    name: "Healthy Bites",
+    name: "Revive Kitchen",
     location: "Downtown",
     rating: 4.8,
-  },
-  {
-    id: 2,
-    name: "Green Bowl",
-    location: "Uptown",
-    rating: 4.5,
   }
 ];
 
-export const mockIngredients = [
-  { id: 1, name: "Chicken Breast", calories: 165, protein: 31, fat: 3.6, carbs: 0 },
-  { id: 2, name: "Brown Rice", calories: 111, protein: 2.6, fat: 0.9, carbs: 23 },
-  { id: 3, name: "Avocado", calories: 160, protein: 2, fat: 15, carbs: 9 },
-  { id: 4, name: "Quinoa", calories: 120, protein: 4.1, fat: 1.9, carbs: 21 },
-  { id: 5, name: "Salmon", calories: 208, protein: 20, fat: 13, carbs: 0 },
-];
+const INGREDIENTS = {
+  Chicken: { name: "Chicken", icon: "🍗" },
+  Rice: { name: "Rice", icon: "🍚" },
+  Carrot: { name: "Carrot", icon: "🥕" },
+  Lettuce: { name: "Lettuce", icon: "🥬" },
+  Tomato: { name: "Tomato", icon: "🍅" },
+  Cucumber: { name: "Cucumber", icon: "🥒" },
+  Beef: { name: "Beef", icon: "🥩" },
+  Potato: { name: "Potato", icon: "🥔" },
+  Salmon: { name: "Salmon", icon: "🐟" },
+  Lemon: { name: "Lemon", icon: "🍋" }
+};
+
+export const mockIngredients = Object.values(INGREDIENTS);
 
 export const mockMeals = [
   {
     id: 1,
-    name: "Chicken Protein Bowl",
-    description: "Grilled chicken with brown rice and veggies",
-    price: 15.99,
+    name: "Chicken cold cut",
+    category: "Chicken",
+    description: "Hot chicken breasts with rice, served with fresh vegetables.",
+    price: 120.0,
     restaurantId: 1,
-    imageUrl: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
-    calories: 450,
-    protein: 45,
-    carbs: 35,
-    fat: 12,
-    ingredients: [1, 2], // referencing ingredient IDs
+    imageUrl: chickenColdCut,
+    location: "Downtown",
+    calories: 250,
+    protein: 31,
+    fat: 18,
+    carbs: 25,
+    sugar: 12,
+    ingredients: [INGREDIENTS.Chicken, INGREDIENTS.Carrot],
     isAvailable: true,
   },
   {
     id: 2,
-    name: "Salmon Quinoa Salad",
-    description: "Fresh salmon served over quinoa and avocado",
-    price: 18.50,
-    restaurantId: 2,
-    imageUrl: "https://images.unsplash.com/photo-1467003909585-2f8a7270028d",
-    calories: 520,
-    protein: 38,
-    carbs: 40,
-    fat: 22,
-    ingredients: [4, 5, 3],
+    name: "Green salad",
+    category: "Vegetarian",
+    description: "Fresh green salad with farm-fresh vegetables and vinaigrette.",
+    price: 140.0,
+    restaurantId: 1,
+    imageUrl: greenSalad,
+    location: "Downtown",
+    calories: 78,
+    protein: 2,
+    fat: 5,
+    carbs: 8,
+    sugar: 4,
+    ingredients: [INGREDIENTS.Lettuce, INGREDIENTS.Tomato, INGREDIENTS.Cucumber],
+    isAvailable: true,
+  },
+  {
+    id: 3,
+    name: "Beef steak",
+    category: "Beef",
+    description: "Grilled beef steak with mashed potatoes and gravy.",
+    price: 180.0,
+    restaurantId: 1,
+    imageUrl: beefSteak,
+    location: "Downtown",
+    calories: 350,
+    protein: 45,
+    fat: 25,
+    carbs: 15,
+    sugar: 2,
+    ingredients: [INGREDIENTS.Beef, INGREDIENTS.Potato],
+    isAvailable: true,
+  },
+  {
+    id: 4,
+    name: "Salmon fillet",
+    category: "Salmon",
+    description: "Fresh Atlantic salmon fillet with herbs and lemon.",
+    price: 200.0,
+    restaurantId: 1,
+    imageUrl: salmon,
+    location: "Downtown",
+    calories: 280,
+    protein: 34,
+    fat: 15,
+    carbs: 0,
+    sugar: 1,
+    ingredients: [INGREDIENTS.Salmon, INGREDIENTS.Lemon],
+    isAvailable: true,
+  },
+  {
+    id: 5,
+    name: "Mix protein bowl",
+    category: "Chicken",
+    description: "The ultimate power bowl with chicken, beef, and rice.",
+    price: 160.0,
+    restaurantId: 1,
+    imageUrl: mixProtein,
+    location: "Downtown",
+    calories: 450,
+    protein: 55,
+    fat: 20,
+    carbs: 45,
+    sugar: 8,
+    ingredients: [INGREDIENTS.Chicken, INGREDIENTS.Beef, INGREDIENTS.Rice],
     isAvailable: true,
   }
+];
+
+export const categories = [
+  "All",
+  "Chicken",
+  "Beef",
+  "Salmon",
+  "Vegetarian"
 ];
