@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { fetchRestaurants, fetchMeals } from "../services/restaurant.service";
 
 /**
  * ==========================
@@ -10,6 +11,7 @@ import { persist } from "zustand/middleware";
  * - Validate restaurant & meal structures
  * - Handle selection and error states
  * - Persist data
+ * - Fetch data from service layer (mock now, API later)
  */
 
 const isValidMeal = (meal) =>
@@ -32,6 +34,7 @@ const useRestaurantStore = create(
          STATE
       ====================== */
       restaurants: [],
+      meals: [], // All meals across restaurants
       selectedRestaurantId: null, // Store ID only to prevent data desync
       loading: false,
       error: null,
@@ -39,6 +42,46 @@ const useRestaurantStore = create(
       /* =====================
          ACTIONS
       ====================== */
+
+      /**
+       * Fetch all restaurants from service
+       * (Currently uses mock data, will use API later)
+       */
+      fetchRestaurants: async () => {
+        set({ loading: true, error: null });
+        try {
+          const response = await fetchRestaurants();
+          set({
+            restaurants: response.data,
+            loading: false,
+          });
+        } catch (error) {
+          set({
+            error: error.message || "Failed to fetch restaurants",
+            loading: false,
+          });
+        }
+      },
+
+      /**
+       * Fetch all meals from service
+       * (Currently uses mock data, will use API later)
+       */
+      fetchMeals: async () => {
+        set({ loading: true, error: null });
+        try {
+          const response = await fetchMeals();
+          set({
+            meals: response.data,
+            loading: false,
+          });
+        } catch (error) {
+          set({
+            error: error.message || "Failed to fetch meals",
+            loading: false,
+          });
+        }
+      },
 
       /**
        * Select a restaurant by id
@@ -82,10 +125,10 @@ const useRestaurantStore = create(
           set({ error: "Invalid meal data" });
           return;
         }
-        
+
         const state = get();
         const selectedId = state.selectedRestaurantId;
-        
+
         if (!selectedId) {
           set({ error: "No restaurant selected" });
           return;
@@ -93,8 +136,8 @@ const useRestaurantStore = create(
 
         const restaurant = state.restaurants.find(r => r.id === selectedId);
         if (!restaurant) {
-             set({ error: "Selected restaurant not found in list" });
-             return;
+          set({ error: "Selected restaurant not found in list" });
+          return;
         }
 
         if (restaurant.meals.find((m) => m.id === meal.id)) {
@@ -125,9 +168,9 @@ const useRestaurantStore = create(
         }
 
         const restaurant = state.restaurants.find(r => r.id === selectedId);
-         if (!restaurant) {
-             set({ error: "Selected restaurant not found" });
-             return;
+        if (!restaurant) {
+          set({ error: "Selected restaurant not found" });
+          return;
         }
 
         if (!restaurant.meals.find((m) => m.id === mealId)) {
@@ -139,9 +182,9 @@ const useRestaurantStore = create(
           restaurants: state.restaurants.map((r) =>
             r.id === selectedId
               ? {
-                  ...r,
-                  meals: r.meals.filter((m) => m.id !== mealId),
-                }
+                ...r,
+                meals: r.meals.filter((m) => m.id !== mealId),
+              }
               : r
           ),
           error: null,
