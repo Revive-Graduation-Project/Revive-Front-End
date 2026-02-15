@@ -2,12 +2,14 @@ import { Route, Routes, Navigate } from "react-router";
 import { AppLayout, AuthLayout } from "./Layout";
 import { Home , Login, Signup} from "./pages";
 import { useAuthInit } from "./hooks/useAuthInit";
+import { useRestaurantInit } from "./hooks/useRestaurantInit";
 import { useAuthStore } from "./store";
 import { LoadingSpinner } from "./components";
 
 export default function App() {
 
   useAuthInit();
+  useRestaurantInit(); // Initialize restaurant data
 
   const { isAuthenticated, loading } = useAuthStore();
 
