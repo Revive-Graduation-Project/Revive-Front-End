@@ -2,10 +2,18 @@
  * Mock Restaurants, Meals & Ingredients
  */
 
+import {
+  chickenColdCut,
+  greenSalad,
+  beefSteak,
+  salmon,
+  mixProtein,
+} from "./meal-images";
+
 export const mockRestaurants = [
   {
     id: 1,
-    name: "Healthy Bites",
+    name: "Revive Kitchen",
     location: "Downtown",
     rating: 4.8,
   },
@@ -46,7 +54,7 @@ export const mockMeals = [
     description: "fresh tomato, vegan eggs, carrot & special bread",
     price: 199,
     discountPercent: 30,
-    imageUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd", // salad bowl متنوع
+    imageUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd",
     calories: 250,
     protein: 25,
     carbs: 35,
@@ -153,3 +161,5 @@ export const mockMeals = [
     isAvailable: true,
   },
 ];
+
+export const categories = ["All", "Chicken", "Beef", "Salmon", "Vegetarian"];
