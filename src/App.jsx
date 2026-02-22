@@ -9,6 +9,7 @@ import {
   Payment,
   Thanks,
   Favorites,
+  StoreDebug,
 } from "./pages";
 import { useAuthInit } from "./hooks/useAuthInit";
 import { useRestaurantInit } from "./hooks/useRestaurantInit";
@@ -57,6 +58,9 @@ export default function App() {
           <Route path="login" element={<Login />} />
           <Route path="signup" element={<Signup />} />
         </Route>
+
+        {/* Debug Route - remove before production */}
+        <Route path="/debug" element={<StoreDebug />} />
 
         {/* 
             If user types /random-page-that-doesnt-exist this route below catches it
