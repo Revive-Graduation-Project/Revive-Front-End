@@ -1,6 +1,17 @@
 import { Route, Routes, Navigate } from "react-router";
 import { AppLayout, AuthLayout } from "./Layout";
 import { Home, Login, Signup } from "./pages";
+import {
+  Home,
+  Login,
+  Signup,
+  Cart,
+  Checkout,
+  Payment,
+  Thanks,
+  Favorites,
+  StoreDebug,
+} from "./pages";
 import { useAuthInit } from "./hooks/useAuthInit";
 import { useRestaurantInit } from "./hooks/useRestaurantInit";
 import { useAuthStore } from "./store";
@@ -42,6 +53,15 @@ export default function App() {
           <Route path="payment" element={<Payment />} />
           <Route path="thanks" element={<Thanks />} />
         </Route>
+
+        {/* Auth Routes - Always accessible */}
+        <Route path="/auth" element={<AuthLayout />}>
+          <Route path="login" element={<Login />} />
+          <Route path="signup" element={<Signup />} />
+        </Route>
+
+        {/* Debug Route - remove before production */}
+        <Route path="/debug" element={<StoreDebug />} />
 
         {/* 
             If user types /random-page-that-doesnt-exist this route below catches it

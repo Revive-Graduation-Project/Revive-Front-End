@@ -1,3 +1,8 @@
 export { default as Login } from "./auth/Login";
 export { default as Signup } from "./auth/Signup";
 export { default as Home } from "./Home/Home";
+export { default as Cart } from "./OrderFlow/Cart";
+export { default as Checkout } from "./OrderFlow/Checkout";
+export { default as Payment } from "./OrderFlow/Payment";
+export { default as Thanks } from "./OrderFlow/Thanks";
+export { default as StoreDebug } from "./StoreDebug";
