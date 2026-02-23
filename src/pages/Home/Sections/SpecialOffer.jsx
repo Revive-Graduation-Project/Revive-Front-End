@@ -10,20 +10,17 @@ const SpecialOffer = () => {
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-5 md:mb-10">
             Special Offer for Groups/Companies
           </h2>
-
           <p className="text-base md:text-lg lg:text-xl text-white max-w-3xl  mb-4 md:mb-4 leading-relaxed">
             For companies; we offer a specially designed meal plan for office
             workers. Full spectrum of vitamins and minerals, micro-minerals,
             high calorie content and natural ingredients.
           </p>
-
           <div className=" px-8 py-1 mb-8 md:mb-10">
             <p className="text-2xl md:text-5xl lg:text-6xl  text-red-500">
               99 EGP <span className="text-white text-4xl">/ Per person</span>
             </p>
           </div>
-
-          {/* الزر */}
+          ٍ
           <button
             className="
               inline-flex items-center justify-center
@@ -49,11 +46,11 @@ const SpecialOffer = () => {
           />
         </div>
 
-        <div className="absolute -bottom-20 -right-10 animate-float-fast">
+        <div className="absolute -bottom-18 -right-10 animate-float-fast">
           <img
             src="/public/images/bowl.png"
             alt="bowl"
-            className="w-full h-full object-contain z-50 "
+            className="w-50 h-50 lg:w-full lg:h-full object-contain z-50 "
           />
         </div>
       </div>

@@ -1,8 +1,23 @@
 // components/PopularMenus.jsx
-import { mockMeals } from "../../../mocks/meals";
+
+import { useEffect } from "react";
+import useRestaurantStore from "../../../store/restaurantStore";
+
 import PopularMenuCard from "../../../components/ui/PopularMenuCard";
+
 const PopularMenus = () => {
-  const popular = mockMeals.slice(0, 6);
+  const { meals, fetchMeals, loading, error } = useRestaurantStore();
+
+  useEffect(() => {
+    if (meals.length === 0) {
+      fetchMeals();
+    }
+  }, [meals.length, fetchMeals]);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
+
+  const popular = meals.slice(0, 6);
 
   return (
     <section className="py-8 md:py-12">

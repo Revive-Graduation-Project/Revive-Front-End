@@ -1,9 +1,17 @@
 // src/pages/Home/Sections/RegularFood.jsx
-import { mockMeals } from "../../../mocks/meals";
+import { useEffect } from "react";
+import useRestaurantStore from "../../../store/restaurantStore";
 import RegularFoodCard from "../../../components/ui/RegularFoodCard";
 
 const RegularFood = () => {
-  const meals = mockMeals;
+  const { meals, fetchMeals, loading, error } = useRestaurantStore();
+
+  useEffect(() => {
+    if (meals.length === 0) fetchMeals();
+  }, [meals.length, fetchMeals]);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
 
   return (
     <section className="py-12 md:py-16 lg:py-20 bg-gray-50">
@@ -20,17 +28,7 @@ const RegularFood = () => {
           </p>
         </div>
 
-        <div
-          className="
-          grid 
-          grid-cols-1 
-          sm:grid-cols-2 
-          lg:grid-cols-3 
-          xl:grid-cols-4 
-          gap-6 
-          md:gap-8
-        "
-        >
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
           {meals.map((meal) => (
             <RegularFoodCard key={meal.id} meal={meal} />
           ))}

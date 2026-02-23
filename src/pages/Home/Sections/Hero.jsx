@@ -4,10 +4,10 @@ const Hero = () => {
       <div
         className="
           container mx-auto
-          pt-40 md:pt-20 lg:pt-20 pb-10
+          pt-40 md:pt-20 lg:pt-20 pb-6
           grid grid-cols-1 lg:grid-cols-2
           items-center
-          gap-16 lg:gap-12
+          gap-1 lg:gap-12
           relative 
         "
       >
@@ -16,7 +16,7 @@ const Hero = () => {
           <img
             src="/images/Spones.png"
             alt="Shape"
-            className="mx-auto lg:mx-0 mb-6"
+            className="mx-auto lg:mx-0 mb-6  hidden lg:block"
           />
 
           <div className="space-y-6">
@@ -50,55 +50,51 @@ const Hero = () => {
           <img
             src="/images/Design1.png"
             alt="Design1"
-            className="absolute top-0 lg:-top-30 right-0 scale-75 lg:scale-100"
+            className="absolute top-0 lg:-top-30 right-0 scale-75 lg:scale-100 hidden lg:block"
           />
           <img
             src="/images/Design2.png"
             alt="Design2"
-            className="absolute -top-20 lg:-top-30 right-0 scale-75 lg:scale-100"
+            className="absolute -top-20 lg:-top-30 right-0 scale-75 lg:scale-100 hidden lg:block"
           />
 
           <img
             src="/images/Herodish.png"
             alt="Healthy Food"
             className="
-                rounded-full shadow-lg z-50 relative
-                w-64 sm:w-72 md:w-70 lg:w-auto
-                left-0 lg:left-60
-                top-0 lg:top-15
-              "
+      rounded-full shadow-lg z-50 relative
+      w-64 sm:w-72 md:w-70 lg:w-auto
+      left-0 lg:left-60
+      top-0 lg:top-15
+      hidden lg:block
+    "
           />
 
           {/* Small dishes */}
-
           <img
             src="/images/dish.png"
             alt="dish"
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 lg:bottom-10 lg:left-150 w-12 lg:w-14 rounded-full shadow-md"
+            className="absolute bottom-6 left-1/2 -translate-x-1/2 lg:bottom-10 lg:left-150 w-12 lg:w-14 rounded-full shadow-md hidden lg:block"
           />
-
           <img
             src="/images/dish.png"
             alt="dish"
-            className="absolute -bottom-10 left-1/3 lg:-bottom-20 lg:left-132 w-12 lg:w-14 rounded-full shadow-md"
+            className="absolute -bottom-10 left-1/3 lg:-bottom-20 lg:left-132 w-12 lg:w-14 rounded-full shadow-md hidden lg:block"
           />
-
           <img
             src="/images/dish.png"
             alt="dish"
-            className="absolute -bottom-20 right-1/3 lg:-bottom-35 lg:left-95 w-12 lg:w-14 rounded-full shadow-md"
+            className="absolute -bottom-20 right-1/3 lg:-bottom-35 lg:left-95 w-12 lg:w-14 rounded-full shadow-md hidden lg:block"
           />
-
           <img
             src="/images/dish.png"
             alt="dish"
-            className="absolute -bottom-10 right-1/4 lg:-bottom-20 lg:left-55 w-12 lg:w-14 rounded-full shadow-md"
+            className="absolute -bottom-10 right-1/4 lg:-bottom-20 lg:left-55 w-12 lg:w-14 rounded-full shadow-md hidden lg:block"
           />
-
           <img
             src="/images/dish.png"
             alt="dish"
-            className="absolute bottom-6 right-1/2 translate-x-1/2 lg:bottom-10 lg:left-35 w-12 lg:w-14 rounded-full shadow-md"
+            className="absolute bottom-6 right-1/2 translate-x-1/2 lg:bottom-10 lg:left-35 w-12 lg:w-14 rounded-full shadow-md hidden lg:block"
           />
         </div>
       </div>
