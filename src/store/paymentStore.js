@@ -6,18 +6,15 @@ import { persist } from "zustand/middleware";
  * Payment Store
  * ==========================
  * Responsibilities:
- * - Manage payment transactions
- * - Validate transaction data
- * - Track status (pending, success, failed)
- * - Persist data
+ * - Manage user payments and transactions.
+ * - Track transaction history.
  */
 
-const isValidPayment = (payment) =>
-  payment &&
-  payment.id &&
-  typeof payment.amount === "number" &&
-  payment.amount > 0 &&
-  ["pending", "success", "failed"].includes(payment.status);
+const isValidTransaction = (transaction) =>
+  transaction &&
+  transaction.id &&
+  typeof transaction.amount === "number" &&
+  transaction.amount > 0;
 
 const MAX_HISTORY_LENGTH = 20;
 
@@ -27,7 +24,8 @@ const usePaymentStore = create(
       /* =====================
          STATE
       ====================== */
-      payments: [],
+      transactions: [],
+      status: null, // Tracks last transaction status
       loading: false,
       error: null,
 
@@ -37,64 +35,58 @@ const usePaymentStore = create(
 
       /**
        * Add a payment transaction
+       * @param {Object} transaction - { id, amount, status }
        */
-      addPayment: (payment) => {
-        if (!isValidPayment(payment)) {
-          set({ error: "Invalid payment data" });
+      addTransaction: (transaction) => {
+        if (!isValidTransaction(transaction)) {
+          set({ error: "Invalid transaction data" });
           return;
         }
 
         const state = get();
         
-        // Idempotency: Duplicate check
-        if (state.payments.some(p => p.id === payment.id)) {
-           // Optionally update existing or just ignore. 
-           // Ignoring to prevent duplicate entries for same ID.
+        // Prevent duplicates
+        if (state.transactions.some(t => t.id === transaction.id)) {
            return;
         }
 
-        const newPayments = [...state.payments, payment].slice(-MAX_HISTORY_LENGTH);
+        const newTransactions = [...state.transactions, transaction].slice(-MAX_HISTORY_LENGTH);
 
         set({
-          payments: newPayments,
+          transactions: newTransactions,
+          status: transaction.status, // Update current status
           error: null,
         });
       },
 
       /**
-       * Update payment status
+       * Update transaction status
+       * @param {string} id 
+       * @param {string} status 
        */
-      updatePaymentStatus: (id, status) => {
-        if (!["pending", "success", "failed"].includes(status)) {
-          set({ error: "Invalid status" });
-          return;
-        }
-
-        const paymentExists = get().payments.find((p) => p.id === id);
-        if (!paymentExists) {
-          set({ error: "Payment not found" });
+      updateStatus: (id, status) => {
+        const transactionExists = get().transactions.find((t) => t.id === id);
+        if (!transactionExists) {
+          set({ error: "Transaction not found" });
           return;
         }
 
         set((state) => ({
-          payments: state.payments.map((p) =>
-            p.id === id ? { ...p, status } : p
+          transactions: state.transactions.map((t) =>
+            t.id === id ? { ...t, status } : t
           ),
+          status: status, // Update current status tracking
           error: null,
         }));
       },
 
       /**
-       * Remove a payment transaction
+       * Remove a transaction
+       * @param {string} id 
        */
-      removePayment: (id) => {
-        const paymentExists = get().payments.find((p) => p.id === id);
-        if (!paymentExists) {
-          set({ error: "Payment not found" });
-          return;
-        }
+      removeTransaction: (id) => {
         set((state) => ({
-          payments: state.payments.filter((p) => p.id !== id),
+          transactions: state.transactions.filter((t) => t.id !== id),
           error: null,
         }));
       },
@@ -106,7 +98,7 @@ const usePaymentStore = create(
     }),
     {
       name: "revive-payment-store",
-      partialize: (state) => ({ payments: state.payments }),
+      partialize: (state) => ({ transactions: state.transactions }),
     }
   )
 );

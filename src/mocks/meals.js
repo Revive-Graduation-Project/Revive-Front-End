@@ -2,10 +2,18 @@
  * Mock Restaurants, Meals & Ingredients
  */
 
+import {
+  chickenColdCut,
+  greenSalad,
+  beefSteak,
+  salmon,
+  mixProtein,
+} from "./meal-images";
+
 export const mockRestaurants = [
   {
     id: 1,
-    name: "Healthy Bites",
+    name: "Revive Kitchen",
     location: "Downtown",
     rating: 4.8,
   },
@@ -45,12 +53,10 @@ export const mockMeals = [
     name: "Beef Protein Bowl",
     description: "Grilled beef with brown rice, veggies & special sauce",
     price: 199,
-    discountPercent: 0,
-    category: "Beef",
-    mainCategory: "Dinner",
-    imageUrl: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092",
-    calories: 450,
-    protein: 45,
+    discountPercent: 30,
+    imageUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd",
+    calories: 250,
+    protein: 25,
     carbs: 35,
     fat: 18,
     sugar: 10,
@@ -329,3 +335,5 @@ export const mockMeals = [
     isAvailable: true,
   },
 ];
+
+export const categories = ["All", "Chicken", "Beef", "Salmon", "Vegetarian"];

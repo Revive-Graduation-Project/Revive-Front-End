@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { loginService , logoutService, restoreSessionService } from "../services/auth.service";
+import { loginService, logoutService, restoreSessionService } from "../services/auth.service";
 /**
  * ==============================
  * Auth Store (Production Ready)
@@ -41,7 +41,7 @@ const useAuthStore = create(
       token: null,
       expiresAt: null,
 
-      isAuthenticated: false,
+      isAuthenticated: true,
       loading: false,
       error: null,
 
@@ -58,19 +58,19 @@ const useAuthStore = create(
        */
       login: async (credentials) => {
         // Reset previous errors
-        set({ error: null , loading: true });
+        set({ error: null, loading: true });
 
-        let response ;
+        let response;
         try {
-               response = await loginService(credentials);
+          response = await loginService(credentials);
         } catch (error) {
-               // user is not registered
-               console.error("Login failed:", error);
-               set({ error });
-               return;
+          // user is not registered
+          console.error("Login failed:", error);
+          set({ error });
+          return;
         }
 
-        const {user , token, expiresAt } = response.data;
+        const { user, token, expiresAt } = response.data;
 
         // Validation
         if (!isValidToken(token)) {
@@ -101,19 +101,19 @@ const useAuthStore = create(
        */
       logout: async (manualLogout = false) => {
         // Reset previous errors
-        set({ error: null , loading: true });
-        
+        set({ error: null, loading: true });
+
         // If manual logout, call logout service to invalidate token on server
         if (manualLogout) {
 
-            try {
-             await logoutService();
-            } catch (error) {
-               // Logout request failed , no return here as we want to clear client state anyway
-               set({ error });
-            }
-       }
-      
+          try {
+            await logoutService();
+          } catch (error) {
+            // Logout request failed , no return here as we want to clear client state anyway
+            set({ error });
+          }
+        }
+
         set({
           user: null,
           token: null,
@@ -129,31 +129,31 @@ const useAuthStore = create(
        * Called on app startup
        */
       restoreSession: async () => {
-         // Get fresh state
-          const { user, token, logout , expiresAt} = get(); 
-          set({ error: null , loading: true });
+        // Get fresh state
+        const { user, token, logout, expiresAt } = get();
+        set({ error: null, loading: true });
 
-           // If we have a user (persisted) but no token (lost in memory due to refresh)
-           const expiredToken = expiresAt && Date.now() > expiresAt;
-           if (user && (!token || expiredToken)) {
-               try {
-                   // Attempt to get a new access token using the httpOnly cookie
-                   const { data } = await restoreSessionService();
-                   set({
-                     token: data.token,
-                     isAuthenticated: true, 
-                     expiresAt: data.expiresAt ,
-                    });
-                    return data.token;
-               } catch (error) {
-                   // Refresh failed (cookie expired, invalid, etc.)
-                   set({ error });
-                   logout(); // Clear everything
-               }
-            }
-            set({ loading: false });
-            // user and token are valid, no action needed
-            return null;
+        // If we have a user (persisted) but no token (lost in memory due to refresh)
+        const expiredToken = expiresAt && Date.now() > expiresAt;
+        if (user && (!token || expiredToken)) {
+          try {
+            // Attempt to get a new access token using the httpOnly cookie
+            const { data } = await restoreSessionService();
+            set({
+              token: data.token,
+              isAuthenticated: true,
+              expiresAt: data.expiresAt,
+            });
+            return data.token;
+          } catch (error) {
+            // Refresh failed (cookie expired, invalid, etc.)
+            set({ error });
+            logout(); // Clear everything
+          }
+        }
+        set({ loading: false });
+        // user and token are valid, no action needed
+        return null;
       },
 
       /**
@@ -168,7 +168,7 @@ const useAuthStore = create(
       setAccessToken: (token, expiresAt) => set({ token, expiresAt }),
 
       getAccessToken: () => get().token,
-     
+
 
     }),
     {
