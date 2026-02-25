@@ -1,23 +1,49 @@
 import { useMenuStore } from "../../store/menuStore";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import MenuFilter from "./Sections/MenuFilter";
 
-import { mockMeals } from "../../mocks/meals";
+import useRecommendationStore from "../../store/recommendationStore"; // default import
 import OffersSection from "./Sections/OffersSection";
 import SuggestedMealsSection from "./Sections/SuggestedMealsSection";
 
 export default function Menu() {
+  const { recommendations, fetchRecommendations, isLoading, error } =
+    useRecommendationStore();
   const { meal, category } = useMenuStore();
 
   const filteredMenu = useMemo(() => {
-    return mockMeals.filter((item) => {
+    return recommendations.filter((item) => {
       const mealMatch = meal === "all" || item.mainCategory === meal;
-
       const categoryMatch = category === "All" || item.category === category;
-
       return mealMatch && categoryMatch;
     });
-  }, [meal, category]);
+  }, [meal, category, recommendations]);
+
+  useEffect(() => {
+    if (recommendations.length === 0) {
+      fetchRecommendations({ userHealth: "example", preferences: [] });
+    }
+  }, [recommendations.length, fetchRecommendations]);
+  if (!isLoading && recommendations.length === 0)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-lg font-medium">No recommendations available</p>
+      </div>
+    );
+  if (isLoading)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-lg font-medium">Loading recommendations...</p>
+      </div>
+    );
+
+  console.log("Recommendations:", recommendations);
+  if (error)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-lg font-medium text-red-500">{error}</p>
+      </div>
+    );
 
   return (
     <div

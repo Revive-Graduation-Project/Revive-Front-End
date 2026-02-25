@@ -60,6 +60,7 @@ export default function App() {
           <Route path="login" element={<Login />} />
           <Route path="signup" element={<Signup />} />
         </Route>
+        <Route path="/menu" element={<Menu />} />
 
         {/* Debug Route - remove before production */}
         <Route path="/debug" element={<StoreDebug />} />
