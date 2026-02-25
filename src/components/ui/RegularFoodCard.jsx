@@ -47,8 +47,8 @@ const RegularFoodCard = ({ meal }) => {
         </svg>
       </button>
       {/* image */}
-      <div className="relative pt-10 pb-4 px-6 flex justify-center">
-        <div className="w-32 h-32 sm:w-24 sm:h-24 rounded-full overflow-hidden border-4 border-orange-100 shadow-lg group-hover:scale-105 transition-transform duration-300">
+      <div className="relative pt-10 pb-2 px-6 flex justify-center">
+        <div className="w-15 h-15 sm:w-24 sm:h-24 rounded-full overflow-hidden border-4 border-orange-100 shadow-lg group-hover:scale-105 transition-transform duration-300">
           <img
             src={imageUrl}
             alt={name}
@@ -58,50 +58,51 @@ const RegularFoodCard = ({ meal }) => {
         </div>
       </div>
       {/* Content */}
-      <div className="px-5 pb-6 flex flex-col items-center text-center">
-        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1.5 line-clamp-1">
+      <div className="px-1 pb-2 flex flex-col items-center text-center">
+        <h3 className="text-sm sm:text-xl font-bold text-gray-900 mb-1.5 line-clamp-1 min-h-10">
           {name}
         </h3>
 
-        <p className="text-sm text-gray-600 mb-4 line-clamp-2 min-h-20">
+        <p className="text-xs sm:text-sm text-gray-600 mb-2 line-clamp-2 min-h-5">
           {description}
         </p>
 
         {/* Nutritional Info */}
-        <div className="flex flex-wrap justify-center gap-3 text-xs text-gray-700 mb-3">
-          <div className="text-center">
-            <div className="font-semibold">Fat</div>
-            <div className="text-(--color-green)">{fat}g</div>
+        <div className="grid grid-cols-2 gap-1 text-xs text-gray-700 mb-2">
+          <div className="flex justify-center gap-1">
+            <span className="font-semibold">Fat:</span>
+            <span className="text-(--color-green)">{fat}g</span>
           </div>
-          <div className="text-center">
-            <div className="font-semibold">Cal</div>
-            <div className="text-(--color-green)">{calories}</div>
+
+          <div className="flex justify-center gap-1">
+            <span className="font-semibold">Cal:</span>
+            <span className="text-(--color-green)">{calories}</span>
           </div>
-          <div className="text-center">
-            <div className="font-semibold">Pro</div>
-            <div className="text-(--color-green)">{protein}g</div>
+
+          <div className="flex justify-center gap-1">
+            <span className="font-semibold">Pro:</span>
+            <span className="text-(--color-green)">{protein}g</span>
           </div>
-          <div className="text-center">
-            <div className="font-semibold">Sug</div>
-            <div className="text-(--color-green)">{sugar}g</div>
+
+          <div className="flex justify-center gap-1">
+            <span className="font-semibold">Sug:</span>
+            <span className="text-(--color-green)">{sugar}g</span>
           </div>
         </div>
 
         {/* Price + Add to Cart */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3 w-full">
+        <div className="flex flex-col  sm:items-center sm:justify-center gap-2 w-full">
           <div className="flex items-baseline justify-center gap-2">
             {hasDiscount && (
               <span className="text-base text-gray-400 line-through">
                 ${price.toFixed(0)}
               </span>
             )}
-            <span
-              className={`text-2xl sm:text-xl font-extrabold ${priceColor}`}
-            >
+            <span className={`text-xl sm:text-xl font-extrabold ${priceColor}`}>
               ${finalPrice}
             </span>
           </div>
-          <button className="w-full sm:w-auto bg-(--color-orange) hover:bg-orange-600 active:bg-orange-700 text-white font-medium py-1 px-2 rounded-2xl transition-colors shadow-sm hover:shadow-md">
+          <button className="w-full  bg-(--color-orange) hover:bg-orange-600 active:bg-orange-700 text-white font-medium py-1 px-1 rounded-2xl transition-colors shadow-sm hover:shadow-md">
             Add to cart
           </button>
         </div>

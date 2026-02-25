@@ -28,7 +28,7 @@ const RegularFood = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-8">
           {meals.map((meal) => (
             <RegularFoodCard key={meal.id} meal={meal} />
           ))}
