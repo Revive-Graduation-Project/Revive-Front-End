@@ -25,8 +25,7 @@ const SuggestedMealsSection = ({ items = [] }) => {
         {/* Grid */}
         <div
           className="
-            grid gap-8
-            grid-cols-1 sm:grid-cols-2 lg:grid-cols-4
+            grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-8
           "
         >
           {visibleMeals.map((meal) => (
