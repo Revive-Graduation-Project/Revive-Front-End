@@ -37,7 +37,6 @@ export default function Menu() {
       </div>
     );
 
-  console.log("Recommendations:", recommendations);
   if (error)
     return (
       <div className="flex justify-center items-center h-screen">
