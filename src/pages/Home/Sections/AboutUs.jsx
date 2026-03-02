@@ -11,7 +11,7 @@ const AboutUs = () => {
           <div className="relative flex justify-center lg:justify-start order-1">
             <div className="relative w-full max-w-md lg:max-w-lg">
               <img
-                src="/public/images/fryingpan.png"
+                src="/images/fryingpan.png"
                 alt="Cooking pan with flying ingredients"
                 className="
                   w-full h-auto 
@@ -29,7 +29,7 @@ const AboutUs = () => {
             </p>
 
             <img
-              src="/public/images/Design3Green.png"
+              src="/images/Design3Green.png"
               alt="herbs"
               className=" object-contain "
             />

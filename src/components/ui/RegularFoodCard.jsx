@@ -1,4 +1,10 @@
+import { useOrderStore, useFavoritesStore } from "../../store";
+
 const RegularFoodCard = ({ meal }) => {
+  const addItem = useOrderStore((state) => state.addItem);
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
+  const isFavorite = useFavoritesStore((state) => state.isFavorite(meal.id));
+
   const {
     name,
     description,
@@ -8,7 +14,7 @@ const RegularFoodCard = ({ meal }) => {
     calories,
     protein,
     fat,
-    sugar = 64,
+    sugar = 0,
   } = meal;
 
   const hasDiscount = discountPercent > 0;
@@ -31,10 +37,17 @@ const RegularFoodCard = ({ meal }) => {
         </div>
       )}
       {/* Favorite Heart */}
-      <button className="absolute top-3 right-3 z-20 text-gray-400 hover:text-red-500 transition-colors">
+      <button
+        onClick={() => toggleFavorite(meal)}
+        className={`absolute top-3 right-3 z-20 transition-all duration-300 ${
+          isFavorite
+            ? "text-red-500 scale-110"
+            : "text-gray-400 hover:text-red-500"
+        }`}
+      >
         <svg
           className="w-6 h-6"
-          fill="none"
+          fill={isFavorite ? "currentColor" : "none"}
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
@@ -102,7 +115,17 @@ const RegularFoodCard = ({ meal }) => {
               ${finalPrice}
             </span>
           </div>
-          <button className="w-full  bg-(--color-orange) hover:bg-orange-600 active:bg-orange-700 text-white font-medium py-1 px-1 rounded-2xl transition-colors shadow-sm hover:shadow-md">
+          <button
+            onClick={() =>
+              addItem({
+                id: meal.id,
+                name,
+                price: finalPrice,
+                imageUrl,
+              })
+            }
+            className="w-full  bg-(--color-orange) hover:bg-orange-600 active:bg-orange-700 text-white font-medium py-1 px-1 rounded-2xl transition-colors shadow-sm hover:shadow-md"
+          >
             Add to cart
           </button>
         </div>
