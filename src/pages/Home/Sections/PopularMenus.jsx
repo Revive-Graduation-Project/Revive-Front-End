@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import useRestaurantStore from "../../../store/restaurantStore";
 
-import PopularMenuCard from "../../../components/ui/PopularMenuCard";
+import PopularMenuCard from "../../../components/UI/PopularMenuCard";
 
 const PopularMenus = () => {
   const { meals, fetchMeals, loading, error } = useRestaurantStore();

@@ -1,7 +1,7 @@
 // src/pages/Home/Sections/RegularFood.jsx
 import { useEffect } from "react";
 import useRestaurantStore from "../../../store/restaurantStore";
-import RegularFoodCard from "../../../components/ui/RegularFoodCard";
+import RegularFoodCard from "../../../components/UI/RegularFoodCard";
 
 const RegularFood = () => {
   const { meals, fetchMeals, loading, error } = useRestaurantStore();
