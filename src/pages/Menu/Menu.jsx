@@ -1,4 +1,4 @@
-import { useMenuStore } from "../../store/menuStore";
+import { useMenuStore, useAuthStore } from "../../store";
 import { useMemo, useEffect } from "react";
 import MenuFilter from "./Sections/MenuFilter";
 
@@ -7,6 +7,8 @@ import OffersSection from "./Sections/OffersSection";
 import SuggestedMealsSection from "./Sections/SuggestedMealsSection";
 
 export default function Menu() {
+  const { user } = useAuthStore();
+
   const { recommendations, fetchRecommendations, isLoading, error } =
     useRecommendationStore();
   const { meal, category } = useMenuStore();
@@ -20,16 +22,12 @@ export default function Menu() {
   }, [meal, category, recommendations]);
 
   useEffect(() => {
-    if (recommendations.length === 0) {
-      fetchRecommendations({ userHealth: "example", preferences: [] });
-    }
-  }, [recommendations.length, fetchRecommendations]);
-  if (!isLoading && recommendations.length === 0)
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <p className="text-lg font-medium">No recommendations available</p>
-      </div>
-    );
+    fetchRecommendations({
+      userHealth: user.health ?? null,
+      preferences: user.preferences ?? [],
+    });
+  }, [user, fetchRecommendations]);
+
   if (isLoading)
     return (
       <div className="flex justify-center items-center h-screen">
@@ -41,6 +39,13 @@ export default function Menu() {
     return (
       <div className="flex justify-center items-center h-screen">
         <p className="text-lg font-medium text-red-500">{error}</p>
+      </div>
+    );
+
+  if (recommendations.length === 0)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-lg font-medium">No recommendations available</p>
       </div>
     );
 

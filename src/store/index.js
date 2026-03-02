@@ -13,4 +13,3 @@ export { default as useRecommendationStore } from "./recommendationStore";
 export { default as useFavoritesStore } from "./favoritesStore";
 //NOTE:
 // the import must be like : import useAuthStore from "../../store";
-

@@ -54,6 +54,8 @@ export const mockMeals = [
     description: "Grilled beef with brown rice, veggies & special sauce",
     price: 199,
     discountPercent: 30,
+    category: "Beef",
+    mainCategory: "Dinner",
     imageUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd",
     calories: 250,
     protein: 25,
@@ -180,7 +182,7 @@ export const mockMeals = [
     description: "Chicken wrap with veggies & light sauce",
     price: 150,
     discountPercent: 15,
-    category: "Lunch",
+    category: "Chicken",
     mainCategory: "Lunch",
     imageUrl: "https://images.unsplash.com/photo-1603133872878-684f208fb84b",
     calories: 420,
@@ -324,7 +326,7 @@ export const mockMeals = [
     description: "Chicken wrap with veggies & light sauce",
     price: 150,
     discountPercent: 0,
-    category: "Lunch",
+    category: "Chicken",
     mainCategory: "Lunch",
     imageUrl: "https://images.unsplash.com/photo-1603133872878-684f208fb84b",
     calories: 420,
@@ -336,4 +338,4 @@ export const mockMeals = [
   },
 ];
 
-export const categories = ["All", "Chicken", "Beef", "Salmon", "Vegetarian"];
+export const categories = ["All", "Chicken", "Beef", "Seafood", "mix Protein"];

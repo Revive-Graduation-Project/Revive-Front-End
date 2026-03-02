@@ -94,6 +94,8 @@ async function fakeAI(context) {
           description: "Grilled beef with brown rice, veggies & special sauce",
           price: 199,
           discountPercent: 30,
+          category: "Beef",
+          mainCategory: "Dinner",
           imageUrl:
             "https://images.unsplash.com/photo-1512621776951-a57141f2eefd",
           calories: 250,
@@ -235,7 +237,7 @@ async function fakeAI(context) {
           description: "Chicken wrap with veggies & light sauce",
           price: 150,
           discountPercent: 15,
-          category: "Lunch",
+          category: "Chicken",
           mainCategory: "Lunch",
           imageUrl:
             "https://images.unsplash.com/photo-1603133872878-684f208fb84b",
@@ -401,7 +403,7 @@ async function fakeAI(context) {
           description: "Chicken wrap with veggies & light sauce",
           price: 150,
           discountPercent: 0,
-          category: "Lunch",
+          category: "Chicken",
           mainCategory: "Lunch",
           imageUrl:
             "https://images.unsplash.com/photo-1603133872878-684f208fb84b",
