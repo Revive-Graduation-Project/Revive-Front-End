@@ -1,14 +1,16 @@
-import { useMenuStore, useAuthStore } from "../../store";
+import {
+  useMenuStore,
+  useAuthStore,
+  useRecommendationStore,
+} from "../../store";
 import { useMemo, useEffect } from "react";
 import MenuFilter from "./Sections/MenuFilter";
 
-import useRecommendationStore from "../../store/recommendationStore"; // default import
 import OffersSection from "./Sections/OffersSection";
 import SuggestedMealsSection from "./Sections/SuggestedMealsSection";
 
 export default function Menu() {
   const { user } = useAuthStore();
-
   const { recommendations, fetchRecommendations, isLoading, error } =
     useRecommendationStore();
   const { meal, category } = useMenuStore();
@@ -23,8 +25,8 @@ export default function Menu() {
 
   useEffect(() => {
     fetchRecommendations({
-      userHealth: user.health ?? null,
-      preferences: user.preferences ?? [],
+      userHealth: user?.health ?? null,
+      preferences: user?.preferences ?? [],
     });
   }, [user, fetchRecommendations]);
 

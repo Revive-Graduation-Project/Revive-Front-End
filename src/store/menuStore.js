@@ -9,3 +9,5 @@ export const useMenuStore = create((set) => ({
 
   resetFilters: () => set({ meal: "all", category: "All" }),
 }));
+
+export default useMenuStore;

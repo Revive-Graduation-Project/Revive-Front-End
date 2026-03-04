@@ -53,6 +53,7 @@ export default function App() {
           <Route path="checkout" element={<Checkout />} />
           <Route path="payment" element={<Payment />} />
           <Route path="thanks" element={<Thanks />} />
+          <Route path="menu" element={<Menu />} />
         </Route>
 
         {/* Auth Routes - Always accessible */}
@@ -60,7 +61,6 @@ export default function App() {
           <Route path="login" element={<Login />} />
           <Route path="signup" element={<Signup />} />
         </Route>
-        <Route path="/menu" element={<Menu />} />
 
         {/* Debug Route - remove before production */}
         <Route path="/debug" element={<StoreDebug />} />
