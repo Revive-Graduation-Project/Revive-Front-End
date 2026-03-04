@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import RegularFoodCard from "../../../components/UI/RegularFoodCard";
 
 const OffersSection = ({ items = [] }) => {
@@ -8,6 +8,7 @@ const OffersSection = ({ items = [] }) => {
   );
 
   const [current, setCurrent] = useState(0);
+  const scrollRef = useRef(null);
 
   if (offersMeals.length === 0) {
     return (
@@ -35,59 +36,69 @@ const OffersSection = ({ items = [] }) => {
           Offers
         </h2>
 
-        <div className="relative flex items-center justify-center">
-          {/* Left Arrow */}
-          <button
-            onClick={goPrev}
-            className="
-              absolute left-0 md:-left-10 lg:-left-16 top-1/2 -translate-y-1/2
-              text-green-700 text-5xl font-bold
-              hover:scale-110 transition
-            "
-            aria-label="Previous"
+        {/* ===== MOBILE: Horizontal Scroll ===== */}
+        <div className="md:hidden">
+          <div
+            ref={scrollRef}
+            className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth
+                       scrollbar-hide"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            ‹
-          </button>
-
-          {/* Cards Wrapper */}
-          <div className="flex items-end justify-center gap-8">
-            {/* Left Card */}
-            <div
-              className="w-[320px] md:w-[340px] lg:w-[360px] 
-                            scale-95 opacity-80 translate-y-6 transition-all duration-300"
-            >
-              <RegularFoodCard meal={offersMeals[prevIndex]} />
-            </div>
-
-            {/* Center Card */}
-            <div
-              className="w-[340px] md:w-[380px] lg:w-[420px]
-                            scale-105 opacity-100 -translate-y-4 transition-all duration-300"
-            >
-              <RegularFoodCard meal={offersMeals[current]} />
-            </div>
-
-            {/* Right Card */}
-            <div
-              className="w-[320px] md:w-[340px] lg:w-[360px]
-                            scale-95 opacity-80 translate-y-6 transition-all duration-300"
-            >
-              <RegularFoodCard meal={offersMeals[nextIndex]} />
-            </div>
+            {offersMeals.map((meal, i) => (
+              <div key={i} className="min-w-[280px] snap-center flex-shrink-0">
+                <RegularFoodCard meal={meal} />
+              </div>
+            ))}
           </div>
+        </div>
 
-          {/* Right Arrow */}
-          <button
-            onClick={goNext}
-            className="
-              absolute right-0 md:-right-10 lg:-right-16 top-1/2 -translate-y-1/2
-              text-green-700 text-5xl font-bold
-              hover:scale-110 transition
-            "
-            aria-label="Next"
-          >
-            ›
-          </button>
+        {/* ===== DESKTOP: Carousel (unchanged) ===== */}
+        <div className="hidden md:block">
+          <div className="relative flex items-center justify-center">
+            {/* Left Arrow */}
+            <button
+              onClick={goPrev}
+              className="
+                absolute md:-left-10 lg:-left-16 top-1/2 -translate-y-1/2
+                text-green-700 text-5xl font-bold
+                hover:scale-110 transition
+              "
+              aria-label="Previous"
+            >
+              ‹
+            </button>
+
+            {/* Cards Wrapper */}
+            <div className="flex items-end justify-center gap-8">
+              {/* Left Card */}
+              <div className="w-[340px] lg:w-[360px] scale-95 opacity-80 translate-y-6 transition-all duration-300">
+                <RegularFoodCard meal={offersMeals[prevIndex]} />
+              </div>
+
+              {/* Center Card */}
+              <div className="w-[380px] lg:w-[420px] scale-105 opacity-100 -translate-y-4 transition-all duration-300">
+                <RegularFoodCard meal={offersMeals[current]} />
+              </div>
+
+              {/* Right Card */}
+              <div className="w-[340px] lg:w-[360px] scale-95 opacity-80 translate-y-6 transition-all duration-300">
+                <RegularFoodCard meal={offersMeals[nextIndex]} />
+              </div>
+            </div>
+
+            {/* Right Arrow */}
+            <button
+              onClick={goNext}
+              className="
+                absolute md:-right-10 lg:-right-16 top-1/2 -translate-y-1/2
+                text-green-700 text-5xl font-bold
+                hover:scale-110 transition
+              "
+              aria-label="Next"
+            >
+              ›
+            </button>
+          </div>
         </div>
       </div>
     </section>
