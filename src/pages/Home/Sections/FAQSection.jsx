@@ -3,30 +3,37 @@ import { useState } from "react";
 
 const faqItems = [
   {
-    question: "Are these Meals Suitable for dieting or bodybuilding?",
-    answer: "",
-    isOpen: false,
+    question: "Are these meals suitable for dieting or bodybuilding?",
+    answer:
+      "Yes, our meals are carefully designed to support both weight loss and muscle gain. Each meal includes balanced macronutrients with clear calorie information.",
   },
   {
     question: "Are there any additives or preservatives?",
-    answer: "",
-    isOpen: false,
+    answer:
+      "No, we use only natural ingredients. Our meals are prepared fresh daily without artificial additives or preservatives.",
   },
   {
     question: "Are the meals fresh or frozen?",
     answer:
-      "The meals are prepared daily with fresh, high-quality products, packed in airtight containers to preserve the taste and nutritional value.",
-    isOpen: true,
+      "The meals are prepared daily using fresh, high-quality ingredients and packed in airtight containers to preserve taste and nutritional value.",
   },
   {
-    question: "Are there any additives or preservatives?",
-    answer: "",
-    isOpen: false,
+    question: "How long does delivery take?",
+    answer:
+      "Delivery usually takes between 30 to 45 minutes depending on your location.",
   },
 ];
 
 const FAQSection = () => {
   const [activeIndex, setActiveIndex] = useState(2);
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredFaqs = faqItems.filter(
+    (item) =>
+      item.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.answer.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   const toggleFAQ = (index) => {
     setActiveIndex(activeIndex === index ? null : index);
@@ -56,7 +63,10 @@ const FAQSection = () => {
             </div>
 
             <div className="space-y-4">
-              {faqItems.map((item, index) => (
+              {filteredFaqs.length === 0 && (
+                <p className="text-gray-600 mt-4">No results found.</p>
+              )}
+              {filteredFaqs.map((item, index) => (
                 <div
                   key={index}
                   className={` pb-4 last:border-b-0 ${
@@ -95,12 +105,12 @@ const FAQSection = () => {
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Lookind for something ?"
-                  className="
-                    w-full pl-12 pr-4 py-2 rounded-full border border-gray-300 
-                    focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200
-                    text-gray-700 placeholder-gray-500 bg-white/80 backdrop-blur-sm
-                  "
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Looking for something?"
+                  className="w-full pl-12 pr-4 py-2 rounded-full border border-gray-300 
+                  focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200
+                text-gray-700 placeholder-gray-500 bg-white/80 backdrop-blur-sm"
                 />
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
                   <svg
@@ -124,7 +134,7 @@ const FAQSection = () => {
           <div className=" flex justify-center lg:justify-end">
             <div className=" w-full max-w-lg">
               <img
-                src="/public/images/image 24.png"
+                src="/images/image 24.png"
                 alt="Woman eating healthy salad"
                 className="
                   w-full h-full object-cover

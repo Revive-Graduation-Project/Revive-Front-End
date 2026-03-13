@@ -20,7 +20,7 @@ const SpecialOffer = () => {
               99 EGP <span className="text-white text-4xl">/ Per person</span>
             </p>
           </div>
-          ٍ
+
           <button
             className="
               inline-flex items-center justify-center
@@ -40,7 +40,7 @@ const SpecialOffer = () => {
       <div className="absolute inset-0 pointer-events-none ">
         <div className="absolute bottom-60 left w-14 h-14 md:w-50 md:h-50 animate-float-slow">
           <img
-            src="/public/images/Design3.png"
+            src="/images/Design3.png"
             alt="herbs"
             className="w-full h-full object-contain "
           />
