@@ -2,16 +2,19 @@
 import { useEffect } from "react";
 import useRestaurantStore from "../../../store/restaurantStore";
 import RegularFoodCard from "../../../components/UI/RegularFoodCard";
+import LoadingSpinner from "../../../components/UI/LoadingSpinner";
 
-const RegularFood = () => {
+const RegularFood = ({ items }) => {
   const { meals, fetchMeals, loading, error } = useRestaurantStore();
 
   useEffect(() => {
-    if (meals.length === 0) fetchMeals();
-  }, [meals.length, fetchMeals]);
+    if (!items && meals.length === 0) fetchMeals(); // ✅ بس لو مفيش items جاي من برا
+  }, [meals.length, fetchMeals, items]);
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>{error}</p>;
+  if (loading && !items) return <LoadingSpinner />;
+  if (error && !items) return <p>{error}</p>;
+
+  const displayMeals = items ?? meals; // ✅ لو في items استخدمها، لو لأ استخدم meals
 
   return (
     <section className="py-12 md:py-16 lg:py-20 bg-gray-50">
@@ -20,7 +23,7 @@ const RegularFood = () => {
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-(--color-green) mb-3">
             OUR REGULAR FOOD
           </h2>
-          <p className="text-gray-600  text-lg md:text-xl mb-2">
+          <p className="text-gray-600 text-lg md:text-xl mb-2">
             Here we will find all the best Quality, and pure food
           </p>
           <p className="text-gray-600 text-base md:text-lg max-w-2xl mx-auto">
@@ -29,7 +32,7 @@ const RegularFood = () => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-8">
-          {meals.map((meal) => (
+          {displayMeals.map((meal) => (
             <RegularFoodCard key={meal.id} meal={meal} />
           ))}
         </div>

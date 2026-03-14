@@ -3,37 +3,58 @@ import {
   useAuthStore,
   useRecommendationStore,
 } from "../../store";
+import useRestaurantStore from "../../store/restaurantStore";
 import { useMemo, useEffect } from "react";
 import MenuFilter from "./Sections/MenuFilter";
-
 import OffersSection from "./Sections/OffersSection";
 import SuggestedMealsSection from "./Sections/SuggestedMealsSection";
+import RegularFood from "../Home/Sections/RegularFood";
 
 export default function Menu() {
   const { user } = useAuthStore();
-  const { recommendations, fetchRecommendations, isLoading, error } =
-    useRecommendationStore();
+  const {
+    recommendations,
+    fetchRecommendations,
+    isLoading: recLoading,
+    error: recError,
+  } = useRecommendationStore();
+  const {
+    meals,
+    fetchMeals,
+    loading: mealsLoading,
+    error: mealsError,
+  } = useRestaurantStore();
   const { meal, category } = useMenuStore();
 
+  const isGuest = !user;
+
+  useEffect(() => {
+    if (isGuest) {
+      if (meals.length === 0) fetchMeals();
+    } else {
+      fetchRecommendations({
+        userHealth: user?.health ?? null,
+        preferences: user?.preferences ?? [],
+      });
+    }
+  }, [user, isGuest]);
+
+  const sourceItems = isGuest ? meals : recommendations;
+  const isLoading = isGuest ? mealsLoading : recLoading;
+  const error = isGuest ? mealsError : recError;
+
   const filteredMenu = useMemo(() => {
-    return recommendations.filter((item) => {
+    return sourceItems.filter((item) => {
       const mealMatch = meal === "all" || item.mainCategory === meal;
       const categoryMatch = category === "All" || item.category === category;
       return mealMatch && categoryMatch;
     });
-  }, [meal, category, recommendations]);
-
-  useEffect(() => {
-    fetchRecommendations({
-      userHealth: user?.health ?? null,
-      preferences: user?.preferences ?? [],
-    });
-  }, [user, fetchRecommendations]);
+  }, [meal, category, sourceItems]);
 
   if (isLoading)
     return (
       <div className="flex justify-center items-center h-screen">
-        <p className="text-lg font-medium">Loading recommendations...</p>
+        <p className="text-lg font-medium">Loading...</p>
       </div>
     );
 
@@ -44,28 +65,23 @@ export default function Menu() {
       </div>
     );
 
-  if (recommendations.length === 0)
+  if (sourceItems.length === 0)
     return (
       <div className="flex justify-center items-center h-screen">
-        <p className="text-lg font-medium">No recommendations available</p>
+        <p className="text-lg font-medium">No meals available</p>
       </div>
     );
 
   return (
-    <div
-      className="
-       
-        bg-white 
-        min-h-screen
-        px-4 md:px-10 lg:px-20
-        overflow-hidden
-      "
-    >
+    <div className="bg-white min-h-screen px-4 md:px-10 lg:px-20 overflow-hidden">
       <div className="py-12 md:py-16 lg:py-20 space-y-5 md:space-y-2 lg:space-y-2">
         <MenuFilter />
-
         <OffersSection items={filteredMenu} />
-        <SuggestedMealsSection items={filteredMenu} />
+        {isGuest ? (
+          <RegularFood items={filteredMenu} />
+        ) : (
+          <SuggestedMealsSection items={filteredMenu} />
+        )}
       </div>
     </div>
   );

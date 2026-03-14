@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo } from "react";
 import RegularFoodCard from "../../../components/UI/RegularFoodCard";
 
 const OffersSection = ({ items = [] }) => {
@@ -8,7 +8,6 @@ const OffersSection = ({ items = [] }) => {
   );
 
   const [current, setCurrent] = useState(0);
-  const scrollRef = useRef(null);
 
   if (offersMeals.length === 0) {
     return (
@@ -39,13 +38,12 @@ const OffersSection = ({ items = [] }) => {
         {/* ===== MOBILE: Horizontal Scroll ===== */}
         <div className="md:hidden">
           <div
-            ref={scrollRef}
             className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth
                        scrollbar-hide"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {offersMeals.map((meal, i) => (
-              <div key={i} className="min-w-[280px] snap-center flex-shrink-0">
+            {offersMeals.map((meal) => (
+              <div key={meal.id} className="min-w-[280px] snap-center shrink-0">
                 <RegularFoodCard meal={meal} />
               </div>
             ))}

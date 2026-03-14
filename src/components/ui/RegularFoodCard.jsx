@@ -9,7 +9,7 @@ const RegularFoodCard = ({ meal }) => {
     name,
     description,
     price,
-    discountPercent = 0,
+    finalPrice,
     imageUrl,
     calories,
     protein,
@@ -17,11 +17,7 @@ const RegularFoodCard = ({ meal }) => {
     sugar = 0,
   } = meal;
 
-  const hasDiscount = discountPercent > 0;
-
-  const finalPrice = hasDiscount
-    ? Math.round(price * (1 - discountPercent / 100))
-    : Math.round(price);
+  const hasDiscount = finalPrice < price;
 
   const priceColor = hasDiscount
     ? "text-[var(--color-orange)]"
@@ -33,7 +29,7 @@ const RegularFoodCard = ({ meal }) => {
       {/* Offer Badge */}
       {hasDiscount && (
         <div className="absolute top-3 left-3 z-20 bg-(--color-orange) text-white text-xs font-bold px-3 py-1 rounded-br-lg rounded-tl-lg shadow-sm">
-          Offer {discountPercent}%
+          Offer
         </div>
       )}
       {/* Favorite Heart */}
@@ -108,11 +104,12 @@ const RegularFoodCard = ({ meal }) => {
           <div className="flex items-baseline justify-center gap-2">
             {hasDiscount && (
               <span className="text-base text-gray-400 line-through">
-                ${price.toFixed(0)}
+                ${price.toFixed(2)}
               </span>
             )}
+
             <span className={`text-xl sm:text-xl font-extrabold ${priceColor}`}>
-              ${finalPrice}
+              ${finalPrice.toFixed(2)}
             </span>
           </div>
           <button

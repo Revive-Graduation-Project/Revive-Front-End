@@ -85,7 +85,7 @@ export default useRecommendationStore;
 async function fakeAI(context) {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve([
+      const meals = [
         {
           id: 1,
           name: "Beef Protein Bowl",
@@ -414,7 +414,17 @@ async function fakeAI(context) {
           sugar: 7,
           isAvailable: true,
         },
-      ]);
+      ];
+
+      resolve(
+        meals.map((meal) => ({
+          ...meal,
+          finalPrice:
+            meal.discountPercent > 0
+              ? meal.price * (1 - meal.discountPercent / 100)
+              : meal.price,
+        })),
+      );
     }, 1200);
   });
 }

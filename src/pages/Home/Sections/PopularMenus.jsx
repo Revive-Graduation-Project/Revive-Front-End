@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import useRestaurantStore from "../../../store/restaurantStore";
-
 import PopularMenuCard from "../../../components/UI/PopularMenuCard";
+import LoadingSpinner from "../../../components/UI/LoadingSpinner";
 
 const PopularMenus = () => {
   const { meals, fetchMeals, loading, error } = useRestaurantStore();
@@ -14,7 +14,7 @@ const PopularMenus = () => {
     }
   }, [meals.length, fetchMeals]);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <LoadingSpinner />;
   if (error) return <p>{error}</p>;
 
   const popular = meals.slice(0, 6);
