@@ -1,5 +1,5 @@
 import { Link, NavLink } from "react-router";
-import Cart from "./Cart";
+import Cart from "../ui/Cart";
 import SearchBar from "./SearchBar";
 import { FaUserCircle } from "react-icons/fa";
 import { FiHeart } from "react-icons/fi";
@@ -13,10 +13,10 @@ function Navbar() {
       <div className="w-full flex flex-wrap p-3 gap-y-2 justify-around items-center">
         <h1 className="grow text-center">
           <Link to="/home">
-            <span className="branding-title text-3xl md:text-4xl text-orange">
+            <span className="branding-title text-3xl md:text-4xl text-(--color-orange)">
               Re
             </span>
-            <span className="branding-title text-3xl md:text-4xl text-green">
+            <span className="branding-title text-3xl md:text-4xl text-(--color-green)">
               vive
             </span>
           </Link>

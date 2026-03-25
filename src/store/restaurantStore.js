@@ -56,8 +56,8 @@ const useRestaurantStore = create(
       partialize: (state) => ({
         meals: state.meals,
       }),
-    }
-  )
+    },
+  ),
 );
 
 export default useRestaurantStore;

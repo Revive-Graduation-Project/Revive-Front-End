@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FaUser, FaLock } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
-import AllergiesDropdown from "../../components/AllergiesDropdown";
+import AllergiesDropdown from "../../components/ui/AllergiesDropdown";
 
 function Signup() {
   const [step, setStep] = useState(1);

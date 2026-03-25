@@ -1,5 +1,5 @@
 import { FiShoppingCart } from "react-icons/fi";
-import { useOrderStore } from "../store";
+import { useOrderStore } from "../../store";
 
 function Cart() {
   const openCartDrawer = useOrderStore((state) => state.openCartDrawer);

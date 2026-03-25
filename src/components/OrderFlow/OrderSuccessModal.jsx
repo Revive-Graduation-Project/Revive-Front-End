@@ -2,7 +2,7 @@ import { FiCheckCircle } from "react-icons/fi";
 
 /**
  * OrderSuccessModal Component
- * 
+ *
  * A high-visibility modal that triggers upon successful order placement.
  * Features a large checkmark icon and a primary "Back to Home" action.
  */
@@ -12,7 +12,7 @@ export default function OrderSuccessModal({ isOpen, onClose }) {
   return (
     <>
       {/* Overlay */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 z-50 transition-opacity flex items-center justify-center p-4"
         onClick={onClose}
       />
@@ -22,10 +22,13 @@ export default function OrderSuccessModal({ isOpen, onClose }) {
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
           <FiCheckCircle className="text-5xl text-green-600" />
         </div>
-        
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Order Confirmed!</h2>
+
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          Order Confirmed!
+        </h2>
         <p className="text-gray-600 mb-8">
-          Thank you for your order. We've received it and will start preparing it right away.
+          Thank you for your order. We've received it and will start preparing
+          it right away.
         </p>
 
         <button

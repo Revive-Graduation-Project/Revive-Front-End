@@ -1,6 +1,10 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { loginService, logoutService, restoreSessionService } from "../services/auth.service";
+import {
+  loginService,
+  logoutService,
+  restoreSessionService,
+} from "../services/auth.service";
 /**
  * ==============================
  * Auth Store (Production Ready)
@@ -18,11 +22,12 @@ const TOKEN_LIFETIME = 1000 * 60 * 60 * 24; // 24 hours
 const isValidUser = (user) => {
   if (!user || typeof user !== "object") return false;
 
-  // Minimal required structure
   return (
     (typeof user.id === "string" || typeof user.id === "number") &&
     typeof user.email === "string" &&
-    user.email.includes("@")
+    user.email.includes("@") &&
+    (user.health === undefined || typeof user.health === "string") &&
+    (user.preferences === undefined || Array.isArray(user.preferences))
   );
 };
 
@@ -84,7 +89,7 @@ const useAuthStore = create(
         }
 
         // Use provided expiration or default to 24h
-        const sessionExpiry = expiresAt || (Date.now() + TOKEN_LIFETIME);
+        const sessionExpiry = expiresAt || Date.now() + TOKEN_LIFETIME;
 
         set({
           user,
@@ -105,7 +110,6 @@ const useAuthStore = create(
 
         // If manual logout, call logout service to invalidate token on server
         if (manualLogout) {
-
           try {
             await logoutService();
           } catch (error) {
@@ -168,8 +172,6 @@ const useAuthStore = create(
       setAccessToken: (token, expiresAt) => set({ token, expiresAt }),
 
       getAccessToken: () => get().token,
-
-
     }),
     {
       name: "revive-auth-store",
@@ -177,13 +179,13 @@ const useAuthStore = create(
       /**
        * Persist only essential data
        * Avoid persisting UI states like loading/error
-       * 
+       *
        * SECURITY NOTE:
        * - token is NOT persisted to localStorage (XSS vulnerability)
        * - Access token lives in Zustand in-memory state only
        * - Refresh token is in httpOnly cookie (backend-managed)
        * - On page refresh, token will be null - call /auth/refresh to restore
-       * 
+       *
        * What IS persisted:
        * - user: Profile data (not sensitive)
        * - expiresAt: For UX (show session expiry warnings)
@@ -193,8 +195,8 @@ const useAuthStore = create(
         // token: deliberately excluded for security - in-memory only
         expiresAt: state.expiresAt,
       }),
-    }
-  )
+    },
+  ),
 );
 
 export default useAuthStore;

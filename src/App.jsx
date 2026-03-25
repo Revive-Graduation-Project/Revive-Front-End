@@ -1,5 +1,6 @@
 import { Route, Routes, Navigate } from "react-router";
 import { AppLayout, AuthLayout } from "./Layout";
+
 import {
   Home,
   Login,
@@ -12,10 +13,11 @@ import {
   StoreDebug,
 } from "./pages";
 import { useAuthInit } from "./hooks/useAuthInit";
+import Menu from "./pages/Menu/Menu";
 import { useRestaurantInit } from "./hooks/useRestaurantInit";
 import { useAuthStore } from "./store";
 import { LoadingSpinner } from "./components";
-import SideCartDrawer from './components/OrderFlow/SideCartDrawer';
+import SideCartDrawer from "./components/OrderFlow/SideCartDrawer";
 
 export default function App() {
   useAuthInit();
@@ -51,6 +53,7 @@ export default function App() {
           <Route path="checkout" element={<Checkout />} />
           <Route path="payment" element={<Payment />} />
           <Route path="thanks" element={<Thanks />} />
+          <Route path="menu" element={<Menu />} />
         </Route>
 
         {/* Auth Routes - Always accessible */}
@@ -74,8 +77,6 @@ export default function App() {
           }
         />
       </Routes>
-
-      <SideCartDrawer />
     </>
   );
 }
