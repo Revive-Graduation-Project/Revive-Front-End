@@ -35,7 +35,7 @@ const RegularFoodCard = ({ meal }) => {
       {/* Favorite Heart */}
       <button
         onClick={() => toggleFavorite(meal)}
-        className={`absolute top-3 right-3 z-20 transition-all duration-300 ${
+        className={`absolute top-3 right-3 z-20 transition-all duration-300 cursor-pointer ${
           isFavorite
             ? "text-red-500 scale-110"
             : "text-gray-400 hover:text-red-500"
@@ -104,12 +104,12 @@ const RegularFoodCard = ({ meal }) => {
           <div className="flex items-baseline justify-center gap-2">
             {hasDiscount && (
               <span className="text-base text-gray-400 line-through">
-                ${price.toFixed(2)}
+                ${price}
               </span>
             )}
 
             <span className={`text-xl sm:text-xl font-extrabold ${priceColor}`}>
-              ${finalPrice.toFixed(2)}
+              ${finalPrice}
             </span>
           </div>
           <button
@@ -121,7 +121,7 @@ const RegularFoodCard = ({ meal }) => {
                 imageUrl,
               })
             }
-            className="w-full  bg-(--color-orange) hover:bg-orange-600 active:bg-orange-700 text-white font-medium py-1 px-1 rounded-2xl transition-colors shadow-sm hover:shadow-md"
+            className="w-full  bg-(--color-orange) hover:bg-orange-600 active:bg-orange-700 text-white font-medium py-1 px-1 rounded-2xl transition-colors shadow-sm hover:shadow-md cursor-pointer"
           >
             Add to cart
           </button>

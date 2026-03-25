@@ -1,7 +1,7 @@
 const PopularMenuCard = ({ name, imageUrl, price }) => {
   // ✅ شيل rating = 5
   return (
-    <div className="shrink-0 w-64 sm:w-80 md:w-96 bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 relative border border-gray-600">
+    <div className="shrink-0 w-64 sm:w-80 md:w-96 bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 relative border border-gray-600 cursor-pointer">
       <div className="flex items-center px-5 py-6 sm:px-6 sm:py-7 gap-4 md:gap-6">
         <div className="flex-1 min-w-0">
           <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1.5 truncate">

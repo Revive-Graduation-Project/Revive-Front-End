@@ -48,7 +48,7 @@ const FAQSection = () => {
     >
       <div className="absolute inset-0 " />
 
-      <div className="container mx-auto px-4 md:px-6 lg:px-8 relative z-10">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 relative z-0">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div className="  rounded-2xl  p-6 md:p-8 lg:p-10 ">
             <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
@@ -75,7 +75,7 @@ const FAQSection = () => {
                 >
                   <button
                     onClick={() => toggleFAQ(index)}
-                    className="w-full text-left flex justify-between items-center"
+                    className="w-full text-left flex justify-between items-center cursor-pointer"
                   >
                     <span
                       className={`font-medium text-lg ${

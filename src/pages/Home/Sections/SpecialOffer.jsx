@@ -2,7 +2,7 @@
 const SpecialOffer = () => {
   return (
     <section className="py-6 md:py-8 lg:py-15 bg-[#84CF29]  relative rounded-2xl ">
-      <div className="container  px-4 md:px-6 lg:px-8 relative z-10">
+      <div className="container  px-4 md:px-6 lg:px-8 relative z-0">
         <div className="max-w-5xl">
           <p className="text-xl md:text-2xl font-semibold text-white mb-3 md:mb-5">
             FOR THE HEALTH OF EMPLOYEES / Companies
@@ -28,7 +28,7 @@ const SpecialOffer = () => {
               font-bold text-lg md:text-xl
               px-10  md:px-14 py-2 md:py-3
               rounded-full shadow-xl hover:shadow-2xl
-              transition-all duration-300 transform hover:-translate-y-1
+              transition-all duration-300 transform hover:-translate-y-1 cursor-pointer
             "
           >
             Order Now
@@ -50,7 +50,7 @@ const SpecialOffer = () => {
           <img
             src="/public/images/bowl.png"
             alt="bowl"
-            className="w-50 h-50 lg:w-full lg:h-full object-contain z-50 "
+            className="w-50 h-50 lg:w-full lg:h-full object-contain z-0 "
           />
         </div>
       </div>

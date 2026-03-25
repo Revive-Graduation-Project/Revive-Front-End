@@ -34,11 +34,11 @@ const Hero = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-              <button className="bg-(--color-orange) text-white px-6 py-3 rounded-full font-medium hover:bg-orange-600 transition">
+              <button className="bg-(--color-orange) text-white px-6 py-3 rounded-full font-medium hover:bg-orange-600 transition cursor-pointer">
                 Order now
               </button>
 
-              <button className="border border-gray-300 px-6 py-3 rounded-full font-medium hover:bg-gray-100 transition">
+              <button className="border border-gray-300 px-6 py-3 rounded-full font-medium hover:bg-gray-100 transition cursor-pointer">
                 Explore More
               </button>
             </div>
@@ -62,7 +62,7 @@ const Hero = () => {
             src="/images/Herodish.png"
             alt="Healthy Food"
             className="
-      rounded-full shadow-lg z-50 relative
+      rounded-full shadow-lg z-0 relative
       w-64 sm:w-72 md:w-70 lg:w-auto
       left-0 lg:left-60
       top-0 lg:top-15
