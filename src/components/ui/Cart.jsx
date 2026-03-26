@@ -8,7 +8,7 @@ function Cart() {
   return (
     <div className="relative">
       <button
-        className="text-2xl text-green-600 hover:text-green-800 cursor-pointer relative"
+        className="flex items-center text-3xl text-(--color-green) transition-colors cursor-pointer relative"
         onClick={openCartDrawer}
         aria-label="Open cart"
       >
