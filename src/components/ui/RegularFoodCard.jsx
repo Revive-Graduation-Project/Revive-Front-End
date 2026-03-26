@@ -25,17 +25,11 @@ const RegularFoodCard = ({ meal }) => {
 
   return (
     <div className="group relative bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 w-full">
-      {" "}
-      {/* Offer Badge */}
-      {hasDiscount && (
-        <div className="absolute top-3 left-3 z-20 bg-(--color-orange) text-white text-xs font-bold px-3 py-1 rounded-br-lg rounded-tl-lg shadow-sm">
-          Offer
-        </div>
-      )}
       {/* Favorite Heart */}
+      <div className="relative pt-10 pb-2 px-6 flex justify-center">
       <button
         onClick={() => toggleFavorite(meal)}
-        className={`absolute top-3 right-3 z-20 transition-all duration-300 cursor-pointer ${
+        className={`absolute top-3 right-3 transition-all duration-300 cursor-pointer ${
           isFavorite
             ? "text-red-500 scale-110"
             : "text-gray-400 hover:text-red-500"
@@ -56,7 +50,6 @@ const RegularFoodCard = ({ meal }) => {
         </svg>
       </button>
       {/* image */}
-      <div className="relative pt-10 pb-2 px-6 flex justify-center">
         <div className="w-15 h-15 sm:w-24 sm:h-24 rounded-full overflow-hidden border-4 border-orange-100 shadow-lg group-hover:scale-105 transition-transform duration-300">
           <img
             src={imageUrl}
