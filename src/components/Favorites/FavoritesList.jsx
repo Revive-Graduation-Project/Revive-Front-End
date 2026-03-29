@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router";
 import { useFavoritesStore } from "../../store";
-import FavoriteItem from "./FavoriteItem";
+import RegularFoodCard from "../UI/RegularFoodCard";
 
 /**
  * FavoritesList Component
@@ -29,7 +29,7 @@ export default function FavoritesList() {
       ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {favorites.map((item) => (
-              <FavoriteItem key={item.id} item={item} />
+              <RegularFoodCard key={item.id} meal={item} />
           ))}
           </div>
       )}

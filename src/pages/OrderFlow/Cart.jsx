@@ -42,24 +42,6 @@ export default function Cart() {
               showItems={false}
             />
           </div>
-          {/* remove when the menu is ready */}
-          {items.length === 0 && (
-            <div className="lg:col-span-3 text-center mt-8">
-              <button
-                onClick={() => addItem(mockMeals[0])}
-                className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition mr-4"
-              >
-                Add Test Item (Dev Only)
-              </button>
-              {/* remove when the menu is ready */}
-              <button
-                onClick={() => toggleFavorite(mockMeals[0])}
-                className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition"
-              >
-                Add Test Favorite (Dev Only)
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </div>
