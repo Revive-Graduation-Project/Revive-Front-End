@@ -2,10 +2,18 @@
  * Mock Restaurants, Meals & Ingredients
  */
 
+import {
+  chickenColdCut,
+  greenSalad,
+  beefSteak,
+  salmon,
+  mixProtein,
+} from "./meal-images";
+
 export const mockRestaurants = [
   {
     id: 1,
-    name: "Healthy Bites",
+    name: "Revive Kitchen",
     location: "Downtown",
     rating: 4.8,
   },
@@ -42,30 +50,50 @@ export const mockIngredients = [
 export const mockMeals = [
   {
     id: 1,
-    name: "Chicken Protein Bowl",
-    description: "Grilled chicken with brown rice and veggies",
-    price: 15.99,
-    restaurantId: 1,
-    imageUrl: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
-    calories: 450,
-    protein: 45,
+    name: "Beef Protein Bowl",
+    description: "Grilled beef with brown rice, veggies & special sauce",
+    price: 199,
+    discountPercent: 30,
+    category: "Beef",
+    mainCategory: "Dinner",
+    imageUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd",
+    calories: 250,
+    protein: 25,
     carbs: 35,
-    fat: 12,
-    ingredients: [1, 2], // referencing ingredient IDs
+    fat: 18,
+    sugar: 10,
     isAvailable: true,
   },
   {
     id: 2,
-    name: "Salmon Quinoa Salad",
-    description: "Fresh salmon served over quinoa and avocado",
-    price: 18.5,
-    restaurantId: 2,
-    imageUrl: "https://images.unsplash.com/photo-1467003909585-2f8a7270028d",
+    name: "Grilled Chicken Protein",
+    description: "Grilled chicken, brown rice, fresh veggies & yogurt sauce",
+    price: 200,
+    discountPercent: 30,
+    category: "Chicken",
+    mainCategory: "Dinner",
+    imageUrl: "https://images.unsplash.com/photo-1603133872878-684f208fb84b",
+    calories: 380,
+    protein: 42,
+    carbs: 30,
+    fat: 22,
+    sugar: 8,
+    isAvailable: true,
+  },
+  {
+    id: 3,
+    name: "Salmon Quinoa Delight",
+    description: "Fresh salmon fillet, quinoa, avocado & mixed greens",
+    price: 199,
+    discountPercent: 0,
+    category: "Seafood",
+    mainCategory: "Dinner",
+    imageUrl: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2",
     calories: 520,
     protein: 38,
     carbs: 40,
     fat: 22,
-    ingredients: [4, 5, 3],
+    sugar: 12,
     isAvailable: true,
   },
 ];
@@ -425,3 +453,5 @@ export const customizeData = [
     ],
   },
 ];
+
+export const categories = ["All", "Chicken", "Beef", "Seafood", "mix Protein"];
