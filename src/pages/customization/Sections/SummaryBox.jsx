@@ -1,6 +1,21 @@
 import { useCustomizeStore } from "../../../store/useCustomizeStore";
-import { motion } from "framer-motion";
+import { useOrderStore } from "../../../store";
 import { ShoppingCart, Flame, Beef, Wheat, Droplet } from "lucide-react";
+
+const NutritionItem = ({ icon: Icon, label, value, unit }) => (
+  <div className="flex items-center gap-2">
+    <div className="p-1.5 bg-orange-50 rounded-lg">
+      <Icon size={14} className="text-orange-400" />
+    </div>
+    <div>
+      <p className="text-xs text-gray-400">{label}</p>
+      <p className="text-sm font-semibold">
+        {value}
+        <span className="text-xs font-normal text-gray-400 ml-0.5">{unit}</span>
+      </p>
+    </div>
+  </div>
+);
 
 const SummaryBox = () => {
   const {
@@ -10,7 +25,11 @@ const SummaryBox = () => {
     getTotalPrice,
     getNutrition,
     isValidSelection,
+    comment,
+    resetCustomize,
   } = useCustomizeStore();
+
+  const { openCartDrawer, addItem } = useOrderStore();
 
   if (!selectedMeal) return null;
 
@@ -18,32 +37,59 @@ const SummaryBox = () => {
   const nutrition = getNutrition();
   const isValid = isValidSelection();
 
-  return (
-    <div className="bg-white rounded-3xl shadow-xl p-8 sticky  w-full max-h-[90vh] overflow-y-auto border border-gray-100">
-      {/* Header */}
-      <h3 className="text-2xl font-semibold mb-2">Your Meal Summary</h3>
+  const handleAddToCart = () => {
+    if (!isValid || !selectedBase) return;
 
-      {/* Meal + Base */}
-      <div className="mb-2 space-y-2">
-        <p className="text-gray-700">
-          <span className="font-medium">Meal:</span> {selectedMeal.name}
-        </p>
-      </div>
+    const ingredientIds = Object.values(selectedSections)
+      .flat()
+      .map((item) => item.id);
+
+    const cartItem = {
+      id: `${selectedMeal.id}-${selectedBase.id}-${Date.now()}`,
+      name: `${selectedMeal.name} (${selectedBase.name})`,
+      price: totalPrice,
+      image: selectedMeal.image,
+      mealId: selectedMeal.id,
+      baseId: selectedBase.id,
+      ingredientIds,
+      comment,
+    };
+
+    addItem(cartItem, 1);
+    openCartDrawer();
+    resetCustomize();
+  };
+
+  return (
+    <div className="bg-white rounded-3xl shadow-xl p-6 sticky top-6 w-full max-h-[90vh] overflow-y-auto border border-gray-100">
+      <h3 className="text-xl font-semibold mb-1">Your Meal Summary</h3>
+      <p className="text-sm text-gray-400 mb-4">{selectedMeal.name}</p>
+
+      {/* Selected Base */}
+      {selectedBase && (
+        <div className="mb-3 px-3 py-2 bg-gray-50 rounded-xl text-sm">
+          <span className="text-gray-400">Base: </span>
+          <span className="font-medium">{selectedBase.name}</span>
+          <span className="text-orange-500 ml-1">
+            +{selectedBase.basePrice} EGP
+          </span>
+        </div>
+      )}
 
       {/* Selected Items */}
-      <div className="space-y-4 mb-2">
+      <div className="space-y-3 mb-4">
         {Object.entries(selectedSections).map(
           ([sectionType, items]) =>
             items.length > 0 && (
               <div key={sectionType}>
-                <p className="text-sm font-semibold capitalize mb-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">
                   {sectionType}
                 </p>
-                <ul className="text-sm text-gray-500 space-y-1">
+                <ul className="text-sm text-gray-600 space-y-1">
                   {items.map((item) => (
                     <li key={item.id} className="flex justify-between">
                       <span>{item.name}</span>
-                      <span>+{item.price} EGP</span>
+                      <span className="text-orange-500">+{item.price} EGP</span>
                     </li>
                   ))}
                 </ul>
@@ -52,63 +98,69 @@ const SummaryBox = () => {
         )}
       </div>
 
-      {/* Nutrition */}
-      <div className="border-t pt-4 mb-6">
-        <h4 className="text-sm font-semibold mb-3">Nutrition Facts</h4>
-
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <Flame size={16} className="text-orange-500" />
-            <span>{nutrition.calories} kcal</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Beef size={16} className="text-red-500" />
-            <span>{nutrition.protein} g protein</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Wheat size={16} className="text-yellow-500" />
-            <span>{nutrition.carbs} g carbs</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Droplet size={16} className="text-blue-500" />
-            <span>{nutrition.fat} g fat</span>
-          </div>
+      <div className="border-t pt-4 mb-4">
+        <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">
+          Nutrition Facts
+        </h4>
+        <div className="grid grid-cols-2 gap-3">
+          <NutritionItem
+            icon={Flame}
+            label="Calories"
+            value={nutrition.calories}
+            unit="kcal"
+          />
+          <NutritionItem
+            icon={Beef}
+            label="Protein"
+            value={nutrition.protein}
+            unit="g"
+          />
+          <NutritionItem
+            icon={Wheat}
+            label="Carbs"
+            value={nutrition.carbs}
+            unit="g"
+          />
+          <NutritionItem
+            icon={Droplet}
+            label="Fat"
+            value={nutrition.fat}
+            unit="g"
+          />
         </div>
       </div>
 
-      {/* Total with Animation */}
-      <div className="border-t pt-4 mb-6 flex justify-between items-center">
-        <span className="text-lg font-semibold">Total</span>
-
-        <motion.span
-          key={totalPrice}
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.2 }}
-          className="text-xl font-bold text-orange-500"
-        >
+      {/* Total */}
+      <div className="border-t pt-4 mb-4 flex justify-between items-center">
+        <span className="text-base font-semibold">Total</span>
+        <span className="text-xl font-bold text-orange-500">
           {totalPrice} EGP
-        </motion.span>
+        </span>
       </div>
 
-      {/* Add To Cart */}
+      {/* Add To Cart Button */}
       <button
+        onClick={handleAddToCart}
         disabled={!isValid}
-        className="w-full py-3 rounded-2xl font-medium flex items-center justify-center gap-2 transition
-          bg-orange-500 hover:bg-orange-600 text-white shadow-md"
+        className={`w-full py-3 rounded-2xl font-medium flex items-center justify-center gap-2 transition cursor-pointer
+          ${
+            !isValid
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+              : "bg-orange-500 hover:bg-orange-600 text-white"
+          }`}
       >
         <ShoppingCart size={18} />
         Add To Cart
       </button>
 
-      {/* {!isValid && (
-        <p className="text-xs text-red-500 mt-2 text-center">
-          Please complete required selections
+      {/* Validation Message */}
+      {!isValid && (
+        <p className="text-xs text-red-400 mt-2 text-center">
+          {!selectedBase
+            ? "Please choose a base first"
+            : "Please complete all required selections"}
         </p>
-      )} */}
+      )}
     </div>
   );
 };

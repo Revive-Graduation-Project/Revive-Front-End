@@ -9,7 +9,7 @@ import SummaryBox from "./Sections/SummaryBox";
 
 const Customize = () => {
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white min-h-screen px-20">
       {/* HERO */}
       <div className="container mx-auto  pt-32">
         <CustomizeHero />

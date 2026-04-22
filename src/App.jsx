@@ -47,6 +47,7 @@ export default function App() {
           {/* Public routes */}
           <Route index element={<Home />} />
           <Route path="menu" element={<Menu />} />
+          <Route path="customize" element={<Customization />} />
 
           {/* Protected routes — ProtectedRoute shows a message + redirects to login if not authenticated */}
           <Route

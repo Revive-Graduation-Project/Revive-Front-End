@@ -1,12 +1,9 @@
-// src/store/useCustomizeStore.js
 import { create } from "zustand";
 
 export const useCustomizeStore = create((set, get) => ({
   selectedMeal: null,
   selectedBase: null,
-
   selectedSections: {},
-
   comment: "",
 
   // =========================
@@ -29,7 +26,7 @@ export const useCustomizeStore = create((set, get) => ({
     }),
 
   // =========================
-  // TOGGLE ITEM (ANY SECTION)
+  // TOGGLE ITEM
   // =========================
   toggleItem: (section, item) =>
     set((state) => {
@@ -41,11 +38,14 @@ export const useCustomizeStore = create((set, get) => ({
       if (exists) {
         updated = current.filter((i) => i.id !== item.id);
       } else {
-        // Respect maxSelect
-        if (section.maxSelect && current.length >= section.maxSelect) {
-          return state;
+        if (section.maxSelect === 1) {
+          updated = [item];
+        } else {
+          if (section.maxSelect && current.length >= section.maxSelect) {
+            return state;
+          }
+          updated = [...current, item];
         }
-        updated = [...current, item];
       }
 
       return {
@@ -62,30 +62,33 @@ export const useCustomizeStore = create((set, get) => ({
   setComment: (text) => set({ comment: text }),
 
   // =========================
-  // TOTAL PRICE
+  // TOTAL PRICE — BUG FIX ✅
+  // لو مفيش selectedBase نرجع 0 بدل ما نعمل fallback
   // =========================
   getTotalPrice: () => {
     const { selectedBase, selectedSections } = get();
 
-    const basePrice = selectedBase?.basePrice || 0;
+    if (!selectedBase) return 0;
 
-    const allItems = Object.values(selectedSections).flat();
+    const allItems = [selectedBase, ...Object.values(selectedSections).flat()];
 
-    const itemsPrice = allItems.reduce(
-      (total, item) => total + (item.price || 0),
+    return allItems.reduce(
+      (total, item) => total + (item.price || item.basePrice || 0),
       0,
     );
-
-    return basePrice + itemsPrice;
   },
 
   // =========================
-  // TOTAL NUTRITION
+  // TOTAL NUTRITION — BUG FIX ✅
+  // نفس المنطق، بدون fallback على bases[0]
   // =========================
   getNutrition: () => {
-    const { selectedSections } = get();
+    const { selectedBase, selectedSections } = get();
 
-    const allItems = Object.values(selectedSections).flat();
+    const allItems = [
+      ...(selectedBase ? [selectedBase] : []),
+      ...Object.values(selectedSections).flat(),
+    ];
 
     return allItems.reduce(
       (totals, item) => {
@@ -96,31 +99,22 @@ export const useCustomizeStore = create((set, get) => ({
         totals.sugar += item.sugar || 0;
         return totals;
       },
-      {
-        calories: 0,
-        protein: 0,
-        carbs: 0,
-        fat: 0,
-        sugar: 0,
-      },
+      { calories: 0, protein: 0, carbs: 0, fat: 0, sugar: 0 },
     );
   },
 
   // =========================
-  // VALIDATION (IMPORTANT)
+  // VALIDATION
   // =========================
   isValidSelection: () => {
     const { selectedMeal, selectedBase, selectedSections } = get();
 
     if (!selectedMeal || !selectedBase) return false;
 
-    // check required sections
     for (const section of selectedMeal.sections) {
       if (section.required) {
         const selected = selectedSections[section.type] || [];
-        if (selected.length === 0) {
-          return false;
-        }
+        if (selected.length === 0) return false;
       }
     }
 
