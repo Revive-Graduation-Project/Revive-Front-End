@@ -1,4 +1,7 @@
 import { FiStar } from "react-icons/fi";
+import { BiSpreadsheet } from "react-icons/bi";
+import { MdAttachMoney } from "react-icons/md";
+import TimeFilter from "./shared/TimeFilter";
 
 function StarRating({ rating }) {
   return (
@@ -6,9 +9,9 @@ function StarRating({ rating }) {
       {[1, 2, 3, 4, 5].map((i) => (
         <FiStar
           key={i}
-          size={11}
-          fill={i <= Math.round(rating) ? "#F97316" : "none"}
-          stroke={i <= Math.round(rating) ? "#F97316" : "#D1D5DB"}
+          size={10}
+          fill={i <= Math.round(rating) ? "#EAB308" : "none"}
+          stroke={i <= Math.round(rating) ? "#EAB308" : "#D1D5DB"}
         />
       ))}
     </div>
@@ -17,22 +20,29 @@ function StarRating({ rating }) {
 
 function TrendingMenus({ data }) {
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-[0_1px_8px_rgba(0,0,0,0.05)] h-full">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-[15px] font-bold text-[#1a1a1a] m-0">Trending Menus</h3>
-        <span className="text-[11px] text-gray-400">This Month ▾</span>
+    <div className="flex flex-col gap-5 h-full">
+      <div className="flex justify-between items-start px-1">
+        <h3 className="text-[14px] font-bold text-[#1a1a1a] m-0">Trending Menus</h3>
+        <TimeFilter defaultValue="This Month" />
       </div>
 
-      <div className="flex flex-col gap-3.5">
-        {data.map((item, index) => (
+      <div className="flex flex-col gap-5">
+        {data.map((item) => (
           <div
             key={item.id}
-            className={`flex items-center gap-3 p-2.5 rounded-xl transition-colors duration-200 hover:bg-[#FFF8F0] ${
-              index === 0 ? "bg-[#FFF8F0]" : "bg-transparent"
-            }`}
+            className="bg-white rounded-3xl p-3.5 shadow-sm flex flex-col gap-3 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
           >
+            {/* Header: Title and Rating */}
+            <div className="flex justify-between items-center px-1.5">
+              <p className="text-[13px] font-bold text-[#1a1a1a] truncate m-0">{item.name}</p>
+              <div className="flex items-center gap-1.5">
+                <StarRating rating={item.rating} />
+                <span className="text-[10px] font-bold text-[#1a1a1a]">{item.rating}</span>
+              </div>
+            </div>
+
             {/* Image */}
-            <div className="w-14 h-14 rounded-[10px] overflow-hidden shrink-0 bg-orange-200">
+            <div className="w-full h-[120px] rounded-[20px] overflow-hidden bg-orange-50 relative">
               <img
                 src={item.image}
                 alt={item.name}
@@ -41,21 +51,18 @@ function TrendingMenus({ data }) {
               />
             </div>
 
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold text-[#1a1a1a] mb-0.5 truncate">{item.name}</p>
-              <div className="flex items-center gap-1.5">
-                <StarRating rating={item.rating} />
-                <span className="text-[11px] text-gray-400">{item.rating}</span>
+            {/* Footer: Orders and Revenue */}
+            <div className="flex justify-between items-center px-1.5 pb-1">
+              <div className="flex items-center gap-1">
+                <BiSpreadsheet size={14} className="text-[#F97316]" />
+                <span className="text-[10px] text-[#1a1a1a] font-medium ml-1">orders:</span>
+                <span className="text-[11px] font-bold text-[#F97316] ml-1">{item.orders}</span>
               </div>
-              <p className="text-[11px] text-gray-400 mt-0.5">{item.orders} orders</p>
-            </div>
-
-            {/* Revenue */}
-            <div className="text-right shrink-0">
-              <p className="text-[13px] font-bold text-orange-500 m-0">
-                ${(item.revenue / 1000).toFixed(1)}k
-              </p>
+              <div className="flex items-center gap-1">
+                <MdAttachMoney size={15} className="text-[#F97316]" />
+                <span className="text-[10px] text-[#1a1a1a] font-medium">Revenue</span>
+                <span className="text-[11px] font-bold text-[#F97316] ml-1">${(item.revenue / 1000).toFixed(3)}</span>
+              </div>
             </div>
           </div>
         ))}

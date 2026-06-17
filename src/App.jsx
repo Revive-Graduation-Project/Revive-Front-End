@@ -17,6 +17,8 @@ import {
   RecipeBuilder,
   ChefMenu,
   LiveKitchen,
+  MenuManagement,
+  Ingredients,
 } from "./pages";
 import { useAuthInit } from "./hooks/useAuthInit";
 import Menu from "./pages/Menu/Menu";
@@ -91,9 +93,10 @@ export default function App() {
           <Route path="recipe-builder" element={<RecipeBuilder />} />
           <Route path="chef-menu" element={<ChefMenu />} />
           <Route path="live-kitchen" element={<LiveKitchen />} />
+          <Route path="menu-management" element={<MenuManagement />} />
+          <Route path="ingredients" element={<Ingredients />} />
         </Route>
       </Routes>
     </>
   );
 }
-

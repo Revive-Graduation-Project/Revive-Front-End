@@ -1,117 +1,67 @@
 /**
  * Dashboard Service Layer
- * --------------------------------------------------
- * Currently returns mock data. To connect to a real API:
- *   1. Import axios (already in project)
- *   2. Replace each function body with an axios call
- *   3. Keep the same return shape so components don't need changes
+ * ─────────────────────────────────────────────────────────────────
+ * All calls go through the shared `api` axios instance which:
+ *   - Attaches the Bearer token automatically
+ *   - Handles token refresh on 401
+ *   - Routes through mock adapter when VITE_USE_MOCK=true
  *
- * Example swap:
- *   // Mock:    return mockMetrics;
- *   // Real:    const { data } = await api.get('/dashboard/metrics');
- *               return data;
+ * To switch from mock → real backend:
+ *   Set VITE_USE_MOCK=false in .env — nothing else changes.
  */
 
-import * as mock from "../mocks/dashboardMock";
+import { api } from "./api";
+import * as Mappers from "./mappers/dashboardMappers";
 
-// Simulated network delay (remove when using real API)
-const delay = (ms = 300) => new Promise((res) => setTimeout(res, ms));
+// ── Dashboard Overview ────────────────────────────────────────────
+export const getDashboardMetrics   = () => api.get("/dashboard/metrics").then(r => Mappers.mapDashboardMetrics(r.data));
+export const getRevenueData        = (period = "6m") => api.get(`/dashboard/revenue?period=${period}`).then(r => Mappers.mapRevenueData(r.data));
+export const getTopCategories      = () => api.get("/dashboard/categories").then(r => Mappers.mapTopCategories(r.data));
+export const getOrdersOverview     = () => api.get("/dashboard/orders-overview").then(r => Mappers.mapOrdersOverview(r.data));
+export const getOrderTypes         = () => api.get("/dashboard/order-types").then(r => Mappers.mapOrderTypes(r.data));
+export const getTrendingMenus      = () => api.get("/dashboard/trending-menus").then(r => Mappers.mapTrendingMenus(r.data));
+export const getInventoryAlerts    = () => api.get("/dashboard/inventory-alerts").then(r => r.data); // Untouched/Custom
+export const getRecentActivity     = () => api.get("/dashboard/activity").then(r => Mappers.mapRecentActivity(r.data));
+export const getCustomerReviews    = () => api.get("/dashboard/reviews").then(r => r.data);
 
-// ── Dashboard ─────────────────────────────────────
+// ── Orders ────────────────────────────────────────────────────────
+export const getOrdersMetrics      = () => api.get("/dashboard/orders/metrics").then(r => Mappers.mapOrdersMetrics(r.data));
+export const getOrders             = (params = {}) => api.get("/dashboard/orders", { params }).then(r => Mappers.mapOrders(r.data));
+export const updateOrderStatus     = (orderId, status) => api.patch(`/dashboard/orders/${encodeURIComponent(orderId)}/status`, { status }).then(r => r.data);
 
-export async function getDashboardMetrics() {
-  await delay();
-  return mock.mockMetrics;
-}
+// ── Kitchen ───────────────────────────────────────────────────────
+export const getKitchenOrders = () =>
+  api.get("/kitchen/orders").then(r => {
+    console.log('[SVC] GET /kitchen/orders raw:', r.data);
+    const mapped = Mappers.mapKitchenOrders(r.data);
+    console.log('[SVC] kitchen mapped queue length:', mapped.queue?.length);
+    return mapped;
+  });
+export const updateKitchenStatus   = (orderId, status) => api.patch(`/kitchen/orders/${encodeURIComponent(orderId)}/status`, { status }).then(r => r.data);
 
-export async function getRevenueData() {
-  await delay();
-  return mock.mockRevenueData;
-}
+// ── Menu (Chef Menu page) ─────────────────────────────────────────
+export const getMenuCategories     = () => api.get("/menu/categories").then(r => Mappers.mapMenuCategories(r.data));
+export const getMenuItems          = (params = {}) => api.get("/menu/items", { params }).then(r => Mappers.mapMenuItems(r.data));
+export const deleteMenuItem        = (id) => api.delete(`/menu/items/${id}`).then(r => r.data);
+export const updateMenuItem        = (id, data) => api.patch(`/menu/items/${id}`, data).then(r => r.data);
+export const createMenuItem        = (data) => api.post("/menu/items", data).then(r => r.data);
 
-export async function getTopCategories() {
-  await delay();
-  return mock.mockTopCategories;
-}
+// ── Recipe Builder ────────────────────────────────────────────────
+export const getRecipeIngredients  = () => api.get("/recipes/ingredients").then(r => r.data);
+export const saveRecipe            = (data) => api.post("/recipes", data).then(r => r.data);
 
-export async function getOrdersOverview() {
-  await delay();
-  return mock.mockOrdersOverview;
-}
+// ── Menu Management ───────────────────────────────────────────────
+export const getMenuUploads        = () => api.get("/menu/uploads").then(r => Mappers.mapMenuUploads(r.data));
+export const uploadMenuFile        = (file) =>
+  api.post("/menu/upload", (() => { const f = new FormData(); f.append("file", file); return f; })(), {
+    headers: { "Content-Type": "multipart/form-data", "X-File-Name": file.name }
+  }).then(r => r.data);
 
-export async function getOrderTypes() {
-  await delay();
-  return mock.mockOrderTypes;
-}
-
-export async function getTrendingMenus() {
-  await delay();
-  return mock.mockTrendingMenus;
-}
-
-export async function getInventoryAlerts() {
-  await delay();
-  return mock.mockInventoryAlerts;
-}
-
-export async function getRecentActivity() {
-  await delay();
-  return mock.mockRecentActivity;
-}
-
-export async function getCustomerReviews() {
-  await delay();
-  return mock.mockCustomerReviews;
-}
-
-// ── Orders ────────────────────────────────────────
-
-export async function getOrdersMetrics() {
-  await delay();
-  return mock.mockOrdersMetrics;
-}
-
-export async function getOrders() {
-  await delay();
-  return mock.mockOrders;
-}
-
-// ── Recipe Builder ────────────────────────────────
-
-export async function getRecipeIngredients() {
-  await delay();
-  return mock.mockRecipeIngredients;
-}
-
-export async function saveRecipe(recipeData) {
-  await delay(500);
-  // TODO: POST /recipes with recipeData
-  console.log("[dashboardService] saveRecipe →", recipeData);
-  return { success: true, id: Date.now() };
-}
-
-// ── Chef Menu ─────────────────────────────────────
-
-export async function getMenuCategories() {
-  await delay();
-  return mock.mockMenuCategories;
-}
-
-export async function getMenuItems() {
-  await delay();
-  return mock.mockMenuItems;
-}
-
-// ── Live Kitchen ──────────────────────────────────
-
-export async function getKitchenOrders() {
-  await delay();
-  return mock.mockKitchenOrders;
-}
-
-export async function updateOrderStatus(orderId, newStatus) {
-  await delay(400);
-  // TODO: PATCH /kitchen/orders/:orderId { status: newStatus }
-  console.log("[dashboardService] updateOrderStatus →", orderId, newStatus);
-  return { success: true };
-}
+// ── Ingredients ───────────────────────────────────────────────────
+export const getIngredientsMetrics = () => api.get("/ingredients/metrics").then(r => Mappers.mapIngredientsMetrics(r.data));
+export const getIngredients        = (params = {}) => api.get("/ingredients", { params }).then(r => Mappers.mapIngredients(r.data));
+export const createIngredient      = (data) => api.post("/ingredients", data).then(r => r.data);
+export const updateIngredient      = (id, data) => api.patch(`/ingredients/${id}`, data).then(r => r.data);
+export const deleteIngredient      = (id) => api.delete(`/ingredients/${id}`).then(r => r.data);
+export const uploadIngredientsFile = (formData) =>
+  api.post("/ingredients/upload", formData, { headers: { "Content-Type": "multipart/form-data" } }).then(r => r.data);

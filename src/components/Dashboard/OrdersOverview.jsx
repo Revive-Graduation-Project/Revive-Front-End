@@ -1,10 +1,13 @@
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from "recharts";
+import { FiArrowUpRight, FiMoreHorizontal } from "react-icons/fi";
+import TimeFilter from "./shared/TimeFilter";
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-[#1a1a1a] rounded-xl px-3 py-2 text-xs text-white">
-        <p className="m-0">{label}: <strong>{payload[0].value} orders</strong></p>
+      <div className="bg-[#1a1a1a] rounded-xl px-3 py-2 text-[11px] text-white shadow-lg flex flex-col items-center">
+        <span className="font-semibold">{label}</span>
+        <span className="font-bold">{payload[0].value} Orders</span>
       </div>
     );
   }
@@ -12,34 +15,41 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 function OrdersOverview({ data }) {
+  const maxValue = Math.max(...data.map(d => d.value));
+
   return (
-    <div className="bg-white rounded-2xl px-5 py-5 shadow-[0_1px_8px_rgba(0,0,0,0.05)]">
-      <div className="flex justify-between items-center mb-4">
+    <div className="bg-white rounded-3xl px-6 py-6 shadow-sm flex flex-col h-full border border-gray-50">
+      <div className="flex justify-between items-start mb-2">
         <div>
-          <h3 className="text-[15px] font-bold text-[#1a1a1a] m-0">Orders Overview</h3>
-          <p className="text-xs text-gray-400 mt-0.5">This Week</p>
+          <h3 className="text-[14px] font-bold text-[#1a1a1a] m-0">Orders overview</h3>
+          <p className="text-[11px] text-gray-400 mt-0.5">
+            <FiArrowUpRight className="text-orange-500 inline mr-1" />
+            <span className="font-semibold text-[#1a1a1a]">{data.reduce((acc, d) => acc + d.value, 0)}</span> in this period
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <TimeFilter defaultValue="This Week" />
+          <button className="text-gray-400 hover:text-gray-600 bg-transparent border-none cursor-pointer p-0">
+            <FiMoreHorizontal size={16} />
+          </button>
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={180}>
-        <BarChart data={data} margin={{ top: 0, right: 0, left: -25, bottom: 0 }} barSize={28}>
-          <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#9CA3AF" }} />
-          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#9CA3AF" }} />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(249,115,22,0.05)" }} />
-          <Bar dataKey="orders" radius={[6, 6, 0, 0]}>
-            {data.map((entry, index) => (
-              <Cell key={index} fill={entry.highlight ? "#F97316" : "#FED7AA"} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-
-      {/* Highlight label */}
-      {data.find((d) => d.highlight) && (
-        <div className="inline-flex items-center gap-1.5 bg-orange-50 border border-orange-200 rounded-lg px-2.5 py-1 text-[11px] text-orange-500 font-semibold mt-2">
-          📈 Peak: {data.find((d) => d.highlight)?.day} — {data.find((d) => d.highlight)?.orders} orders
-        </div>
-      )}
+      <div className="flex-1 min-h-[180px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 0, right: 0, left: -25, bottom: 0 }} barSize={32}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+            <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#9CA3AF" }} dy={10} />
+            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#9CA3AF" }} />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: "transparent" }} />
+            <Bar dataKey="orders" radius={[8, 8, 8, 8]}>
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.highlight ? "#F97316" : "#FDE68A"} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }

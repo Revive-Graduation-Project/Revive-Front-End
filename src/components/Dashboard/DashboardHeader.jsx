@@ -1,57 +1,78 @@
 import { FiSearch, FiBell } from "react-icons/fi";
-import chefLogo from "../../../public/images/chef-avatar.png";
+import useAuthStore from "../../store/authStore";
 
-function DashboardHeader({ title = "Dashboard", subtitle = "Hello Basmala, Welcome back" }) {
+function DashboardHeader({ title = "Dashboard", subtitle }) {
+  const { user } = useAuthStore();
+
+  const firstName = user?.name ? user.name.split(" ")[0] : "";
+  const fullName  = user?.name || "Loading...";
+  const roleName  = user?.role || "Staff";
+  
+  const initials = user?.name
+    ? user.name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()
+    : "U";
+
+  const displaySubtitle = subtitle || (firstName ? `Hello ${firstName}, Welcome back` : "Welcome back");
+
   return (
-    <header className="flex items-center justify-between px-8 py-5 bg-[#FFF8F0] border-b border-[#FFE8CC] sticky top-0 z-10">
+    <header className="flex flex-col md:flex-row items-start md:items-center justify-between px-6 md:px-8 py-6 bg-transparent sticky top-0 z-10 gap-4 md:gap-0">
       {/* Title + greeting */}
       <div>
-        <h1 className="text-[22px] font-bold text-[#1a1a1a] m-0">{title}</h1>
-        <p className="text-[13px] text-gray-400 mt-0.5 font-normal">{subtitle}</p>
+        <h1 className="text-[28px] font-bold text-[#1a1a1a] m-0 tracking-tight">{title}</h1>
+        <p className="text-[13px] text-gray-500 mt-1 font-medium">{displaySubtitle}</p>
       </div>
 
       {/* Right: search + bell + profile */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
         {/* Search */}
-        <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3.5 py-2.5">
-          <FiSearch size={15} className="text-gray-400" />
+        <div className="hidden sm:flex items-center gap-3 bg-white rounded-full px-5 py-3 shadow-sm min-w-[200px] md:min-w-[320px]">
+          <FiSearch size={18} className="text-gray-400" />
           <input
             type="text"
-            placeholder="Search..."
-            className="border-none outline-none text-[13px] text-gray-700 bg-transparent w-40"
+            placeholder="Search"
+            className="border-none outline-none text-[13px] text-gray-700 bg-transparent w-full font-medium"
           />
         </div>
 
-        {/* Bell */}
-        <button
-          type="button"
-          onClick={() => alert("Notifications coming soon!")}
-          className="w-[38px] h-[38px] rounded-xl bg-white border border-gray-200 flex items-center justify-center cursor-pointer relative hover:border-orange-300 transition-colors"
-        >
-          <FiBell size={16} className="text-gray-500" />
-          <span className="absolute top-[7px] right-[7px] w-[7px] h-[7px] bg-orange-500 rounded-full border-[1.5px] border-[#FFF8F0]" />
-        </button>
+        <div className="flex items-center gap-5">
+          {/* Bell */}
+          <button
+            type="button"
+            className="w-[46px] h-[46px] rounded-2xl bg-white flex items-center justify-center cursor-pointer relative hover:shadow-md transition-shadow shadow-sm border-none"
+          >
+            <FiBell size={20} className="text-[#1a1a1a]" />
+            <span className="absolute top-[12px] right-[12px] w-2 h-2 bg-orange-500 rounded-full border-[1.5px] border-white" />
+          </button>
 
-        {/* Profile */}
-        <div className="flex items-center gap-2.5">
-          <div className="text-right">
-            <p className="text-[13px] font-semibold text-[#1a1a1a] m-0">Chef Marc</p>
-            <p className="text-[11px] text-gray-400 m-0">Head Curator</p>
+          {/* Profile */}
+          <div className="flex items-center gap-3">
+            <div className="text-right hidden sm:block">
+              <p className="text-[10px] text-gray-400 m-0 font-medium capitalize">{roleName.toLowerCase()}</p>
+              <p className="text-[13px] font-bold text-[#1a1a1a] m-0">{fullName}</p>
+            </div>
+            
+            {user?.avatar ? (
+              <img
+                src={user.avatar}
+                alt="Profile"
+                className="w-[42px] h-[42px] rounded-xl object-cover bg-white shadow-sm"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                  e.currentTarget.nextSibling.style.display = "flex";
+                }}
+              />
+            ) : null}
+            
+            {/* Fallback avatar */}
+            <div 
+              className={`${user?.avatar ? "hidden" : "flex"} w-[42px] h-[42px] rounded-xl bg-gray-800 items-center justify-center text-white font-bold text-[14px] shadow-sm tracking-widest`}
+            >
+              {user?.name ? initials : (
+                <div className="w-full h-full rounded-xl bg-gray-200 animate-pulse" />
+              )}
+            </div>
           </div>
-          <img
-            src={chefLogo}
-            alt="Chef Profile"
-            className="w-[38px] h-[38px] rounded-full object-cover border-2 border-orange-500 bg-white"
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-              e.currentTarget.nextSibling.style.display = "flex";
-            }}
-          />
-          {/* Fallback avatar */}
-          <div className="hidden w-[38px] h-[38px] rounded-full bg-linear-to-br from-orange-500 to-orange-400 items-center justify-center text-white font-bold text-sm">
-            CM
-          </div>
-          </div>
+        </div>
       </div>
     </header>
   );

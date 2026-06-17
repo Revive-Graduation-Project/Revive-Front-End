@@ -14,3 +14,5 @@ export { default as Orders } from "./Dashboard/Orders";
 export { default as RecipeBuilder } from "./Dashboard/RecipeBuilder";
 export { default as ChefMenu } from "./Dashboard/ChefMenu";
 export { default as LiveKitchen } from "./Dashboard/LiveKitchen";
+export { default as MenuManagement } from "./Dashboard/MenuManagement";
+export { default as Ingredients } from "./Dashboard/Ingredients";

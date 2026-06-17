@@ -2,6 +2,8 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import usePaymentStore from "./paymentStore";
 import { MAX_QUANTITY, DELIVERY_FEE, SUBMIT_DELAY } from "../constants";
+import { placeOrder } from "../services/order.service";
+import queryClient from "../lib/queryClient";
 
 /**
  * ============================================================================
@@ -107,6 +109,7 @@ const useOrderStore = create(
         set({ error: null }); // Clear error on action start
         
         if (!isValidItem(item)) {
+          console.error("OrderStore: Invalid item data", item);
           set({ error: "Invalid item data" });
           return;
         }
@@ -319,9 +322,11 @@ const useOrderStore = create(
        */
       submitOrder: async () => {
         set({ loading: true, error: null });
+        console.log('[ORDER] submitOrder started');
 
         try {
           const state = get();
+          console.log('[ORDER] cart items:', state.items);
           
           if (state.items.length === 0) {
              throw new Error("Cart is empty");
@@ -334,7 +339,6 @@ const useOrderStore = create(
           }
 
           // Validation: Duplicate Order Prevention
-          // Generate a simple hash (stringified ID-Qty pairs)
           const currentHash = JSON.stringify(state.items.map(i => `${i.id}-${i.quantity}`));
           const lastHash = state.lastOrder ? JSON.stringify(state.lastOrder.items.map(i => `${i.id}-${i.quantity}`)) : null;
           
@@ -342,27 +346,35 @@ const useOrderStore = create(
             throw new Error("Wait! You just placed this exact order.");
           }
 
-          // Artificial delay to simulate network request
-          await new Promise((resolve) => setTimeout(resolve, SUBMIT_DELAY));
-
-          // Generate simulated Order ID (5 alphanumeric digits)
-          const orderId = Math.floor(10000 + Math.random() * 90000).toString();
-          
-          const newOrder = {
-             id: orderId,
-             date: new Date().toISOString(),
+          // Make real API request to place the order
+          console.log('[ORDER] calling placeOrder API...');
+          const response = await placeOrder({
              items: [...state.items],
              totalAmount: state.totalAmount,
              deliveryFee: state.getDeliveryFee(),
              finalTotal: totalWithDelivery,
              customerDetails: state.customerDetails,
              paymentMethod: state.paymentMethod,
-             cardDetails: state.savedCard
+             note: state.note
+          });
+          console.log('[ORDER] placeOrder response:', response.data);
+
+          const newOrder = {
+             id: response.data.id || Math.floor(10000 + Math.random() * 90000).toString(),
+             date: response.data.createdAt || new Date().toISOString(),
+             items: [...state.items],
+             totalAmount: state.totalAmount,
+             deliveryFee: state.getDeliveryFee(),
+             finalTotal: totalWithDelivery,
+             customerDetails: state.customerDetails,
+             paymentMethod: state.paymentMethod,
+             cardDetails: state.savedCard,
+             note: state.note
           };
 
           // Log to Payment Store for transaction history (PRD requirement)
           usePaymentStore.getState().addTransaction({
-             id: orderId,
+             id: newOrder.id,
              amount: totalWithDelivery,
              status: 'success'
           });
@@ -376,9 +388,15 @@ const useOrderStore = create(
           // Cleanup cart on success
           get().clearCart();
 
+          // Invalidate dashboard caches so the new order appears immediately
+          console.log('[ORDER] invalidating kitchen + orders cache...');
+          queryClient.invalidateQueries({ queryKey: ["kitchen"] });
+          queryClient.invalidateQueries({ queryKey: ["orders"] });
+          console.log('[ORDER] done — order placed successfully:', newOrder.id);
+
           return true;
         } catch (err) {
-          console.error("Order submission failed:", err);
+          console.error("[ORDER] submission failed:", err);
           set({ 
             loading: false, 
             error: err.message || "Failed to place order. Please try again." 

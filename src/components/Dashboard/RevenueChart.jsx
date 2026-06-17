@@ -2,6 +2,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
+import TimeFilter from "./shared/TimeFilter";
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -19,30 +20,30 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-function RevenueChart({ data }) {
+function RevenueChart({ data, totalRevenue = 0 }) {
+  const formattedTotal = `$${totalRevenue.toLocaleString()}`;
+
   return (
-    <div className="bg-white rounded-2xl px-5 py-5 shadow-[0_1px_8px_rgba(0,0,0,0.05)]">
-      <div className="flex items-center justify-between mb-5">
-        <div>
-          <h3 className="text-[15px] font-bold text-[#1a1a1a] m-0">Total Revenue</h3>
-          <p className="text-xs text-gray-400 mt-0.5">Last 8 months</p>
+    <div className="bg-white rounded-3xl px-6 py-6 shadow-sm">
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex flex-col gap-1">
+          <p className="text-[13px] text-gray-500 font-medium m-0">Total Revenue</p>
+          <h3 className="text-[24px] font-bold text-[#1a1a1a] m-0">{formattedTotal}</h3>
         </div>
-        <select className="text-xs text-gray-500 border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white cursor-pointer outline-none">
-          <option>This Year</option>
-          <option>Last Year</option>
-        </select>
+        <TimeFilter defaultValue="This Month" />
       </div>
 
-      <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+
+      <ResponsiveContainer width="100%" height={220}>
+        <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
-          <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#9CA3AF" }} />
+          <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#9CA3AF" }} dy={10} />
           <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#9CA3AF" }} />
           <Tooltip content={<CustomTooltip />} />
-          <Legend wrapperStyle={{ fontSize: "12px", paddingTop: "12px" }} iconType="circle" iconSize={8} />
+          <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: "11px", color: "#6B7280" }} iconType="circle" iconSize={6} />
           <Line type="monotone" dataKey="income" name="Income" stroke="#F97316" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: "#F97316" }} />
-          <Line type="monotone" dataKey="revenue" name="Revenue" stroke="#8B5CF6" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: "#8B5CF6" }} strokeDasharray="6 3" />
-          <Line type="monotone" dataKey="expense" name="Expense" stroke="#94A3B8" strokeWidth={2} dot={false} activeDot={{ r: 5, fill: "#94A3B8" }} strokeDasharray="3 3" />
+          <Line type="monotone" dataKey="revenue" name="Revenue" stroke="#10B981" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: "#10B981" }} />
+          <Line type="monotone" dataKey="expense" name="Expense" stroke="#111827" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: "#111827" }} />
         </LineChart>
       </ResponsiveContainer>
     </div>

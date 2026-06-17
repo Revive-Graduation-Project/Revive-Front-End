@@ -2,6 +2,7 @@ import { useOrderStore, useFavoritesStore } from "../../store";
 
 const RegularFoodCard = ({ meal }) => {
   const addItem = useOrderStore((state) => state.addItem);
+  const openCartDrawer = useOrderStore((state) => state.openCartDrawer);
   const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
   const isFavorite = useFavoritesStore((state) => state.isFavorite(meal.id));
 
@@ -106,14 +107,17 @@ const RegularFoodCard = ({ meal }) => {
             </span>
           </div>
           <button
-            onClick={() =>
-              addItem({
+            onClick={() => {
+              const itemToAdd = {
                 id: meal.id,
                 name,
-                price: finalPrice,
+                price: parseFloat(finalPrice ?? price),
                 imageUrl,
-              })
-            }
+              };
+              console.log("Adding item to cart:", itemToAdd);
+              addItem(itemToAdd);
+              openCartDrawer();
+            }}
             className="w-full  bg-(--color-orange) hover:bg-orange-600 active:bg-orange-700 text-white font-medium py-1 px-1 rounded-2xl transition-colors shadow-sm hover:shadow-md cursor-pointer"
           >
             Add to cart

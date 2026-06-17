@@ -2,23 +2,17 @@ import { FiAlertTriangle } from "react-icons/fi";
 
 function AlertItem({ emoji, name, daysLeft }) {
   return (
-    <div className="flex flex-col items-center gap-1.5">
-      <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-[22px] border-2 border-gray-100">
+    <div className="flex flex-col items-center gap-1.5 min-w-[48px]">
+      <div className="w-[42px] h-[42px] rounded-full bg-[#f8f9fa] flex items-center justify-center text-[20px] shadow-sm">
         {emoji}
       </div>
-      <span className="text-[11px] font-medium text-gray-700">{name}</span>
+      <span className="text-[11px] font-semibold text-[#1a1a1a] text-center">{name}</span>
       {daysLeft !== undefined && (
-        <span className="text-[10px] text-red-500">({daysLeft} day{daysLeft !== 1 ? "s" : ""} left)</span>
+        <span className="text-[9px] text-gray-500">({daysLeft}Day left)</span>
       )}
     </div>
   );
 }
-
-const SECTION_STYLES = {
-  lowStock:   { bg: "bg-red-50",    border: "border-red-200",    title: "text-red-500"    },
-  shelfLife:  { bg: "bg-orange-50", border: "border-orange-200", title: "text-orange-500" },
-  inSeason:   { bg: "bg-green-50",  border: "border-green-200",  title: "text-green-600"  },
-};
 
 function InventoryAlerts({ data }) {
   const sections = [
@@ -28,22 +22,21 @@ function InventoryAlerts({ data }) {
   ];
 
   return (
-    <div className="bg-white rounded-2xl px-5 py-5 shadow-[0_1px_8px_rgba(0,0,0,0.05)]">
-      <div className="flex items-center gap-2 mb-4">
-        <FiAlertTriangle size={16} className="text-orange-500" />
-        <h3 className="text-[15px] font-bold text-[#1a1a1a] m-0 uppercase tracking-wide">
-          Inventory Alerts
+    <div className="bg-white rounded-3xl px-6 py-6 shadow-sm">
+      <div className="flex items-center gap-2.5 mb-5">
+        <FiAlertTriangle size={20} className="text-red-600" fill="#fee2e2" />
+        <h3 className="text-[14px] font-bold text-[#1a1a1a] m-0 uppercase tracking-wider">
+          INVENTORY ALERTS
         </h3>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {sections.map(({ key, label, items, showDays }) => {
-          const s = SECTION_STYLES[key];
           return (
-            <div key={key} className={`${s.bg} border ${s.border} rounded-xl p-3.5`}>
-              <p className={`text-[11px] font-bold ${s.title} mb-3 uppercase tracking-wide`}>{label}</p>
-              <div className="flex gap-3 flex-wrap">
-                {items.map((item) => (
+            <div key={key} className={`bg-white border border-[#FEE2E2] rounded-2xl p-4 shadow-[0_2px_10px_rgba(254,226,226,0.5)]`}>
+              <p className={`text-[12px] font-bold text-[#1a1a1a] mb-3`}>{label}</p>
+              <div className="flex gap-4 items-start">
+                {items.slice(0, 3).map((item) => (
                   <AlertItem
                     key={item.id}
                     emoji={item.image}
@@ -51,6 +44,13 @@ function InventoryAlerts({ data }) {
                     daysLeft={showDays ? item.daysLeft : undefined}
                   />
                 ))}
+                {items.length > 3 && (
+                  <div className="flex flex-col items-center justify-center h-[42px]">
+                    <div className="w-[28px] h-[28px] rounded-full bg-gray-100 flex items-center justify-center text-[10px] text-gray-500 font-bold border border-gray-200">
+                      +{items.length - 3}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           );
