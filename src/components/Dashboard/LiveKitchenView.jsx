@@ -39,16 +39,16 @@ function OrderCard({ order, columnKey, onAction }) {
         <span className="text-gray-500 font-medium">Name</span>
         <span className="text-[#1a1a1a] font-semibold truncate text-right">{order.name || order.items?.[0]}</span>
 
-        {order.notes && (
-          <>
-            <span className="text-gray-500 font-medium pt-1">Notes</span>
-            <div className="flex justify-end pt-1">
-              <span className="bg-[#FFF4D2] text-[#B48400] px-2.5 py-0.5 rounded-full text-[10px] font-bold">
-                {order.notes}
-              </span>
-            </div>
-          </>
-        )}
+        <span className="text-gray-500 font-medium pt-1">Notes</span>
+        <div className="flex justify-end pt-1">
+          {order.notes ? (
+            <span className="bg-[#FFF4D2] text-[#B48400] px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+              {order.notes}
+            </span>
+          ) : (
+            <span className="text-gray-400 text-[10px] font-medium italic">None</span>
+          )}
+        </div>
       </div>
 
       {/* Action buttons */}
@@ -57,7 +57,7 @@ function OrderCard({ order, columnKey, onAction }) {
           <button
             type="button"
             onClick={() => onAction(order.id, col.prevStatus)}
-            className="px-3 py-1.5 rounded-full text-[12px] font-semibold cursor-pointer transition-colors bg-white text-gray-500 border-[1px] border-gray-200 hover:bg-gray-50 hover:text-gray-700"
+            className="px-3 py-1.5 rounded-full text-[12px] font-semibold cursor-pointer transition-colors bg-white text-gray-500 border border-gray-200 hover:bg-gray-50 hover:text-gray-700"
             title="Move Back"
           >
             Back
@@ -67,7 +67,7 @@ function OrderCard({ order, columnKey, onAction }) {
           <button
             type="button"
             onClick={() => onAction(order.id, "cancelled")}
-            className="px-3 py-1.5 rounded-full text-[12px] font-semibold cursor-pointer transition-colors bg-white text-red-500 border-[1px] border-red-200 hover:bg-red-50 hover:text-red-600"
+            className="px-3 py-1.5 rounded-full text-[12px] font-semibold cursor-pointer transition-colors bg-white text-red-500 border border-red-200 hover:bg-red-50 hover:text-red-600"
             title="Cancel Order"
           >
             Cancel
@@ -89,10 +89,15 @@ function LiveKitchenView() {
   const { boards, isConnected, isFetching, error, refetch } = useRealtimeKitchen();
   const { mutate: updateStatus } = useUpdateKitchenStatus();
   const [orderToCancel, setOrderToCancel] = useState(null);
+  const [orderToMarkDone, setOrderToMarkDone] = useState(null);
 
   const handleAction = useCallback((orderId, nextStatus) => {
     if (nextStatus === "cancelled") {
       setOrderToCancel(orderId);
+      return;
+    }
+    if (nextStatus === "done") {
+      setOrderToMarkDone(orderId);
       return;
     }
     updateStatus({ orderId, nextStatus });
@@ -102,6 +107,13 @@ function LiveKitchenView() {
     if (orderToCancel) {
       updateStatus({ orderId: orderToCancel, nextStatus: "cancelled" });
       setOrderToCancel(null);
+    }
+  };
+
+  const confirmMarkDone = () => {
+    if (orderToMarkDone) {
+      updateStatus({ orderId: orderToMarkDone, nextStatus: "done" });
+      setOrderToMarkDone(null);
     }
   };
 
@@ -199,28 +211,18 @@ function LiveKitchenView() {
                       <span className="text-[#1a1a1a] font-semibold text-right">{order.time}</span>
                       <span className="text-gray-500 font-medium">Name</span>
                       <span className="text-[#1a1a1a] font-semibold truncate text-right">{order.name || order.items?.[0]}</span>
-                      {order.notes && (
-                        <>
-                          <span className="text-gray-500 font-medium pt-1">Notes</span>
-                          <div className="flex justify-end pt-1">
-                            <span className="bg-[#FFF4D2] text-[#B48400] px-2.5 py-0.5 rounded-full text-[10px] font-bold">
-                              {order.notes}
-                            </span>
-                          </div>
-                        </>
-                      )}
+                      <span className="text-gray-500 font-medium pt-1">Notes</span>
+                      <div className="flex justify-end pt-1">
+                        {order.notes ? (
+                          <span className="bg-[#FFF4D2] text-[#B48400] px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                            {order.notes}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 text-[10px] font-medium italic">None</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex justify-center mt-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleAction(order.id, "ready")}
-                        className="w-9 h-9 rounded-full bg-white text-gray-500 border-[1px] border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
-                        title="Move Back to Ready"
-                      >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                      </button>
+                    <div className="flex justify-center mt-2">
                       <div className="w-9 h-9 rounded-full bg-[#16A34A] flex items-center justify-center shadow-md shadow-green-500/30">
                         <svg viewBox="0 0 20 20" fill="white" className="w-5 h-5">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -249,6 +251,15 @@ function LiveKitchenView() {
         onConfirm={confirmCancel}
         title="Cancel Order?"
         message="This order will be permanently removed from the kitchen board and marked as cancelled. This action cannot be undone."
+      />
+      <ConfirmModal
+        isOpen={!!orderToMarkDone}
+        onClose={() => setOrderToMarkDone(null)}
+        onConfirm={confirmMarkDone}
+        title="Mark as Done?"
+        message="This order will be moved to the Done list and marked as completed."
+        confirmLabel="Mark Done"
+        confirmClassName="bg-[#16A34A] hover:bg-green-700 shadow-lg shadow-green-500/30"
       />
     </div>
   );
