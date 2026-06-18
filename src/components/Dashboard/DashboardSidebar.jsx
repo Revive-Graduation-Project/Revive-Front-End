@@ -21,6 +21,9 @@ const navItems = [
   { to: "/dashboard/ingredients", label: "Ingredients", icon: MdOutlineSetMeal },
 ];
 
+/**
+ * Renders the dashboard sidebar with navigation links, an AI Intelligence card, and logout functionality.
+ */
 function DashboardSidebar() {
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();

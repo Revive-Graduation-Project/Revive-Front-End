@@ -1,5 +1,11 @@
 import { FiAlertTriangle } from "react-icons/fi";
 
+/**
+ * Renders a compact inventory alert tile with an icon, item name, and optional day count.
+ * @param {string} emoji - The emoji icon.
+ * @param {string} name - The item name.
+ * @param {number} [daysLeft] - Optional number of days remaining.
+ */
 function AlertItem({ emoji, name, daysLeft }) {
   return (
     <div className="flex flex-col items-center gap-1.5 min-w-[48px]">
@@ -14,6 +20,10 @@ function AlertItem({ emoji, name, daysLeft }) {
   );
 }
 
+/**
+ * Renders an inventory alerts dashboard with categorized item sections.
+ * @param {Object} data - The alert data object containing `lowStock`, `shelfLife`, and `inSeason` arrays.
+ */
 function InventoryAlerts({ data }) {
   const sections = [
     { key: "lowStock",  label: "Low Stock",                  items: data.lowStock,  showDays: false },

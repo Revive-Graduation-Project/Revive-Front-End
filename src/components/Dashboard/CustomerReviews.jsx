@@ -1,5 +1,10 @@
 import { FiStar } from "react-icons/fi";
 
+/**
+ * Displays a visual star rating.
+ * @param {number} rating - The rating value; stars at positions 1 through this value are filled.
+ * @returns {JSX.Element} A horizontal row of five star icons.
+ */
 function StarRating({ rating }) {
   return (
     <div className="flex gap-0.5">
@@ -15,6 +20,11 @@ function StarRating({ rating }) {
   );
 }
 
+/**
+ * Renders a responsive grid of customer review cards with ratings and images.
+ * @param {Object} props - The component props.
+ * @param {Array<Object>} props.data - Array of review objects, each containing title, comment, name, rating, date, time, and image.
+ */
 function CustomerReviews({ data }) {
   return (
     <div>

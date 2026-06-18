@@ -25,6 +25,10 @@ import {
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 
+/**
+ * Renders the dashboard with business metrics, revenue analysis, inventory alerts, trending items, recent activity, and customer reviews.
+ * Displays a skeleton loader while fetching data, and an error screen with a retry option if data fetching fails.
+ */
 function DashboardView() {
   const { data: metrics,        isLoading: loadingMetrics, error: errMetrics } = useDashboardMetrics();
   const { data: revenue,        isLoading: loadingRev,     error: errRev     } = useRevenueData();

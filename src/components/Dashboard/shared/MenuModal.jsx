@@ -20,6 +20,12 @@ const EMPTY_FORM = {
   fat: "", calories: "", protein: "", sugar: "", price: "",
 };
 
+/**
+ * Renders a labeled form field with optional error message.
+ * @param {string} label - The label text for the input.
+ * @param {string} [error] - Optional error message displayed when validation fails.
+ * @param {React.ReactNode} children - The input or select element.
+ */
 function Field({ label, error, children }) {
   return (
     <div>
@@ -34,6 +40,14 @@ function Field({ label, error, children }) {
   );
 }
 
+/**
+ * Modal form for creating or editing meal information.
+ * @param {boolean} isOpen - Whether the modal is visible.
+ * @param {() => void} onClose - Callback invoked when the modal is closed.
+ * @param {(data: object) => void} onSubmit - Callback invoked with validated meal data.
+ * @param {object} [initialData] - Optional meal data to populate for editing.
+ * @returns {JSX.Element | null} The modal dialog when open, `null` otherwise.
+ */
 function MenuModal({ isOpen, onClose, onSubmit, initialData }) {
   const isEditing = !!initialData;
   const [formData, setFormData] = useState(EMPTY_FORM);

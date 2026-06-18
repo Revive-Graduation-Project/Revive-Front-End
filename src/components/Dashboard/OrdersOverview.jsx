@@ -14,6 +14,10 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
+/**
+ * Displays an overview of orders in a card with a bar chart visualization and time filter.
+ * @param {Array<{orders: number, day: string}>} data - Array of order data points.
+ */
 function OrdersOverview({ data }) {
   const totalOrders = data.reduce((acc, d) => acc + d.orders, 0);
 

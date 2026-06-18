@@ -8,10 +8,19 @@ export const menuKeys = {
   ingredients: () => ["menu", "recipe-ingredients"],
 };
 
+/**
+ * Fetches menu categories.
+ * @return {Object} A query result containing menu categories.
+ */
 export function useMenuCategories() {
   return useQuery({ queryKey: menuKeys.categories(), queryFn: getMenuCategories });
 }
 
+/**
+ * Retrieves menu items with optional filtering.
+ * @param {object} [filters={}] - Optional filter criteria for menu items.
+ * @returns {object} Query result containing menu items.
+ */
 export function useMenuItems(filters = {}) {
   return useQuery({
     queryKey: menuKeys.items(filters),
@@ -19,11 +28,23 @@ export function useMenuItems(filters = {}) {
   });
 }
 
+/**
+ * Fetches recipe ingredients.
+ * @return {object} A query result object containing recipe ingredients data.
+ */
 export function useRecipeIngredients() {
   return useQuery({ queryKey: menuKeys.ingredients(), queryFn: getRecipeIngredients });
 }
 
-/** Mutation: delete a menu item */
+/**
+ * Mutation hook for deleting a menu item.
+ *
+ * Optimistically removes the item from the cached menu items and attempts deletion.
+ * If the deletion fails, the previous cache state is restored. After completion,
+ * the entire menu cache is invalidated to ensure consistency.
+ *
+ * @return {object} A mutation object to trigger the deletion.
+ */
 export function useDeleteMenuItem() {
   const qc = useQueryClient();
   return useMutation({
@@ -44,7 +65,10 @@ export function useDeleteMenuItem() {
   });
 }
 
-/** Mutation: update a menu item */
+/**
+ * Mutation hook for updating a menu item.
+ * @return {object} A mutation object that accepts an object with `id` and `data` properties.
+ */
 export function useUpdateMenuItem() {
   const qc = useQueryClient();
   return useMutation({
@@ -53,7 +77,12 @@ export function useUpdateMenuItem() {
   });
 }
 
-/** Mutation: create a menu item */
+/**
+ * Creates a menu item.
+ * 
+ * The mutation invalidates the menu cache on completion.
+ * @returns {Object} A React Query mutation object.
+ */
 export function useCreateMenuItem() {
   const qc = useQueryClient();
   return useMutation({
@@ -62,7 +91,10 @@ export function useCreateMenuItem() {
   });
 }
 
-/** Mutation: save a new recipe */
+/**
+ * Creates a mutation to save a new recipe.
+ * @returns {UseMutationResult} A mutation hook for saving recipes.
+ */
 export function useSaveRecipe() {
   const qc = useQueryClient();
   return useMutation({

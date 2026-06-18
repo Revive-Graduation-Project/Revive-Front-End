@@ -20,6 +20,11 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
+/**
+ * Renders a revenue chart displaying income, revenue, and expense trends with a total revenue summary.
+ * @param {Array} data - Chart data points.
+ * @param {number} [totalRevenue=0] - The aggregate revenue amount to display.
+ */
 function RevenueChart({ data, totalRevenue = 0 }) {
   const formattedTotal = `$${totalRevenue.toLocaleString()}`;
 

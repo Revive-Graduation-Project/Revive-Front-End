@@ -2,13 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { FiSliders, FiCheck, FiChevronUp, FiChevronDown } from "react-icons/fi";
 
 /**
- * SortMenu
- *
- * Props:
- *   columns   – array of { key, label } objects for sortable columns
- *   sortKey   – currently active sort key (string)
- *   sortDir   – "asc" | "desc"
- *   onChange  – (key, dir) => void
+ * Dropdown menu for selecting a sort column and direction.
+ * @param {Object} props
+ * @param {Array<{key: string, label: string}>} [props.columns] - Sortable columns; defaults to an empty array.
+ * @param {string} [props.sortKey] - Currently active sort column key.
+ * @param {string} props.sortDir - Current sort direction; either "asc" or "desc".
+ * @param {(key: string, dir: string) => void} props.onChange - Callback invoked with the selected column key and sort direction when a sort option is selected.
  */
 function SortMenu({ columns = [], sortKey, sortDir, onChange }) {
   const [open, setOpen] = useState(false);

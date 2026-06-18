@@ -11,6 +11,12 @@ const DAY_MAP = {
   Fri: "Friday",
 };
 
+/**
+ * Displays an interactive bar chart of orders grouped by day.
+ * @param {Object} props
+ * @param {Array} props.data - Array of order entries. Each entry should contain a `day` property (3-letter abbreviation) and either an `orders` or `value` property for the bar height.
+ * @returns {React.ReactNode} A chart component.
+ */
 function OrdersOverviewChart({ data = [] }) {
   const [hoveredIndex, setHoveredIndex] = useState(null);
 

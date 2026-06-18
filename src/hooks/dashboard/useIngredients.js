@@ -7,10 +7,19 @@ export const ingredientKeys = {
   list:    (filters) => ["ingredients", "list", filters],
 };
 
+/**
+ * Fetches metrics data for ingredients.
+ * @returns {object} Query result containing ingredient metrics.
+ */
 export function useIngredientsMetrics() {
   return useQuery({ queryKey: ingredientKeys.metrics(), queryFn: getIngredientsMetrics });
 }
 
+/**
+ * Fetches the list of ingredients based on optional filters.
+ * @param {Object} [filters={}] - Optional filters to apply to the ingredient list.
+ * @return {Object} A React Query result containing the ingredients data.
+ */
 export function useIngredients(filters = {}) {
   return useQuery({
     queryKey: ingredientKeys.list(filters),
@@ -18,7 +27,10 @@ export function useIngredients(filters = {}) {
   });
 }
 
-/** Mutation: delete an ingredient */
+/**
+ * Creates a mutation hook for deleting an ingredient.
+ * @returns {Object} A mutation object that accepts an ingredient ID and deletes the ingredient.
+ */
 export function useDeleteIngredient() {
   const qc = useQueryClient();
   return useMutation({
@@ -38,7 +50,10 @@ export function useDeleteIngredient() {
   });
 }
 
-/** Mutation: create an ingredient */
+/**
+ * Creates a mutation hook for adding new ingredients.
+ * @return {object} A mutation object for creating ingredients.
+ */
 export function useCreateIngredient() {
   const qc = useQueryClient();
   return useMutation({
@@ -47,7 +62,10 @@ export function useCreateIngredient() {
   });
 }
 
-/** Mutation: update an ingredient */
+/**
+ * Creates a mutation hook for updating an ingredient.
+ * @returns {UseMutationResult} A mutation that accepts an object with `id` (ingredient ID) and `data` (update payload) and invalidates ingredient-related queries when settled.
+ */
 export function useUpdateIngredient() {
   const qc = useQueryClient();
   return useMutation({
@@ -56,7 +74,10 @@ export function useUpdateIngredient() {
   });
 }
 
-/** Mutation: upload ingredients CSV */
+/**
+ * Creates a mutation for uploading ingredients from a CSV file.
+ * @return {Object} A mutation object for triggering the ingredients upload.
+ */
 export function useUploadIngredients() {
   const qc = useQueryClient();
   return useMutation({

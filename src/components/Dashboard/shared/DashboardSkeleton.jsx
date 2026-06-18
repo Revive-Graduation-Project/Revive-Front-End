@@ -5,7 +5,9 @@
  * with a Tailwind pseudo-element pattern.
  */
 
-/** Base shimmer block */
+/**
+ * Renders an animated skeleton placeholder with a shimmering gradient effect.
+ */
 function Shimmer({ className = "" }) {
   return (
     <div className={`relative overflow-hidden rounded-lg bg-gray-100 ${className}`}>
@@ -14,7 +16,9 @@ function Shimmer({ className = "" }) {
   );
 }
 
-/** Metric card skeleton — matches MetricCards layout */
+/**
+ * Renders a loading placeholder for a metric card.
+ */
 export function MetricCardSkeleton() {
   return (
     <div className="bg-white rounded-2xl px-5 py-4 shadow-sm flex items-center gap-3.5">
@@ -27,7 +31,11 @@ export function MetricCardSkeleton() {
   );
 }
 
-/** Chart card skeleton */
+/**
+ * Renders a skeleton placeholder for a chart card.
+ * @param {number} [height=280] - The height of the skeleton in pixels.
+ * @returns {JSX.Element} A chart skeleton placeholder.
+ */
 export function ChartSkeleton({ height = 280 }) {
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm flex flex-col gap-3" style={{ height }}>
@@ -40,7 +48,11 @@ export function ChartSkeleton({ height = 280 }) {
   );
 }
 
-/** Table row skeleton */
+/**
+ * Renders a table row placeholder with shimmer cells.
+ * @param {number} [cols=7] - The number of table cells to render.
+ * @return {JSX.Element} A table row with shimmer placeholder cells.
+ */
 export function TableRowSkeleton({ cols = 7 }) {
   return (
     <tr className="border-b border-gray-50">
@@ -53,7 +65,9 @@ export function TableRowSkeleton({ cols = 7 }) {
   );
 }
 
-/** Kanban card skeleton */
+/**
+ * Renders a loading placeholder for a kanban card.
+ */
 export function KanbanCardSkeleton() {
   return (
     <div className="bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-2.5">
@@ -69,7 +83,9 @@ export function KanbanCardSkeleton() {
   );
 }
 
-/** Full page skeleton — 3 metric cards + chart */
+/**
+ * Renders a dashboard page skeleton with metric cards and charts.
+ */
 export function DashboardPageSkeleton() {
   return (
     <div className="flex flex-col gap-5 p-8">

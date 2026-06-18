@@ -12,6 +12,10 @@ const CustomTooltip = ({ active, payload }) => {
   return null;
 };
 
+/**
+ * Renders a donut chart displaying category distribution with a legend.
+ * @param {Array} data - Array of category objects with `name`, `value`, and optional `color` properties.
+ */
 function TopCategories({ data }) {
   // Override colors for the donut chart to match screenshot (Orange, Red, Green, Black)
   const categoryColors = {

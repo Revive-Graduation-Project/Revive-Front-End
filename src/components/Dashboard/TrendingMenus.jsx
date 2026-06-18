@@ -3,6 +3,11 @@ import { BiSpreadsheet } from "react-icons/bi";
 import { MdAttachMoney } from "react-icons/md";
 import TimeFilter from "./shared/TimeFilter";
 
+/**
+ * Renders a star rating visualization.
+ * @param {number} rating - The rating value to display.
+ * @returns {JSX.Element} A row of 5 star icons, with filled stars for the rounded rating value.
+ */
 function StarRating({ rating }) {
   return (
     <div className="flex gap-0.5">
@@ -18,6 +23,12 @@ function StarRating({ rating }) {
   );
 }
 
+/**
+ * Displays a list of trending menu items with ratings, images, orders, and revenue.
+ * @param {Object} props - Component props.
+ * @param {Array<Object>} props.data - Menu items to display, each with `id`, `name`, `rating`, `image`, `orders`, and `revenue`.
+ * @returns {JSX.Element} The rendered component.
+ */
 function TrendingMenus({ data }) {
   return (
     <div className="flex flex-col gap-5 h-full">

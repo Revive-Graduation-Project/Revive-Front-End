@@ -24,6 +24,11 @@ const STATUS_MAP = {
   "Out of Stock": "bg-red-50     text-red-500",
 };
 
+/**
+ * Renders a styled badge displaying a status.
+ * @param {string} status - The status to display.
+ * @returns {React.ReactElement} A styled span element.
+ */
 export function StatusBadge({ status }) {
   const cls = STATUS_MAP[status] ?? "bg-gray-100 text-gray-500";
   return (

@@ -3,10 +3,12 @@ import { useNavigate } from "react-router";
 import { useAuthStore } from "../store";
 
 /**
- * StaffRoute
- *
- * Wraps routes that require staff privileges (e.g., chefs, admins).
- * API-Ready: Uncomment the role check once the backend sends real user.role fields.
+ * Guards routes that require staff authentication.
+ * 
+ * Displays a login prompt for unauthenticated users. Renders the provided children
+ * for authenticated users.
+ * 
+ * @param {React.ReactNode} children - The content to render when authenticated.
  */
 function StaffRoute({ children }) {
   const { isAuthenticated, user } = useAuthStore();

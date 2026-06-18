@@ -1,5 +1,12 @@
 import { FiChevronDown } from "react-icons/fi";
 
+/**
+ * Renders a dropdown selector for filtering by time period.
+ * @param {Object} props - Component props.
+ * @param {string} [props.defaultValue="This Week"] - The initial selected time period.
+ * @param {Function} [props.onChange] - Callback invoked when the user changes the selected time period.
+ * @returns {JSX.Element} The rendered select dropdown with chevron icon.
+ */
 function TimeFilter({ defaultValue = "This Week", onChange }) {
   return (
     <div className="relative flex items-center group">

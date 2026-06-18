@@ -15,6 +15,12 @@ import SortMenu from "./shared/SortMenu";
 
 const TABS = ["All", "Preparing", "Ready", "Done", "Cancelled"];
 
+/**
+ * Renders a circular progress visualization with two concentric progress rings.
+ * @param {number} salesPct - Sales progress percentage (0-100) displayed on the outer orange ring.
+ * @param {number} orderPct - Order progress percentage (0-100) displayed on the inner green ring.
+ * @param {number} [displayPct] - Optional percentage to display in the center; falls back to the rounded sales percentage if not provided.
+ */
 function CircularProgress({ salesPct, orderPct, displayPct }) {
   const r1 = 36;
   const r2 = 28;
@@ -43,6 +49,14 @@ function CircularProgress({ salesPct, orderPct, displayPct }) {
   );
 }
 
+/**
+ * Renders the orders management dashboard.
+ * 
+ * Displays order metrics, an orders overview chart, and a daily sales/orders goal tracker.
+ * Provides an interactive orders table with filtering by status and multi-column sorting.
+ * Also shows trending menus and recent activity in a sidebar. Displays loading and error
+ * states while data is being fetched.
+ */
 function OrdersView() {
   const [activeTab, setActiveTab] = useState("All");
   const [sortKey, setSortKey] = useState(null);

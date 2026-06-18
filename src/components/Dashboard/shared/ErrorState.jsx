@@ -1,6 +1,11 @@
 import { FiAlertCircle, FiRefreshCw } from "react-icons/fi";
 
-/** Reusable error state with retry button */
+/**
+ * Renders an error state UI with an alert icon, message, and optional retry button.
+ * @param {string} [message="Something went wrong."] - The error message to display.
+ * @param {Function} [onRetry] - Callback invoked when the retry button is clicked. If provided, displays a "Try Again" button.
+ * @return {JSX.Element} The error state component.
+ */
 export function ErrorState({ message = "Something went wrong.", onRetry }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-6 text-center gap-4">

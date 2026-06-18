@@ -11,7 +11,14 @@ import EmptyState from "./shared/EmptyState";
 import SortMenu from "./shared/SortMenu";
 import MenuModal from "./shared/MenuModal";
 
-/** Circular progress metric card — green ring, black name, orange count, red/green trend */
+/**
+ * Renders a circular progress metric card showing a percentage ring, name, and count.
+ * @param {string} name - The metric name to display.
+ * @param {number} percentage - The percentage value displayed in the center (clamped to 100 for the ring).
+ * @param {number} count - The count value displayed below the name.
+ * @param {number} [change] - Optional percentage change; displays with an up or down arrow, green if non-negative or red if negative.
+ * @param {boolean} isTotal - Increases the card and text sizing when true.
+ */
 function CircleMetric({ name, percentage, count, change, isTotal }) {
   const r = isTotal ? 30 : 26;
   const circ = 2 * Math.PI * r;
@@ -55,6 +62,9 @@ function CircleMetric({ name, percentage, count, change, isTotal }) {
   );
 }
 
+/**
+ * Renders a menu management dashboard with items, category metrics, and editing controls.
+ */
 function ChefMenuView() {
   const [activeTab, setActiveTab] = useState("All Menu");
   const [sortKey, setSortKey] = useState(null);

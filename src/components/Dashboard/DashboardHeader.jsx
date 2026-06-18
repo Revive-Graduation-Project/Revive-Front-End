@@ -1,6 +1,12 @@
 import { FiSearch, FiBell } from "react-icons/fi";
 import useAuthStore from "../../store/authStore";
 
+/**
+ * Renders a sticky dashboard header with user profile, search functionality, and notifications.
+ * @param {string} [title="Dashboard"] - The main heading text.
+ * @param {string} [subtitle] - An optional greeting message; displays a personalized welcome using the user's first name if not provided.
+ * @return {React.ReactElement} The dashboard header component.
+ */
 function DashboardHeader({ title = "Dashboard", subtitle }) {
   const { user } = useAuthStore();
 

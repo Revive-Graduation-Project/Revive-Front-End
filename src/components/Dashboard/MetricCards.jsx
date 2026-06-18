@@ -11,12 +11,22 @@ const labels = {
   totalCustomers: "Total Customer",
   totalRevenue: "Total Revenue",
 };
+/**
+ * Formats a metric value for display, adding a dollar prefix for revenue metrics.
+ * @param {string} key - The metric identifier.
+ * @param {number} value - The numeric value to format.
+ * @returns {string} The formatted value, prefixed with "$" if the metric is revenue.
+ */
 function formatValue(key, value) {
   if (key === "totalRevenue") return `$${value.toLocaleString()}`;
   return value.toLocaleString();
 }
 const metricOrder = ["totalOrders", "totalCustomers", "totalRevenue"];
 
+/**
+ * Renders a grid of metric cards displaying key business metrics.
+ * @param {Object} metrics - Object containing metric data with keys `totalOrders`, `totalCustomers`, and `totalRevenue`. Each metric object should have `value`, `change`, and `trend` properties.
+ */
 function MetricCards({ metrics = {} }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

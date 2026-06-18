@@ -27,6 +27,9 @@ import { useAuthStore } from "./store";
 import { LoadingSpinner } from "./components";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+/**
+ * Initializes the application and renders the router configuration.
+ */
 export default function App() {
   useAuthInit();
   useRestaurantInit();

@@ -1,6 +1,10 @@
 import { FiMonitor, FiShoppingBag, FiTruck } from "react-icons/fi";
 import TimeFilter from "./shared/TimeFilter";
 
+/**
+ * Display order type metrics including counts, percentages, and progress visualizations.
+ * @param {Array<{name: string, percentage: number, count: number}>} data - Order type metrics.
+ */
 function OrderTypes({ data }) {
   // Use stroke icons instead of emojis to match design
   const icons = { 

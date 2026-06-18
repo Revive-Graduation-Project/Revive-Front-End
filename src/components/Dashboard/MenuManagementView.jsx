@@ -7,6 +7,9 @@ import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 import EmptyState from "./shared/EmptyState";
 
+/**
+ * Renders a menu management dashboard page with drag-and-drop file upload, recent uploads history, and calendar widget.
+ */
 function MenuManagementView() {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);

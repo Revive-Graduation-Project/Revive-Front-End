@@ -11,6 +11,15 @@ import SortMenu from "./shared/SortMenu";
 import IngredientModal from "./shared/IngredientModal";
 import ConfirmModal from "./shared/ConfirmModal";
 
+/**
+ * Renders a circular progress metric card with a percentage, label, value, and change indicator.
+ * @param {number} pct - The percentage value to display (0-100).
+ * @param {string} value - The numeric value to display.
+ * @param {string} label - The label text.
+ * @param {boolean} [badge] - If true, applies red styling; otherwise uses orange and green.
+ * @param {number} [change] - The percentage change value.
+ * @returns {React.ReactElement} A metric card component.
+ */
 function CircleMetric({ pct, color, value, label, badge, change = 0 }) {
   const r = 20;
   const circ = 2 * Math.PI * r;
@@ -48,6 +57,12 @@ function CircleMetric({ pct, color, value, label, badge, change = 0 }) {
 
 const CATEGORY_TABS = ["All Ingredients", "Protein", "Vegetables", "Sauces", "Stock"];
 
+/**
+ * Renders the ingredients management dashboard.
+ * 
+ * Provides a complete interface for managing ingredients with metric summaries, a filterable and sortable ingredients table,
+ * bulk file upload, and create, update, and delete operations.
+ */
 function IngredientsView() {
 
   const [activeCategory, setActiveCategory] = useState("All Ingredients");

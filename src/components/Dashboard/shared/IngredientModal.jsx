@@ -23,6 +23,9 @@ const EMPTY_FORM = {
   stock: "", costPerUnit: "",
 };
 
+/**
+ * Renders a labeled form field with optional error message.
+ */
 function Field({ htmlFor, label, error, children }) {
   return (
     <div>
@@ -37,6 +40,18 @@ function Field({ htmlFor, label, error, children }) {
   );
 }
 
+/**
+ * Modal form for adding or editing an ingredient.
+ *
+ * Displays form fields for ingredient details including name, category, stock amount, price, and optional nutrients.
+ * Validates all inputs and displays error messages inline when validation fails.
+ *
+ * @param {boolean} isOpen - Controls visibility of the modal.
+ * @param {Function} onClose - Callback when the user closes the modal.
+ * @param {Function} onSubmit - Callback invoked with validated form data upon successful submission.
+ * @param {Object} [initialData] - Pre-populated ingredient data for editing. When provided, the modal operates in edit mode.
+ * @returns {ReactElement|null} The rendered modal if open, otherwise null.
+ */
 function IngredientModal({ isOpen, onClose, onSubmit, initialData }) {
   const isEditing = !!initialData;
   const [formData, setFormData] = useState(EMPTY_FORM);

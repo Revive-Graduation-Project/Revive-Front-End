@@ -6,6 +6,11 @@ const roleIcons = {
   Receptionist:        <FiCalendar size={16} className="text-[#F97316]" />,
 };
 
+/**
+ * Displays recent activity items in a vertical timeline card.
+ * @param {Object} props - Component props.
+ * @param {Array<Object>} props.data - Array of activity items with `id`, `user`, `role`, `action`, and `time` properties.
+ */
 function RecentActivity({ data }) {
   return (
     <div className="bg-white rounded-3xl px-6 py-6 shadow-sm h-full flex flex-col">

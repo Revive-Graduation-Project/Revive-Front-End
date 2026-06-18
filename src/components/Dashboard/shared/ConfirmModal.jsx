@@ -1,5 +1,17 @@
 import { FiAlertTriangle } from "react-icons/fi";
 
+/**
+ * Renders a confirmation modal dialog when opened.
+ * @param {Object} props - Component props.
+ * @param {boolean} props.isOpen - Controls whether the modal is visible.
+ * @param {Function} props.onClose - Invoked when the modal is closed.
+ * @param {Function} props.onConfirm - Invoked when the Confirm button is clicked.
+ * @param {string} [props.title] - Dialog title; defaults to "Are you sure?".
+ * @param {string} [props.message] - Dialog message; defaults to "This action cannot be undone. Do you wish to proceed?".
+ * @param {string} [props.confirmLabel] - Confirm button label; defaults to "Delete".
+ * @param {string} [props.confirmClassName] - Additional CSS classes for the confirm button; defaults to red styling.
+ * @returns {React.ReactElement|null} The modal element when open, or null when closed.
+ */
 function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confirmLabel, confirmClassName }) {
   if (!isOpen) return null;
 

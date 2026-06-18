@@ -21,6 +21,10 @@ export const kitchenKeys = {
   orders: () => ["kitchen", "orders"],
 };
 
+/**
+ * Fetches kitchen orders at regular intervals for real-time board updates.
+ * @returns {Object} The kitchen board with queue, preparing, ready, and done columns, along with isConnected, isFetching, error, and refetch controls.
+ */
 export function useRealtimeKitchen() {
   const { data: boards, error, refetch, isFetching } = useQuery({
     queryKey:        kitchenKeys.orders(),
@@ -40,7 +44,16 @@ export function useRealtimeKitchen() {
   };
 }
 
-/** Mutation: move an order to the next kitchen status */
+/**
+ * Creates a mutation hook for updating an order's kitchen status.
+ * 
+ * Moves the order between kitchen board columns (queue, preparing, ready, done). Sets
+ * `startedAt` when transitioning from queue to preparing, prepends to done, and removes
+ * the order from the board when moving to cancelled. Includes optimistic updates with
+ * error recovery.
+ * 
+ * @return {import('react-query').UseMutationResult} A mutation accepting `{orderId, nextStatus}`.
+ */
 export function useUpdateKitchenStatus() {
   const qc = useQueryClient();
 

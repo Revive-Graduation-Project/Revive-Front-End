@@ -4,10 +4,8 @@ import { useDashboardRealtime } from "../hooks/dashboard/useDashboardRealtime";
 import { ToastContainer } from "../components/Dashboard/shared/useToast";
 
 /**
- * DashboardLayout
- * Full-screen staff dashboard shell.
- * No customer Navbar/Footer — completely separate from AppLayout.
- * ToastContainer is mounted here so toasts appear globally across all dashboard pages.
+ * Renders the staff dashboard shell with a fixed sidebar, scrollable content area, and global toast notifications.
+ * Initializes the dashboard real-time connection for all views.
  */
 function DashboardLayout() {
   // Initialize real-time WebSocket connection for all dashboard views

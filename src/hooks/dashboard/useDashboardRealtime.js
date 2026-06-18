@@ -24,6 +24,10 @@ class MockSocket {
   disconnect() {}
 }
 
+/**
+ * Establishes real-time dashboard updates by wiring WebSocket events to React Query cache operations.
+ * @return {Object} An object with `isConnected` property; `true` if the socket is connected, `false` otherwise.
+ */
 export function useDashboardRealtime() {
   const qc = useQueryClient();
   const socketRef = useRef(null);

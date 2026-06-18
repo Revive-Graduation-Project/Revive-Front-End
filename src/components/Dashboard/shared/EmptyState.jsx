@@ -1,4 +1,12 @@
-/** Reusable empty state for any dashboard list/table */
+/**
+ * Renders an empty state UI for dashboard lists and tables.
+ * @param {Object} props - Component props.
+ * @param {React.ComponentType} [props.icon] - Optional React component rendered as an icon.
+ * @param {string} props.title - The main headline text.
+ * @param {string} [props.description] - Optional supporting text beneath the title.
+ * @param {Object} [props.action] - Optional action object with onClick function and label string properties.
+ * @returns {JSX.Element} A centered layout with the title, optional icon, description, and action button.
+ */
 export function EmptyState({ icon: Icon, title, description, action }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-6 text-center gap-4">

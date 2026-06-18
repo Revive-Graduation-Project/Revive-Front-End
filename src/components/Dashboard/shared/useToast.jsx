@@ -40,9 +40,12 @@ const useToastStore = create((set) => ({
 
 // ── Hook ──────────────────────────────────────────────────────────
 /**
- * Returns toast helpers. Supports two call signatures:
- *   toast.success("message")           ← named helpers
- *   toast.addToast("message", "type")  ← generic shorthand (views use this)
+ * Provides helper functions for creating toast notifications.
+ * @returns {Object} An object containing methods to display toasts.
+ * @returns {Function} returns.success - Display a success toast.
+ * @returns {Function} returns.error - Display an error toast.
+ * @returns {Function} returns.info - Display an info toast.
+ * @returns {Function} returns.addToast - Display a toast of the specified type.
  */
 export function useToast() {
   const { addToast: _addToast } = useToastStore();
@@ -79,7 +82,10 @@ const TOAST_STYLES = {
   info: { icon: FiInfo, cls: "bg-sky-50   border-sky-200   text-sky-700", iconCls: "text-sky-500" },
 };
 
-// ── Container (mounted once in DashboardLayout) ───────────────────
+/**
+ * Renders active toast notifications in a fixed container at the bottom-right of the screen.
+ * Toasts include a close button for manual dismissal.
+ */
 export function ToastContainer() {
   const { toasts, removeToast } = useToastStore();
 

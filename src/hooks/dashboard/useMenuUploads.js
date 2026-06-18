@@ -5,6 +5,10 @@ export const menuUploadKeys = {
   all: ["menu-uploads"],
 };
 
+/**
+ * Fetches menu uploads.
+ * @return {Object} A query result containing menu uploads data and query state.
+ */
 export function useMenuUploads() {
   return useQuery({
     queryKey: menuUploadKeys.all,
@@ -12,7 +16,11 @@ export function useMenuUploads() {
   });
 }
 
-/** Mutation: upload a menu file (Excel/CSV) */
+/**
+ * Creates a mutation for uploading a menu file.
+ * The menu uploads list is automatically refetched when the upload completes.
+ * @return {Object} A mutation object with methods to manage the file upload.
+ */
 export function useUploadMenu() {
   const qc = useQueryClient();
   return useMutation({

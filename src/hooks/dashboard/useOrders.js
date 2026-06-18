@@ -8,10 +8,19 @@ export const orderKeys = {
   trending:() => ["orders", "trending"],
 };
 
+/**
+ * Fetches order metrics data.
+ * @returns {Object} The query result containing order metrics.
+ */
 export function useOrdersMetrics() {
   return useQuery({ queryKey: orderKeys.metrics(), queryFn: getOrdersMetrics });
 }
 
+/**
+ * Fetches a list of orders with optional filters and automatically polls for updates.
+ * @param {Object} [filters={}] - Filters to apply to the orders query.
+ * @returns {Object} The React Query result containing orders data and query state.
+ */
 export function useOrders(filters = {}) {
   return useQuery({
     queryKey: orderKeys.list(filters),
@@ -22,11 +31,18 @@ export function useOrders(filters = {}) {
   });
 }
 
+/**
+ * Fetches the list of trending menus.
+ * @returns {Object} A React Query query result for trending menus.
+ */
 export function useOrdersTrending() {
   return useQuery({ queryKey: orderKeys.trending(), queryFn: getTrendingMenus });
 }
 
-/** Mutation: update an order's status */
+/**
+ * Creates a mutation to update an order's status.
+ * @returns {Object} A mutation object for updating order statuses.
+ */
 export function useUpdateOrderStatus() {
   const qc = useQueryClient();
   return useMutation({

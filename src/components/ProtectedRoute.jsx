@@ -3,13 +3,7 @@ import { useNavigate } from "react-router";
 import { useAuthStore } from "../store";
 
 /**
- * ProtectedRoute
- *
- * Wraps any route that requires authentication.
- *
- * - Authenticated  → renders children normally
- * - NOT authenticated → shows a friendly message for 2 seconds,
- *                       then redirects the user to the Login page
+ * Renders protected route content when authenticated, or displays a login prompt when not.
  */
 function ProtectedRoute({ children }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);

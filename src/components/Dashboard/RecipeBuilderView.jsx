@@ -10,6 +10,11 @@ import {
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 
+/**
+ * React view for creating or editing meal recipes with dynamic ingredients and nutritional information.
+ * 
+ * Displays a form for entering meal metadata (name, category, price, cooking time, description), uploading a meal image, managing a dynamic ingredient list, and editing nutritional fields (fat, calories, protein, sugar). Pre-fills form data when editing an existing meal via location state. Provides input validation for prices, times, nutrients, and ingredient amounts. Shows a confirmation panel only when all required fields are complete (form fields, at least one ingredient, and a meal image).
+ */
 export default function RecipeBuilderView() {
   const { state } = useLocation();
   const editMeal = state?.editMeal ?? null;
