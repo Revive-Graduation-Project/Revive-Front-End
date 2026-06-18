@@ -28,21 +28,23 @@ function CustomerReviews({ data }) {
             {/* Left side: Content */}
             <div className="flex-1 flex flex-col justify-between min-w-0">
               <div>
-                <h4 className="text-[13px] font-bold text-[#1a1a1a] m-0 mb-1.5">Customer Reviews</h4>
+               <h4 className="text-[13px] font-bold text-[`#1a1a1a`] m-0 mb-1.5">{review.title || "Customer Review"}</h4>
                 <p className="text-[11px] text-gray-500 m-0 leading-relaxed line-clamp-3">
-                  this pasta is my favourite dish i have ever never eat . Highly recommended for pasta levels !
-                </p>
+                   {review.comment || "No review text available."}                </p>
               </div>
 
               {/* Reviewer Footer */}
               <div className="flex items-end justify-between mt-4">
                 <div className="flex items-center gap-2">
                   <div className="w-[26px] h-[26px] rounded-full overflow-hidden shrink-0">
-                    <img 
-                      src={`https://ui-avatars.com/api/?name=${review.name.replace(' ', '+')}&background=F97316&color=fff`} 
-                      alt="avatar" 
-                      className="w-full h-full object-cover" 
-                    />
+                    <div className="w-full h-full bg-orange-500 text-white flex items-center justify-center text-[10px] font-bold">
+                      {(review.name || "")
+                        .split(/\s+/)
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .map((p) => p[0]?.toUpperCase())
+                        .join("") || "U"
+                      }</div>
                   </div>
                   <div>
                     <p className="text-[11px] font-bold text-[#1a1a1a] m-0 leading-tight">{review.name}</p>
@@ -53,8 +55,8 @@ function CustomerReviews({ data }) {
                   </div>
                 </div>
                 <div className="text-[9px] text-gray-400 text-right whitespace-nowrap">
-                  <div>Oct 12 / 2026</div>
-                  <div>4:25</div>
+                  <div>{review.date || "-"}</div>
+                  <div>{review.time || "-"}</div> 
                 </div>
               </div>
             </div>

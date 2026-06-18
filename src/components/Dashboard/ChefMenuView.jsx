@@ -131,7 +131,7 @@ function ChefMenuView() {
   // Per-category counts — use live item count from actual menu data
   const categoryCounts = categoryItems.map(cat => ({
     ...cat,
-    count: allItems.filter(i => i.category?.toLowerCase() === cat.name?.toLowerCase()).length || cat.count,
+    count: allItems.filter(i => i.category?.toLowerCase() === cat.name?.toLowerCase()).length,
   }));
 
   // Build tabs dynamically

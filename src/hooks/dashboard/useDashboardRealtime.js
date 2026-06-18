@@ -37,7 +37,7 @@ export function useDashboardRealtime() {
     // 1. Live Orders (New incoming order)
     socket.on("orders:new", (newOrder) => {
       // Invalidate orders list or optimistic update
-      qc.invalidateQueries({ queryKey: orderKeys.list({}) });
+      qc.invalidateQueries({ queryKey: orderKeys.all });
       qc.invalidateQueries({ queryKey: kitchenKeys.orders() });
     });
 

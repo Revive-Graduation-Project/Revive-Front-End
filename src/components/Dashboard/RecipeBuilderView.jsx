@@ -112,6 +112,7 @@ export default function RecipeBuilderView() {
   };
 
   const handleSave = () => {
+    if (saving) return;
     if (!form.name.trim()) return;
     saveRecipe(
       { ...form, ingredients: localIngredients },
@@ -349,7 +350,7 @@ export default function RecipeBuilderView() {
                 { key: 'fat', label: 'Fat', color: 'text-blue-500', Icon: FiShare2 },
                 { key: 'calories', label: 'Calories', color: 'text-green-500', Icon: FiTarget },
                 { key: 'protein', label: 'Protein', color: 'text-blue-400', Icon: FiUser },
-                { key: 'sugar', label: 'Suger', color: 'text-orange-400', Icon: FiEye }
+                { key: 'sugar', label: 'Sugar', color: 'text-orange-400', Icon: FiEye }
               ].map(nut => (
                 <div key={nut.key} className="bg-white rounded-3xl pt-5 pb-6 px-4 flex flex-col items-center justify-center relative shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-gray-50/50">
                   <p className="text-[14px] font-medium text-[#1a1a1a] mb-3">{nut.label}</p>
@@ -392,9 +393,10 @@ export default function RecipeBuilderView() {
                   </button>
                   <button 
                      onClick={handleSave}
+                     disabled={saving}
                      className="cursor-pointer bg-orange-400 text-white font-bold py-3.5 px-12 rounded-2xl shadow-[0_4px_15px_rgba(249,115,22,0.3)] hover:bg-orange-600 transition-colors w-full sm:w-auto"
                   >
-                     {saved ? (editMeal ? "Saved!" : "Added!") : (editMeal ? "Save Changes" : "Add Meal")}
+                     {saving ? "Saving..." : saved ? (editMeal ? "Saved!" : "Added!") : (editMeal ? "Save Changes" : "Add Meal")}
                   </button>
                </div>
              </div>

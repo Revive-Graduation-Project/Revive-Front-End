@@ -11,17 +11,21 @@ const labels = {
   totalCustomers: "Total Customer",
   totalRevenue: "Total Revenue",
 };
-
 function formatValue(key, value) {
   if (key === "totalRevenue") return `$${value.toLocaleString()}`;
   return value.toLocaleString();
 }
+const metricOrder = ["totalOrders", "totalCustomers", "totalRevenue"];
 
-function MetricCards({ metrics }) {
+function MetricCards({ metrics = {} }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {Object.entries(metrics).map(([key, { value, change, trend }]) => {
+      {metricOrder.map((key) => {
+        const metric = metrics[key];
+        if (!metric) return null;
+        const { value = 0, change = 0, trend = "up" } = metric;
         const Icon = icons[key];
+        if (!Icon) return null;
         const isUp = trend === "up";
         const TrendIcon = isUp ? FiTrendingUp : FiTrendingDown;
 
@@ -33,7 +37,7 @@ function MetricCards({ metrics }) {
             <div className="w-[52px] h-[52px] rounded-2xl bg-[#F97316] flex items-center justify-center shrink-0">
               <Icon size={24} className="text-white" />
             </div>
-            
+
             <div className="flex-1">
               <p className="text-[12px] text-gray-500 font-medium m-0 mb-1.5">{labels[key]}</p>
               <div className="flex justify-between items-end">

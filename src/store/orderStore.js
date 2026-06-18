@@ -360,7 +360,7 @@ const useOrderStore = create(
           console.log('[ORDER] placeOrder response:', response.data);
 
           const newOrder = {
-             id: response.data.id || Math.floor(10000 + Math.random() * 90000).toString(),
+             id: response.data.id,
              date: response.data.createdAt || new Date().toISOString(),
              items: [...state.items],
              totalAmount: state.totalAmount,
@@ -371,6 +371,10 @@ const useOrderStore = create(
              cardDetails: state.savedCard,
              note: state.note
           };
+
+          if (!newOrder.id) {
+            console.warn("[ORDER] API did not return order ID");
+          }
 
           // Log to Payment Store for transaction history (PRD requirement)
           usePaymentStore.getState().addTransaction({

@@ -23,10 +23,10 @@ const EMPTY_FORM = {
   stock: "", costPerUnit: "",
 };
 
-function Field({ label, error, children }) {
+function Field({ htmlFor, label, error, children }) {
   return (
     <div>
-      <label className="block text-[13px] font-bold text-gray-700 mb-1">{label}</label>
+      <label htmlFor={htmlFor} className="block text-[13px] font-bold text-gray-700 mb-1">{label}</label>
       {children}
       {error && (
         <p className="text-[11px] text-red-500 mt-1 flex items-center gap-1">
@@ -124,78 +124,176 @@ function IngredientModal({ isOpen, onClose, onSubmit, initialData }) {
           <h2 className="text-[18px] font-bold text-[#1a1a1a]">
             {isEditing ? "Edit Ingredient" : "Add Ingredient"}
           </h2>
-          <button type="button" onClick={onClose} className="p-2 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors">
+         <button type="button" aria-label="Close ingredient modal" onClick={onClose} className="p-2 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors">
             <FiX size={20} />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4" noValidate>
+<form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4" noValidate>
 
-          <Field label="Name" error={errors.name}>
-            <input
-              type="text" name="name" value={formData.name}
-              onChange={handleChange} onBlur={handleBlur}
-              placeholder="e.g. Tomatoes"
-              className={inputClass("name")}
-            />
-          </Field>
+  <Field htmlFor="ingredient-name" label="Name" error={errors.name}>
+    <input
+      id="ingredient-name"
+      type="text"
+      name="name"
+      value={formData.name}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      placeholder="e.g. Tomatoes"
+      className={inputClass("name")}
+    />
+  </Field>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Category">
-              <select name="category" value={formData.category} onChange={handleChange} className={inputClass("category")}>
-                <option value="Vegetables">Vegetables</option>
-                <option value="Protein">Protein</option>
-                <option value="Sauces">Sauces</option>
-                <option value="Stock">Stock</option>
-              </select>
-            </Field>
-            <Field label="Stock Amount" error={errors.stock}>
-              <input
-                type="text" name="stock" value={formData.stock}
-                onChange={handleChange} onBlur={handleBlur}
-                placeholder="e.g. 5000"
-                className={inputClass("stock")}
-              />
-            </Field>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Price (e.g. 40)" error={errors.costPerUnit}>
-              <input
-                type="text" name="costPerUnit" value={formData.costPerUnit}
-                onChange={handleChange} onBlur={handleBlur}
-                placeholder="40"
-                className={inputClass("costPerUnit")}
-              />
-            </Field>
-            <Field label="Fat (optional)" error={errors.fat}>
-              <input type="text" name="fat" value={formData.fat} onChange={handleChange} onBlur={handleBlur} placeholder="e.g. 15g" className={inputClass("fat")} />
-            </Field>
-          </div>
+  <div className="grid grid-cols-2 gap-4">
+    <Field htmlFor="ingredient-category" label="Category">
+      <select
+        id="ingredient-category"
+        name="category"
+        value={formData.category}
+        onChange={handleChange}
+        className={inputClass("category")}
+      >
+        <option value="Vegetables">Vegetables</option>
+        <option value="Protein">Protein</option>
+        <option value="Sauces">Sauces</option>
+        <option value="Stock">Stock</option>
+      </select>
+    </Field>
 
-          <div className="grid grid-cols-3 gap-4">
-            <Field label="Calories" error={errors.calories}>
-              <input type="text" name="calories" value={formData.calories} onChange={handleChange} onBlur={handleBlur} placeholder="47g" className={inputClass("calories")} />
-            </Field>
-            <Field label="Protein" error={errors.protein}>
-              <input type="text" name="protein" value={formData.protein} onChange={handleChange} onBlur={handleBlur} placeholder="25g" className={inputClass("protein")} />
-            </Field>
-            <Field label="Sugar" error={errors.sugar}>
-              <input type="text" name="sugar" value={formData.sugar} onChange={handleChange} onBlur={handleBlur} placeholder="5g" className={inputClass("sugar")} />
-            </Field>
-          </div>
 
-          <div className="mt-2 flex gap-3 justify-end">
-            <button type="button" onClick={onClose} className="px-5 py-2.5 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors">
-              Cancel
-            </button>
-            <button type="submit" className="px-5 py-2.5 rounded-xl font-bold text-white bg-orange-500 hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/30">
-              {isEditing ? "Save Changes" : "Add Ingredient"}
-            </button>
-          </div>
+    <Field
+      htmlFor="ingredient-stock"
+      label="Stock Amount"
+      error={errors.stock}
+    >
+      <input
+        id="ingredient-stock"
+        type="text"
+        name="stock"
+        value={formData.stock}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        placeholder="e.g. 5000"
+        className={inputClass("stock")}
+      />
+    </Field>
+  </div>
 
-        </form>
+
+  <div className="grid grid-cols-2 gap-4">
+    <Field
+      htmlFor="ingredient-cost"
+      label="Price (e.g. 40)"
+      error={errors.costPerUnit}
+    >
+      <input
+        id="ingredient-cost"
+        type="text"
+        name="costPerUnit"
+        value={formData.costPerUnit}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        placeholder="40"
+        className={inputClass("costPerUnit")}
+      />
+    </Field>
+
+
+    <Field
+      htmlFor="ingredient-fat"
+      label="Fat (optional)"
+      error={errors.fat}
+    >
+      <input
+        id="ingredient-fat"
+        type="text"
+        name="fat"
+        value={formData.fat}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        placeholder="e.g. 15g"
+        className={inputClass("fat")}
+      />
+    </Field>
+  </div>
+
+
+  <div className="grid grid-cols-3 gap-4">
+    <Field
+      htmlFor="ingredient-calories"
+      label="Calories"
+      error={errors.calories}
+    >
+      <input
+        id="ingredient-calories"
+        type="text"
+        name="calories"
+        value={formData.calories}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        placeholder="47g"
+        className={inputClass("calories")}
+      />
+    </Field>
+
+
+    <Field
+      htmlFor="ingredient-protein"
+      label="Protein"
+      error={errors.protein}
+    >
+      <input
+        id="ingredient-protein"
+        type="text"
+        name="protein"
+        value={formData.protein}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        placeholder="25g"
+        className={inputClass("protein")}
+      />
+    </Field>
+
+
+    <Field
+      htmlFor="ingredient-sugar"
+      label="Sugar"
+      error={errors.sugar}
+    >
+      <input
+        id="ingredient-sugar"
+        type="text"
+        name="sugar"
+        value={formData.sugar}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        placeholder="5g"
+        className={inputClass("sugar")}
+      />
+    </Field>
+  </div>
+
+
+  <div className="mt-2 flex gap-3 justify-end">
+    <button
+      type="button"
+      onClick={onClose}
+      className="px-5 py-2.5 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors"
+    >
+      Cancel
+    </button>
+
+    <button
+      type="submit"
+      className="px-5 py-2.5 rounded-xl font-bold text-white bg-orange-500 hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/30"
+    >
+      {isEditing ? "Save Changes" : "Add Ingredient"}
+    </button>
+  </div>
+
+</form>
       </div>
     </div>
   );

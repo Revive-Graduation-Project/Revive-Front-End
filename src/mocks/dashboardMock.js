@@ -8,9 +8,16 @@
 // ── Dashboard Page ────────────────────────────────────────────────
 
 const loadMock = (key, defaultData) => {
-  const saved = localStorage.getItem(`mock_${key}`);
-  if (saved) return JSON.parse(saved);
-  localStorage.setItem(`mock_${key}`, JSON.stringify(defaultData));
+  const storageKey = `mock_${key}`;
+  const saved = localStorage.getItem(storageKey);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch {
+      localStorage.removeItem(storageKey);
+    }
+  }
+  localStorage.setItem(storageKey, JSON.stringify(defaultData));
   return defaultData;
 };
 

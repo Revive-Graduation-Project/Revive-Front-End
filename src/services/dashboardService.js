@@ -32,9 +32,7 @@ export const updateOrderStatus     = (orderId, status) => api.patch(`/dashboard/
 // ── Kitchen ───────────────────────────────────────────────────────
 export const getKitchenOrders = () =>
   api.get("/kitchen/orders").then(r => {
-    console.log('[SVC] GET /kitchen/orders raw:', r.data);
     const mapped = Mappers.mapKitchenOrders(r.data);
-    console.log('[SVC] kitchen mapped queue length:', mapped.queue?.length);
     return mapped;
   });
 export const updateKitchenStatus   = (orderId, status) => api.patch(`/kitchen/orders/${encodeURIComponent(orderId)}/status`, { status }).then(r => r.data);

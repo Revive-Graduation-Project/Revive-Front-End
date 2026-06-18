@@ -9,21 +9,21 @@
 
 // ── Dashboard Overview Mappers ─────────────────────────────────────
 
-export const mapDashboardMetrics = (data) => ({
+export const mapDashboardMetrics = (data = {}) => ({
   totalOrders: {
-    value: data.totalOrders?.value || 0,
-    change: data.totalOrders?.change || 0,
-    trend: data.totalOrders?.trend || "up",
+    value: data?.totalOrders?.value ?? 0,
+    change: data?.totalOrders?.change ?? 0,
+    trend: data?.totalOrders?.trend ?? "up",
   },
   totalCustomers: {
-    value: data.totalCustomers?.value || 0,
-    change: data.totalCustomers?.change || 0,
-    trend: data.totalCustomers?.trend || "down",
+    value: data?.totalCustomers?.value ?? 0,
+    change: data?.totalCustomers?.change ?? 0,
+    trend: data?.totalCustomers?.trend ?? "down",
   },
   totalRevenue: {
-    value: data.totalRevenue?.value || 0,
-    change: data.totalRevenue?.change || 0,
-    trend: data.totalRevenue?.trend || "up",
+    value: data?.totalRevenue?.value ?? 0,
+    change: data?.totalRevenue?.change ?? 0,
+    trend: data?.totalRevenue?.trend ?? "up",
   },
 });
 
@@ -91,7 +91,7 @@ export const mapRecentActivity = (data) => {
 
 // ── Orders Mappers ────────────────────────────────────────────────
 
-export const mapOrdersMetrics = (data) => ({
+export const mapOrdersMetrics = (data = {}) => ({
   totalOrders: data.totalOrders || 0,
   totalOrdersChange: data.totalOrdersChange ?? 0,
   preparing: data.preparing || 0,
@@ -148,7 +148,7 @@ export const mapKitchenOrders = (data) => {
 
 export const mapMenuCategories = (data) => {
   // Support both array (legacy) and { totalChange, items[] } (new shape)
-  const items = Array.isArray(data) ? data : (data?.items || []);
+  const items = Array.isArray(data) ? data : (Array.isArray(data?.items) ? data.items : []);
   const totalChange = Array.isArray(data) ? 0 : (data?.totalChange ?? 0);
   const totalPercentage = Array.isArray(data) ? 100 : (data?.totalPercentage ?? 100);
   return {
@@ -183,13 +183,13 @@ export const mapMenuItems = (data) => {
 
 // ── Ingredients Mappers ───────────────────────────────────────────
 
-export const mapIngredientsMetrics = (data) => ({
-  total: data.total || 0,
-  totalChange: data.totalChange ?? 0,
-  lowStock: data.lowStock || 0,
-  lowStockChange: data.lowStockChange ?? 0,
-  outOfStock: data.outOfStock || 0,
-  outOfStockChange: data.outOfStockChange ?? 0,
+export const mapIngredientsMetrics = (data = {}) => ({
+  total: data?.total ?? 0,
+  totalChange: data?.totalChange ?? 0,
+  lowStock: data?.lowStock ?? 0,
+  lowStockChange: data?.lowStockChange ?? 0,
+  outOfStock: data?.outOfStock ?? 0,
+  outOfStockChange: data?.outOfStockChange ?? 0,
 });
 
 export const mapIngredients = (data) => {

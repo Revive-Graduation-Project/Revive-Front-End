@@ -39,20 +39,37 @@ function MenuManagementView() {
     if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
     else if (e.type === "dragleave") setDragActive(false);
   };
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const ALLOWED_EXTENSIONS = [".csv", ".xlsx", ".xls"];
 
+const isValidMenuFile = (file) => {
+  const name = file.name.toLowerCase();
+  const hasAllowedExt = ALLOWED_EXTENSIONS.some((ext) => name.endsWith(ext));
+  return hasAllowedExt && file.size <= MAX_FILE_SIZE;
+};
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setSelectedFile(e.dataTransfer.files[0]);
+      const file = e.dataTransfer.files[0];
+      if (!isValidMenuFile(file)) {
+        addToast("Please upload a CSV/XLS/XLSX file up to 10MB.", "error");
+        return;
+      }
+      setSelectedFile(file);
     }
   };
 
   const handleChange = (e) => {
     e.preventDefault();
     if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+      const file = e.target.files[0];
+      if (!isValidMenuFile(file)) {
+        addToast("Please upload a CSV/XLS/XLSX file up to 10MB.", "error");
+        return;
+      }
+      setSelectedFile(file);
     }
   };
 

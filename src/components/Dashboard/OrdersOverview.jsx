@@ -15,7 +15,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 function OrdersOverview({ data }) {
-  const maxValue = Math.max(...data.map(d => d.value));
+  const totalOrders = data.reduce((acc, d) => acc + d.orders, 0);
 
   return (
     <div className="bg-white rounded-3xl px-6 py-6 shadow-sm flex flex-col h-full border border-gray-50">
@@ -24,7 +24,7 @@ function OrdersOverview({ data }) {
           <h3 className="text-[14px] font-bold text-[#1a1a1a] m-0">Orders overview</h3>
           <p className="text-[11px] text-gray-400 mt-0.5">
             <FiArrowUpRight className="text-orange-500 inline mr-1" />
-            <span className="font-semibold text-[#1a1a1a]">{data.reduce((acc, d) => acc + d.value, 0)}</span> in this period
+            <span className="font-semibold text-[#1a1a1a]">{totalOrders}</span> in this period
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -42,11 +42,24 @@ function OrdersOverview({ data }) {
             <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#9CA3AF" }} dy={10} />
             <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#9CA3AF" }} />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: "transparent" }} />
-            <Bar dataKey="orders" radius={[8, 8, 8, 8]}>
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.highlight ? "#F97316" : "#FDE68A"} />
-              ))}
-            </Bar>
+            <Bar
+              dataKey="orders"
+              radius={[8, 8, 8, 8]}
+              shape={(props) => {
+                const { x, y, width, height, payload } = props;
+
+                return (
+                  <rect
+                    x={x}
+                    y={y}
+                    width={width}
+                    height={height}
+                    rx={8}
+                    fill={payload.highlight ? "#F97316" : "#FDE68A"}
+                  />
+                );
+              }}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>

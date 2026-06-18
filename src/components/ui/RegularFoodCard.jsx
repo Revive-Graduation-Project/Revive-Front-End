@@ -108,13 +108,17 @@ const RegularFoodCard = ({ meal }) => {
           </div>
           <button
             onClick={() => {
+              const rawPrice =
+                finalPrice != null && String(finalPrice).trim() !== "" ? finalPrice : price;
+              const normalizedPrice = Number.parseFloat(String(rawPrice).replace(/[^\d.]/g, ""));
+              if (!Number.isFinite(normalizedPrice) || normalizedPrice <= 0) return;
+
               const itemToAdd = {
                 id: meal.id,
                 name,
-                price: parseFloat(finalPrice ?? price),
+                price: normalizedPrice,
                 imageUrl,
               };
-              console.log("Adding item to cart:", itemToAdd);
               addItem(itemToAdd);
             }}
             className="w-full  bg-(--color-orange) hover:bg-orange-600 active:bg-orange-700 text-white font-medium py-1 px-1 rounded-2xl transition-colors shadow-sm hover:shadow-md cursor-pointer"

@@ -490,13 +490,7 @@ export const MOCK_HANDLERS = [
     dash.mockMenuItems.push(newItem);
     return { status: 201, data: newItem };
   }},
-
-  // ──────────────────────────────────────────────
-  // MENU MANAGEMENT
-  // ──────────────────────────────────────────────
-  { method: "get",  match: (url) => url.endsWith("/menu/uploads"), handler: () => ({ status: 200, data: dash.mockMenuUploads }) },
-  { method: "post", match: (url) => url.endsWith("/menu/upload"),  handler: () => ({ status: 200, data: { success: true, itemsImported: 42 } }) },
-
+  
   // ──────────────────────────────────────────────
   // INGREDIENTS
   // ──────────────────────────────────────────────

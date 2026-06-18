@@ -2,7 +2,7 @@ import { useState } from "react";
 import DashboardHeader from "./DashboardHeader";
 import { useIngredientsMetrics, useIngredients, useUploadIngredients, useDeleteIngredient, useCreateIngredient, useUpdateIngredient } from "../../hooks/dashboard/useIngredients";
 import { useToast } from "./shared/useToast";
-import { FiSearch, FiPlus, FiUploadCloud, FiTrash2, FiEdit2 } from "react-icons/fi";
+import { FiPlus, FiUploadCloud, FiTrash2, FiEdit2 } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 import EmptyState from "./shared/EmptyState";
@@ -46,10 +46,10 @@ function CircleMetric({ pct, color, value, label, badge, change = 0 }) {
   );
 }
 
-const CATEGORY_TABS = ["All Ingredients", "Protien", "Vegetables", "Sauces", "Stock"];
+const CATEGORY_TABS = ["All Ingredients", "Protein", "Vegetables", "Sauces", "Stock"];
 
 function IngredientsView() {
-  const [search, setSearch] = useState("");
+
   const [activeCategory, setActiveCategory] = useState("All Ingredients");
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("asc");
@@ -141,14 +141,14 @@ function IngredientsView() {
   const allIngredients = ingredients || [];
   const categories      = [...new Set(allIngredients.map((i) => i.category))];
 
-  const filtered = (() => {
-    let items = allIngredients.filter((item) => {
-      const matchCat =
-        activeCategory === "All Ingredients" ||
-        item.category.toLowerCase() === activeCategory.toLowerCase();
-      const matchSearch = item.name.toLowerCase().includes(search.toLowerCase());
-      return matchCat && matchSearch;
-    });
+ const filtered = (() => {
+  let items = allIngredients.filter((item) => {
+    const matchCat =
+      activeCategory === "All Ingredients" ||
+      item.category.toLowerCase() === activeCategory.toLowerCase();
+
+    return matchCat;
+  });
     if (sortKey) {
       items.sort((a, b) => {
         const av = a[sortKey] ?? "";
@@ -182,7 +182,7 @@ function IngredientsView() {
   const metricRows = metrics
     ? [
         { label: "Total Ingredients", value: metrics.total || 0, pct: 100, change: metrics.totalChange || 1.58 },
-        { label: "Protien",           value: getCategoryCount("Protein"),    pct: getCategoryPct("Protein"),  change: 0.92 },
+        { label: "Protein",           value: getCategoryCount("Protein"),    pct: getCategoryPct("Protein"),  change: 0.92 },
         { label: "Vegetables",        value: getCategoryCount("Vegetables"), pct: getCategoryPct("Vegetables"),  change: 0.12 },
         { label: "Sauces",            value: getCategoryCount("Sauces"),     pct: getCategoryPct("Sauces"),  change: 0.92 },
         { label: "Out of stock",      value: metrics.outOfStock || 0, pct: metrics.total ? Math.round((metrics.outOfStock / metrics.total) * 100) : 0,  badge: true, change: metrics.outOfStockChange || 0.42 },
@@ -253,7 +253,7 @@ function IngredientsView() {
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={10}><EmptyState title="No ingredients found" description="Adjust your search or add a new ingredient." /></td></tr>
+                  <tr><td colSpan={10}><EmptyState title="No ingredients found"  description="add a new ingredient." /></td></tr>
                 ) : (
                   filtered.map((item, i) => (
                     <tr key={item.id} className="border-b border-gray-100 hover:bg-orange-50/30 transition-colors">
@@ -272,11 +272,25 @@ function IngredientsView() {
                         {item.stock >= 1000 ? `${(item.stock/1000).toFixed(0)}k` : item.stock}
                       </td>
                       <td className="px-4 py-4 text-[12px] font-bold text-[#F97316] text-center">{item.costPerUnit}</td>
-                      <td className="px-4 py-4 text-center cursor-pointer hover:text-orange-500 transition-colors" onClick={() => { setEditingIngredient(item); setIsModalOpen(true); }}>
-                        <FiEdit2 size={16} />
+                      <td className="px-4 py-4 text-center">
+                        <button
+                          type="button"
+                          aria-label={`Edit ${item.name}`}
+                          className="cursor-pointer hover:text-orange-500 transition-colors"
+                          onClick={() => { setEditingIngredient(item); setIsModalOpen(true); }}
+                        >
+                          <FiEdit2 size={16} />
+                        </button>
                       </td>
-                      <td className="px-4 py-4 text-center cursor-pointer text-red-500 hover:text-red-600 transition-colors" onClick={() => handleDelete(item.id)}>
-                        <FiTrash2 size={16} />
+                      <td className="px-4 py-4 text-center">
+                        <button
+                          type="button"
+                          aria-label={`Delete ${item.name}`}
+                          className="cursor-pointer text-red-500 hover:text-red-600 transition-colors"
+                          onClick={() => handleDelete(item.id)}
+                        >
+                          <FiTrash2 size={16} />
+                        </button>
                       </td>
                     </tr>
                   ))

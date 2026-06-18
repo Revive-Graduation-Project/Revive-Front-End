@@ -118,6 +118,10 @@ function OrdersView() {
     : [];
 
   const handleSortChange = (key, dir) => { setSortKey(key); setSortDir(dir); };
+  const salesTarget = metrics?.dailyGoal?.salesTarget ?? 0;
+  const ordersTarget = metrics?.dailyGoal?.ordersTarget ?? 0;
+  const salesPct = salesTarget > 0 ? (metrics.dailyGoal.salesCurrent / salesTarget) * 100 : 0;
+  const orderPct = ordersTarget > 0 ? (metrics.dailyGoal.ordersCurrent / ordersTarget) * 100 : 0;
 
   return (
     <div>
@@ -175,9 +179,9 @@ function OrdersView() {
                 
                 <div className="absolute right-6 top-1/2 -translate-y-[40%]">
                   <CircularProgress 
-                    salesPct={(metrics.dailyGoal.salesCurrent / metrics.dailyGoal.salesTarget) * 100} 
-                    orderPct={(metrics.dailyGoal.ordersCurrent / metrics.dailyGoal.ordersTarget) * 100}
-                    displayPct={Math.round((metrics.dailyGoal.salesCurrent / metrics.dailyGoal.salesTarget) * 100)}
+                    salesPct={salesPct} 
+                    orderPct={orderPct}
+                    displayPct={Math.round(salesPct)}
                   />
                 </div>
 

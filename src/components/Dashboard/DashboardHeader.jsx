@@ -58,7 +58,8 @@ function DashboardHeader({ title = "Dashboard", subtitle }) {
                 className="w-[42px] h-[42px] rounded-xl object-cover bg-white shadow-sm"
                 onError={(e) => {
                   e.currentTarget.style.display = "none";
-                  e.currentTarget.nextSibling.style.display = "flex";
+                  const fallback = e.currentTarget.nextElementSibling;
+                  if (fallback) fallback.style.display = "flex";
                 }}
               />
             ) : null}

@@ -36,11 +36,16 @@ export function useUpdateOrderStatus() {
       await qc.cancelQueries({ queryKey: orderKeys.list({}) });
       const prev = qc.getQueriesData({ queryKey: orderKeys.all });
       qc.setQueriesData({ queryKey: orderKeys.all }, (old) => {
-        if (!old?.orders) return old;
-        return {
-          ...old,
-          orders: old.orders.map((o) => o.id === orderId ? { ...o, status } : o),
-        };
+        if (Array.isArray(old)) {
+          return old.map((o) => (o.id === orderId ? { ...o, status } : o));
+        }
+        if (old?.orders && Array.isArray(old.orders)) {
+          return {
+            ...old,
+            orders: old.orders.map((o) => (o.id === orderId ? { ...o, status } : o)),
+          };
+        }
+        return old;
       });
       return { prev };
     },

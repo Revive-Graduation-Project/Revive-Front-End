@@ -1,6 +1,6 @@
 /**
  * Dashboard Overview Hooks
- * All hooks use React Query — stale time / cache config inherited from QueryClient in main.jsx
+ * All hooks use React Query — stale time / cache config inherited from QueryClient
  */
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
