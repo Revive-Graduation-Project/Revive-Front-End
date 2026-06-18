@@ -210,7 +210,7 @@ export const MOCK_HANDLERS = [
         dash.mockOrders.unshift({
           id: shortId,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          name: body.items?.[0]?.name || "Custom Order",
+          name: body.items?.map(i => i.quantity > 1 ? `${i.name} (x${i.quantity})` : i.name).join(', ') || "Custom Order",
           items: body.items?.length || 0,
           total: body.finalTotal || body.totalAmount,
           customer: currentUser?.name || "Guest",

@@ -1,10 +1,11 @@
 import { useState, useCallback } from "react";
-import { FiInbox, FiRefreshCw } from "react-icons/fi";
+import { FiInbox, FiRefreshCw, FiArrowLeft } from "react-icons/fi";
 import DashboardHeader from "./DashboardHeader";
 import { useRealtimeKitchen, useUpdateKitchenStatus } from "../../hooks/dashboard/useKitchenOrders";
 import { DashboardPageSkeleton, KanbanCardSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 import ConfirmModal from "./shared/ConfirmModal";
+import OrderDetailsModal from "./shared/OrderDetailsModal";
 
 const COLUMNS = [
   { key: "queue", label: "Order Queue", action: "Start Preparing", nextStatus: "preparing", prevStatus: null },
@@ -16,7 +17,7 @@ const COLUMNS = [
  * A single kitchen order card matching the Figma design:
  * white card, label/value grid (Order / Time / Name / Notes), status button at bottom
  */
-function OrderCard({ order, columnKey, onAction }) {
+function OrderCard({ order, columnKey, onAction, onViewOrder }) {
   const col = COLUMNS.find((c) => c.key === columnKey);
 
   const getButtonStyle = (action) => {
@@ -27,7 +28,10 @@ function OrderCard({ order, columnKey, onAction }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-md flex flex-col gap-3">
+    <div 
+      className="group bg-white rounded-2xl p-4 shadow-md flex flex-col gap-3 cursor-pointer hover:shadow-lg transition-all duration-200 border border-transparent hover:border-orange-200"
+      onClick={onViewOrder}
+    >
       {/* Info grid */}
       <div className="grid grid-cols-[44px_1fr] gap-x-2 gap-y-1 text-[11px] sm:text-[12px]">
         <span className="text-gray-500 font-medium pt-0.5">Order</span>
@@ -37,7 +41,12 @@ function OrderCard({ order, columnKey, onAction }) {
         <span className="text-[#1a1a1a] font-semibold text-right">{order.time}</span>
 
         <span className="text-gray-500 font-medium">Name</span>
-        <span className="text-[#1a1a1a] font-semibold truncate text-right">{order.name || order.items?.[0]}</span>
+        <span 
+          className="text-[#1a1a1a] font-semibold truncate text-right"
+          title={order.name || (Array.isArray(order.items) ? order.items.join(', ') : order.items)}
+        >
+          {order.name || (Array.isArray(order.items) ? order.items.join(', ') : order.items)}
+        </span>
 
         <span className="text-gray-500 font-medium pt-1">Notes</span>
         <div className="flex justify-end pt-1">
@@ -51,32 +60,25 @@ function OrderCard({ order, columnKey, onAction }) {
         </div>
       </div>
 
+      {/* Hover hint */}
+      <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 -mt-1 translate-y-1 group-hover:translate-y-0">
+        <span className="text-[10px] font-semibold text-orange-400 tracking-wide">Click to view details</span>
+        <span className="text-orange-400 text-[10px]">→</span>
+      </div>
+
       {/* Action buttons */}
       <div className="flex justify-center mt-1 gap-2">
         {col.prevStatus && (
           <button
-            type="button"
-            onClick={() => onAction(order.id, col.prevStatus)}
-            className="px-3 py-1.5 rounded-full text-[12px] font-semibold cursor-pointer transition-colors bg-white text-gray-500 border border-gray-200 hover:bg-gray-50 hover:text-gray-700"
-            title="Move Back"
+            onClick={(e) => { e.stopPropagation(); onAction(order.id, col.prevStatus); }}
+            className={`flex-1 py-2 rounded-xl text-[12px] font-bold transition-all shadow-sm ${getButtonStyle('Start Preparing')}`}
           >
-            Back
-          </button>
-        )}
-        {columnKey === "queue" && (
-          <button
-            type="button"
-            onClick={() => onAction(order.id, "cancelled")}
-            className="px-3 py-1.5 rounded-full text-[12px] font-semibold cursor-pointer transition-colors bg-white text-red-500 border border-red-200 hover:bg-red-50 hover:text-red-600"
-            title="Cancel Order"
-          >
-            Cancel
+            Undo
           </button>
         )}
         <button
-          type="button"
-          onClick={() => onAction(order.id, col.nextStatus)}
-          className={`flex-1 px-5 py-1.5 rounded-full text-[12px] font-semibold cursor-pointer transition-colors ${getButtonStyle(col.action)}`}
+          onClick={(e) => { e.stopPropagation(); onAction(order.id, col.nextStatus); }}
+          className={`flex-2 py-2 rounded-xl text-[12px] font-bold transition-all shadow-sm ${getButtonStyle(col.action)}`}
         >
           {col.action}
         </button>
@@ -86,10 +88,13 @@ function OrderCard({ order, columnKey, onAction }) {
 }
 
 function LiveKitchenView() {
+  const [revertingOrder, setRevertingOrder] = useState(null);
+  const [viewingOrder, setViewingOrder] = useState(null);
   const { boards, isConnected, isFetching, error, refetch } = useRealtimeKitchen();
   const { mutate: updateStatus } = useUpdateKitchenStatus();
   const [orderToCancel, setOrderToCancel] = useState(null);
   const [orderToMarkDone, setOrderToMarkDone] = useState(null);
+  const [orderToRevert, setOrderToRevert] = useState(null);
 
   const handleAction = useCallback((orderId, nextStatus) => {
     if (nextStatus === "cancelled") {
@@ -114,6 +119,13 @@ function LiveKitchenView() {
     if (orderToMarkDone) {
       updateStatus({ orderId: orderToMarkDone, nextStatus: "done" });
       setOrderToMarkDone(null);
+    }
+  };
+
+  const confirmRevert = () => {
+    if (orderToRevert) {
+      updateStatus({ orderId: orderToRevert, nextStatus: "ready" });
+      setOrderToRevert(null);
     }
   };
 
@@ -178,6 +190,7 @@ function LiveKitchenView() {
                           order={order}
                           columnKey={col.key}
                           onAction={handleAction}
+                          onViewOrder={() => setViewingOrder(order)}
                         />
                       ))
                     )}
@@ -203,14 +216,23 @@ function LiveKitchenView() {
               {boards.done && boards.done.length > 0 ? (
                 <div className="flex gap-5">
                   {(boards.done || []).map((order) => (
-                    <div key={order.id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-md hover:shadow-lg transition-shadow flex flex-col gap-3 min-w-[280px] shrink-0">
+                    <div 
+                      key={order.id} 
+                      className="group bg-white rounded-2xl p-4 border border-gray-100 shadow-md hover:shadow-lg transition-all duration-200 flex flex-col gap-3 min-w-[280px] shrink-0 cursor-pointer hover:border-orange-200"
+                      onClick={() => setViewingOrder(order)}
+                    >
                     <div className="grid grid-cols-[44px_1fr] gap-x-2 gap-y-1 text-[11px] sm:text-[12px]">
                       <span className="text-gray-500 font-medium pt-0.5">Order</span>
                       <span className="text-[#1a1a1a] font-semibold text-right pt-0.5">{order.id}</span>
                       <span className="text-gray-500 font-medium">Time</span>
                       <span className="text-[#1a1a1a] font-semibold text-right">{order.time}</span>
                       <span className="text-gray-500 font-medium">Name</span>
-                      <span className="text-[#1a1a1a] font-semibold truncate text-right">{order.name || order.items?.[0]}</span>
+                      <span 
+                        className="text-[#1a1a1a] font-semibold truncate text-right"
+                        title={order.name || (Array.isArray(order.items) ? order.items.join(', ') : order.items)}
+                      >
+                        {order.name || (Array.isArray(order.items) ? order.items.join(', ') : order.items)}
+                      </span>
                       <span className="text-gray-500 font-medium pt-1">Notes</span>
                       <div className="flex justify-end pt-1">
                         {order.notes ? (
@@ -222,12 +244,25 @@ function LiveKitchenView() {
                         )}
                       </div>
                     </div>
-                    <div className="flex justify-center mt-2">
-                      <div className="w-9 h-9 rounded-full bg-[#16A34A] flex items-center justify-center shadow-md shadow-green-500/30">
-                        <svg viewBox="0 0 20 20" fill="white" className="w-5 h-5">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      </div>
+                    {/* Hover hint */}
+                    <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 -mt-1 translate-y-1 group-hover:translate-y-0">
+                      <span className="text-[10px] font-semibold text-orange-400 tracking-wide">Click to view details</span>
+                      <span className="text-orange-400 text-[10px]">→</span>
+                    </div>
+                    <div className="flex justify-center mt-1">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setOrderToRevert(order.id); }}
+                        className="flex items-center justify-center gap-1 bg-white text-[#1a1a1a] border border-[#d1d5db] hover:bg-gray-50 flex-1 py-2 rounded-xl text-[12px] font-bold transition-all shadow-sm"
+                        title="Undo Done Status"
+                      >
+                        <FiArrowLeft size={14} />
+                      </button>
+                      <button
+                        disabled
+                        className="flex-3 py-2 rounded-xl text-[12px] font-bold transition-all shadow-sm bg-gray-100 text-gray-400 border border-gray-100 cursor-not-allowed ml-2"
+                      >
+                        Done
+                      </button>
                     </div>
                     </div>
                   ))}
@@ -256,10 +291,26 @@ function LiveKitchenView() {
         isOpen={!!orderToMarkDone}
         onClose={() => setOrderToMarkDone(null)}
         onConfirm={confirmMarkDone}
-        title="Mark as Done?"
-        message="This order will be moved to the Done list and marked as completed."
-        confirmLabel="Mark Done"
+        title="Ready"
+        message="Are you sure this order is ready and should be moved to the Done list?"
+        confirmLabel="Ready"
         confirmClassName="bg-[#16A34A] hover:bg-green-700 shadow-lg shadow-green-500/30"
+      />
+      <ConfirmModal
+        isOpen={!!orderToRevert}
+        onClose={() => setOrderToRevert(null)}
+        onConfirm={confirmRevert}
+        title="Not Done"
+        message="Are you sure this order is not Done and should be moved to the Ready list?"
+        confirmLabel="Not Done"
+        confirmClassName="bg-[#16A34A] hover:bg-green-700 shadow-lg shadow-green-500/30"
+      />
+
+      <OrderDetailsModal
+        isOpen={!!viewingOrder}
+        onClose={() => setViewingOrder(null)}
+        order={viewingOrder}
+        showCustomerInfo={false}
       />
     </div>
   );

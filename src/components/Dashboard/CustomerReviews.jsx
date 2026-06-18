@@ -30,7 +30,7 @@ function CustomerReviews({ data }) {
               <div>
                 <h4 className="text-[13px] font-bold text-[#1a1a1a] m-0 mb-1.5">Customer Reviews</h4>
                 <p className="text-[11px] text-gray-500 m-0 leading-relaxed line-clamp-3">
-                  this pasta is my favourite dish i have ever never eat . Highly recommended for pasta levels !
+                  {review.text || "No review text provided."}
                 </p>
               </div>
 
@@ -53,8 +53,7 @@ function CustomerReviews({ data }) {
                   </div>
                 </div>
                 <div className="text-[9px] text-gray-400 text-right whitespace-nowrap">
-                  <div>Oct 12 / 2026</div>
-                  <div>4:25</div>
+                  <div>{review.date}</div>
                 </div>
               </div>
             </div>

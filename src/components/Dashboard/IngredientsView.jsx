@@ -1,7 +1,7 @@
 import { useState } from "react";
 import DashboardHeader from "./DashboardHeader";
 import { useIngredientsMetrics, useIngredients, useUploadIngredients, useDeleteIngredient, useCreateIngredient, useUpdateIngredient } from "../../hooks/dashboard/useIngredients";
-import { useToast } from "./shared/useToast";
+import { useToast } from "./shared/toastUtils";
 import { FiSearch, FiPlus, FiUploadCloud, FiTrash2, FiEdit2 } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
@@ -244,9 +244,9 @@ function IngredientsView() {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-[#F5F6F8] rounded-xl overflow-hidden">
-                  {["name", "Category", "Fat", "Cal", "Pro", "Sug", "Stock", "Price", "Edit", "Delet"].map((h, idx) => (
-                    <th key={h} className={`px-4 py-2.5 text-[12px] font-bold text-[#1a1a1a] text-center ${idx === 0 ? "rounded-l-xl text-left pl-6" : ""} ${idx === 9 ? "rounded-r-xl" : ""}`}>
-                      {h}
+                  {["Name", "Category", "Fat", "Cal", "Pro", "Sug", "Stock", "Price", "Actions"].map((h, idx) => (
+                    <th key={h} className={`px-4 py-2.5 text-[12px] font-bold text-[#1a1a1a] text-center ${idx === 0 ? "rounded-l-xl text-left pl-6" : ""} ${idx === 8 ? "rounded-r-xl" : ""}`}>
+                      {h === "Actions" ? "" : h}
                     </th>
                   ))}
                 </tr>
@@ -272,11 +272,25 @@ function IngredientsView() {
                         {item.stock >= 1000 ? `${(item.stock/1000).toFixed(0)}k` : item.stock}
                       </td>
                       <td className="px-4 py-4 text-[12px] font-bold text-[#F97316] text-center">{item.costPerUnit}</td>
-                      <td className="px-4 py-4 text-center cursor-pointer hover:text-orange-500 transition-colors" onClick={() => { setEditingIngredient(item); setIsModalOpen(true); }}>
-                        <FiEdit2 size={16} />
-                      </td>
-                      <td className="px-4 py-4 text-center cursor-pointer text-red-500 hover:text-red-600 transition-colors" onClick={() => handleDelete(item.id)}>
-                        <FiTrash2 size={16} />
+                      <td className="px-4 py-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            type="button"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-orange-50 text-gray-500 hover:text-orange-500 rounded-lg text-[12px] font-bold border border-gray-100 transition-all cursor-pointer shadow-sm"
+                            onClick={() => { setEditingIngredient(item); setIsModalOpen(true); }}
+                            title="Edit"
+                          >
+                            <FiEdit2 size={14} /> Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-red-50 text-gray-500 hover:text-red-500 rounded-lg text-[12px] font-bold border border-gray-100 transition-all cursor-pointer shadow-sm"
+                            onClick={() => handleDelete(item.id)}
+                            title="Delete"
+                          >
+                            <FiTrash2 size={14} /> Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))

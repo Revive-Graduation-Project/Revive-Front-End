@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import DashboardHeader from "./DashboardHeader";
 import { useRecipeIngredients, useSaveRecipe } from "../../hooks/dashboard/useMenuItems";
-import { useToast } from "./shared/useToast";
+import { useToast } from "./shared/toastUtils";
 import { 
   FiPlus, FiTrash2, FiCamera, FiBookOpen, FiDollarSign, 
   FiClock, FiAlignLeft, FiChevronUp, FiChevronDown, FiShare2, FiTarget, FiUser, FiEye, FiGrid, FiUploadCloud

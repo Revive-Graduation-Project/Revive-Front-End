@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import DashboardHeader from "./DashboardHeader";
 import { useMenuUploads, useUploadMenu } from "../../hooks/dashboard/useMenuUploads";
-import { useToast } from "./shared/useToast";
+import { useToast } from "./shared/toastUtils";
 import { FiUploadCloud, FiFileText, FiCheckCircle, FiXCircle } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";

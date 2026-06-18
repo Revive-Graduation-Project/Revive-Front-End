@@ -1,15 +1,17 @@
 import { useState } from "react";
 import DashboardHeader from "./DashboardHeader";
 import TrendingMenus from "./TrendingMenus";
-import { useMenuCategories, useMenuItems, useCreateMenuItem, useUpdateMenuItem } from "../../hooks/dashboard/useMenuItems";
+import { useMenuCategories, useMenuItems, useCreateMenuItem, useUpdateMenuItem, useDeleteMenuItem } from "../../hooks/dashboard/useMenuItems";
 import { useTrendingMenus } from "../../hooks/dashboard/useDashboard";
-import { FiEdit2, FiCheck, FiX, FiPlus } from "react-icons/fi";
-import { useToast } from "./shared/useToast";
+import { FiEdit2, FiCheck, FiX, FiPlus, FiTrash2 } from "react-icons/fi";
+import { useToast } from "./shared/toastUtils";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 import EmptyState from "./shared/EmptyState";
 import SortMenu from "./shared/SortMenu";
 import MenuModal from "./shared/MenuModal";
+import ConfirmModal from "./shared/ConfirmModal";
+import DishDetailsModal from "./shared/DishDetailsModal";
 
 /** Circular progress metric card — green ring, black name, orange count, red/green trend */
 function CircleMetric({ name, percentage, count, change, isTotal }) {
@@ -62,10 +64,22 @@ function ChefMenuView() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const [viewingItem, setViewingItem] = useState(null);
 
   const { addToast } = useToast();
   const { mutate: createItem } = useCreateMenuItem();
   const { mutate: updateItem } = useUpdateMenuItem();
+  const { mutate: deleteItem } = useDeleteMenuItem();
+
+  const confirmDelete = () => {
+    if (!deletingId) return;
+    deleteItem(deletingId, {
+      onSuccess: () => addToast("Menu item deleted", "success"),
+      onError: () => addToast("Failed to delete menu item", "error"),
+    });
+    setDeletingId(null);
+  };
 
   const handleModalSubmit = (formData) => {
     if (editingItem) {
@@ -229,9 +243,9 @@ function ChefMenuView() {
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b border-gray-100">
-                    {["Meal", "Category", "Fat", "Cal", "Pro", "Sug", "Price", "Edit"].map((h) => (
+                    {["Meal", "Category", "Fat", "Cal", "Pro", "Sug", "Price", "Actions"].map((h) => (
                       <th key={h} className="px-5 py-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wide">
-                        {h}
+                        {h === "Actions" ? "" : h}
                       </th>
                     ))}
                   </tr>
@@ -243,7 +257,11 @@ function ChefMenuView() {
                   {filtered.map((item, i) => {
 
                     return (
-                      <tr key={item.id} className={`transition-colors hover:bg-orange-50/30 ${i < filtered.length - 1 ? "border-b border-gray-50" : ""}`}>
+                      <tr 
+                        key={item.id} 
+                        className={`group transition-colors hover:bg-orange-50/30 cursor-pointer ${i < filtered.length - 1 ? "border-b border-gray-50" : ""}`}
+                        onClick={() => setViewingItem(item)}
+                      >
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-orange-100 overflow-hidden shrink-0">
@@ -253,7 +271,8 @@ function ChefMenuView() {
                             </div>
                             <div>
                               <p className="text-[13px] font-bold text-[#1a1a1a] m-0">{item.name}</p>
-                              <p className="text-[11px] text-gray-400 m-0">{item.category}</p>
+                              <p className="text-[11px] text-gray-400 m-0 group-hover:text-orange-300 transition-colors duration-200">{item.category}</p>
+                              <span className="text-[10px] font-semibold text-orange-400 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-0.5 group-hover:translate-y-0 inline-block">Click to view details →</span>
                             </div>
                           </div>
                         </td>
@@ -264,16 +283,29 @@ function ChefMenuView() {
                         <td className="px-5 py-3.5 text-[12px] text-green-600 font-semibold">{item.sugar || "-"}</td>
                         <td className="px-5 py-3.5 text-[13px] font-bold text-orange-500">${item.price}</td>
                         <td className="px-5 py-3.5">
-                          <button
-                            onClick={() => {
-                              setEditingItem(item);
-                              setIsModalOpen(true);
-                            }}
-                            className="p-1.5 text-gray-400 hover:text-orange-500 bg-transparent border-none cursor-pointer rounded transition-colors"
-                            title={`Edit ${item.name}`}
-                          >
-                            <FiEdit2 size={15} />
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingItem(item);
+                                setIsModalOpen(true);
+                              }}
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-orange-50 text-gray-500 hover:text-orange-500 rounded-lg text-[12px] font-bold border border-gray-100 transition-all cursor-pointer shadow-sm"
+                              title={`Edit ${item.name}`}
+                            >
+                              <FiEdit2 size={14} /> Edit
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeletingId(item.id);
+                              }}
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-red-50 text-gray-500 hover:text-red-500 rounded-lg text-[12px] font-bold border border-gray-100 transition-all cursor-pointer shadow-sm"
+                              title={`Delete ${item.name}`}
+                            >
+                              <FiTrash2 size={14} /> Delete
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -305,6 +337,20 @@ function ChefMenuView() {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleModalSubmit}
         initialData={editingItem}
+      />
+
+      <ConfirmModal
+        isOpen={!!deletingId}
+        onClose={() => setDeletingId(null)}
+        onConfirm={confirmDelete}
+        title="Delete Menu Item"
+        message="Are you sure you want to delete this meal? This action cannot be undone."
+      />
+
+      <DishDetailsModal 
+        isOpen={!!viewingItem}
+        onClose={() => setViewingItem(null)}
+        dish={viewingItem}
       />
     </div>
   );

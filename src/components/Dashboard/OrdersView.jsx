@@ -12,6 +12,7 @@ import StatusBadge from "./shared/StatusBadge";
 import TimeFilter from "./shared/TimeFilter";
 import OrdersOverviewChart from "./shared/OrdersOverviewChart";
 import SortMenu from "./shared/SortMenu";
+import OrderDetailsModal from "./shared/OrderDetailsModal";
 
 const TABS = ["All", "Preparing", "Ready", "Done", "Cancelled"];
 
@@ -48,6 +49,7 @@ function OrdersView() {
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("asc");
   const [hoveredBarIndex, setHoveredBarIndex] = useState(null);
+  const [viewingOrder, setViewingOrder] = useState(null);
 
   const ORDER_SORT_COLS = [
     { key: "id",       label: "Order ID"      },
@@ -234,14 +236,21 @@ function OrdersView() {
                     <tr><td colSpan={7}><EmptyState title="No orders found" description={`No orders match "${activeTab}".`} /></td></tr>
                   )}
                   {filtered.map((order, i) => (
-                    <tr key={order.id} className="transition-colors border-b border-gray-100 last:border-none">
+                    <tr 
+                      key={order.id} 
+                      className="group transition-colors border-b border-gray-100 last:border-none hover:bg-orange-50/30 cursor-pointer"
+                      onClick={() => setViewingOrder(order)}
+                    >
                       <td className="px-5 py-4 text-[13px] font-mono font-medium text-gray-500">{order.id.replace("#", "")}</td>
                       <td className="px-5 py-4 text-[13px] text-[#1a1a1a] font-medium">{order.time.replace(/ (AM|PM)/, "")}</td>
                       <td className="px-5 py-4 text-[13px] font-medium text-[#1a1a1a] max-w-[180px] truncate">{order.name}</td>
                       <td className="px-5 py-4 text-[13px] text-[#1a1a1a] font-medium">{order.items}</td>
                       <td className="px-5 py-4 text-[13px] font-bold text-orange-500">${order.total.toFixed(0)}</td>
                       <td className="px-5 py-4 text-[13px] text-[#1a1a1a] font-medium">{order.customer}</td>
-                      <td className="px-5 py-4"><StatusBadge status={order.status} /></td>
+                      <td className="px-5 py-4">
+                        <StatusBadge status={order.status} />
+                        <span className="block text-[10px] font-semibold text-orange-400 mt-1 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-0.5 group-hover:translate-y-0">Click to view details →</span>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -256,6 +265,13 @@ function OrdersView() {
           <RecentActivity data={activity} />
         </div>
       </div>
+
+      <OrderDetailsModal
+        isOpen={!!viewingOrder}
+        onClose={() => setViewingOrder(null)}
+        order={viewingOrder}
+        showCustomerInfo={true}
+      />
     </div>
   );
 }

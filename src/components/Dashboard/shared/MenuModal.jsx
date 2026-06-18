@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FiX, FiAlertCircle } from "react-icons/fi";
+import { FiX, FiAlertCircle, FiUploadCloud } from "react-icons/fi";
 
 // ── Regex validators ────────────────────────────────────────────────
 const VALIDATORS = {
@@ -17,13 +17,13 @@ const FILTERS = {
 
 const EMPTY_FORM = {
   name: "", category: "Chicken",
-  fat: "", calories: "", protein: "", sugar: "", price: "",
+  fat: "", calories: "", protein: "", sugar: "", price: "", image: "",
 };
 
-function Field({ label, error, children }) {
+function Field({ label, id, error, children }) {
   return (
     <div>
-      <label className="block text-[13px] font-bold text-gray-700 mb-1">{label}</label>
+      <label htmlFor={id} className="block text-[13px] font-bold text-gray-700 mb-1">{label}</label>
       {children}
       {error && (
         <p className="text-[11px] text-red-500 mt-1 flex items-center gap-1">
@@ -77,6 +77,14 @@ function MenuModal({ isOpen, onClose, onSubmit, initialData }) {
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setFormData((prev) => ({ ...prev, image: url }));
+    }
+  };
+
   const handleBlur = (e) => {
     const { name, value } = e.target;
     setTouched((prev) => ({ ...prev, [name]: true }));
@@ -127,8 +135,9 @@ function MenuModal({ isOpen, onClose, onSubmit, initialData }) {
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4" noValidate>
 
-          <Field label="Meal Name" error={errors.name}>
+          <Field label="Meal Name" id="nameInput" error={errors.name}>
             <input
+              id="nameInput"
               type="text" name="name" value={formData.name}
               onChange={handleChange} onBlur={handleBlur}
               placeholder="e.g. Grilled Chicken"
@@ -137,9 +146,30 @@ function MenuModal({ isOpen, onClose, onSubmit, initialData }) {
             />
           </Field>
 
+          <Field label="Meal Image">
+            <div className="flex flex-col gap-3">
+              <label
+                htmlFor="imageInput"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-orange-50 border border-gray-200 hover:border-orange-200 rounded-xl cursor-pointer text-[13px] font-bold text-gray-600 hover:text-orange-500 transition-colors w-fit shadow-sm"
+              >
+                <FiUploadCloud size={18} />
+                <span>Upload Photo</span>
+              </label>
+              <input
+                id="imageInput"
+                type="file" accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+              {formData.image && (
+                <img src={formData.image} alt="Preview" className="w-16 h-16 object-cover rounded-xl border border-gray-200 shadow-sm" />
+              )}
+            </div>
+          </Field>
+
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Category">
-              <select name="category" value={formData.category} onChange={handleChange} className={inputClass("category")}>
+            <Field label="Category" id="categoryInput">
+              <select id="categoryInput" name="category" value={formData.category} onChange={handleChange} className={inputClass("category")}>
                 <option value="Chicken">Chicken</option>
                 <option value="Mixed">Mixed</option>
                 <option value="Meat">Meat</option>
@@ -147,8 +177,9 @@ function MenuModal({ isOpen, onClose, onSubmit, initialData }) {
                 <option value="Seafood">Seafood</option>
               </select>
             </Field>
-            <Field label="Price (e.g. 15.99)" error={errors.price}>
+            <Field label="Price (e.g. 15.99)" id="priceInput" error={errors.price}>
               <input
+                id="priceInput"
                 type="text" name="price" value={formData.price}
                 onChange={handleChange} onBlur={handleBlur}
                 placeholder="15.99"
@@ -158,20 +189,20 @@ function MenuModal({ isOpen, onClose, onSubmit, initialData }) {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Fat (optional)" error={errors.fat}>
-              <input type="text" name="fat" value={formData.fat} onChange={handleChange} onBlur={handleBlur} placeholder="e.g. 18g" className={inputClass("fat")} />
+            <Field label="Fat (optional)" id="fatInput" error={errors.fat}>
+              <input id="fatInput" type="text" name="fat" value={formData.fat} onChange={handleChange} onBlur={handleBlur} placeholder="e.g. 18g" className={inputClass("fat")} />
             </Field>
-            <Field label="Calories (optional)" error={errors.calories}>
-              <input type="text" name="calories" value={formData.calories} onChange={handleChange} onBlur={handleBlur} placeholder="e.g. 520g" className={inputClass("calories")} />
+            <Field label="Calories (optional)" id="caloriesInput" error={errors.calories}>
+              <input id="caloriesInput" type="text" name="calories" value={formData.calories} onChange={handleChange} onBlur={handleBlur} placeholder="e.g. 520g" className={inputClass("calories")} />
             </Field>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Protein (optional)" error={errors.protein}>
-              <input type="text" name="protein" value={formData.protein} onChange={handleChange} onBlur={handleBlur} placeholder="e.g. 38g" className={inputClass("protein")} />
+            <Field label="Protein (optional)" id="proteinInput" error={errors.protein}>
+              <input id="proteinInput" type="text" name="protein" value={formData.protein} onChange={handleChange} onBlur={handleBlur} placeholder="e.g. 38g" className={inputClass("protein")} />
             </Field>
-            <Field label="Sugar (optional)" error={errors.sugar}>
-              <input type="text" name="sugar" value={formData.sugar} onChange={handleChange} onBlur={handleBlur} placeholder="e.g. 4g" className={inputClass("sugar")} />
+            <Field label="Sugar (optional)" id="sugarInput" error={errors.sugar}>
+              <input id="sugarInput" type="text" name="sugar" value={formData.sugar} onChange={handleChange} onBlur={handleBlur} placeholder="e.g. 4g" className={inputClass("sugar")} />
             </Field>
           </div>
 
