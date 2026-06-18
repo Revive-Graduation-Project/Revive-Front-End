@@ -22,7 +22,7 @@ const navItems = [
 ];
 
 /**
- * Renders the dashboard sidebar with navigation links, an AI Intelligence card, and logout functionality.
+ * Displays the fixed dashboard sidebar for navigation and account management.
  */
 function DashboardSidebar() {
   const logout = useAuthStore((s) => s.logout);

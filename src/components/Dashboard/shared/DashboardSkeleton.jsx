@@ -49,9 +49,9 @@ export function ChartSkeleton({ height = 280 }) {
 }
 
 /**
- * Renders a table row placeholder with shimmer cells.
+ * Renders a skeleton placeholder for a table row.
  * @param {number} [cols=7] - The number of table cells to render.
- * @return {JSX.Element} A table row with shimmer placeholder cells.
+ * @return {JSX.Element} A table row element with shimmer placeholder cells.
  */
 export function TableRowSkeleton({ cols = 7 }) {
   return (

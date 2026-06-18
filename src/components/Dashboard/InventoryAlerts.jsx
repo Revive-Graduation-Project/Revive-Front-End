@@ -22,7 +22,7 @@ function AlertItem({ emoji, name, daysLeft }) {
 
 /**
  * Renders an inventory alerts dashboard with categorized item sections.
- * @param {Object} data - The alert data object containing `lowStock`, `shelfLife`, and `inSeason` arrays.
+ * @param {Object} data - An object with `lowStock`, `shelfLife`, and `inSeason` arrays. Each array contains items with at least `id`, `image` (emoji), `name`, and optionally `daysLeft` properties.
  */
 function InventoryAlerts({ data }) {
   const sections = [

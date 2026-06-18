@@ -1,11 +1,11 @@
 import { FiChevronDown } from "react-icons/fi";
 
 /**
- * Renders a dropdown selector for filtering by time period.
+ * A time period filter dropdown component.
  * @param {Object} props - Component props.
- * @param {string} [props.defaultValue="This Week"] - The initial selected time period.
- * @param {Function} [props.onChange] - Callback invoked when the user changes the selected time period.
- * @returns {JSX.Element} The rendered select dropdown with chevron icon.
+ * @param {string} [props.defaultValue="This Week"] - The initially selected time period.
+ * @param {Function} [props.onChange] - Callback invoked with the selected time period value when changed.
+ * @returns {JSX.Element} The rendered filter dropdown.
  */
 function TimeFilter({ defaultValue = "This Week", onChange }) {
   return (

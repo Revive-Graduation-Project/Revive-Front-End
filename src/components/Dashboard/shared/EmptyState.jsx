@@ -1,11 +1,11 @@
 /**
  * Renders an empty state UI for dashboard lists and tables.
  * @param {Object} props - Component props.
- * @param {React.ComponentType} [props.icon] - Optional React component rendered as an icon.
+ * @param {React.ComponentType} [props.icon] - Optional icon component.
  * @param {string} props.title - The main headline text.
- * @param {string} [props.description] - Optional supporting text beneath the title.
- * @param {Object} [props.action] - Optional action object with onClick function and label string properties.
- * @returns {JSX.Element} A centered layout with the title, optional icon, description, and action button.
+ * @param {string} [props.description] - Optional supporting text below the title.
+ * @param {Object} [props.action] - Optional action object with `onClick` function and `label` string.
+ * @returns {JSX.Element} An empty state layout.
  */
 export function EmptyState({ icon: Icon, title, description, action }) {
   return (

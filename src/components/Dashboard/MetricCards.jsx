@@ -25,7 +25,7 @@ const metricOrder = ["totalOrders", "totalCustomers", "totalRevenue"];
 
 /**
  * Renders a grid of metric cards displaying key business metrics.
- * @param {Object} metrics - Object containing metric data with keys `totalOrders`, `totalCustomers`, and `totalRevenue`. Each metric object should have `value`, `change`, and `trend` properties.
+ * @param {Object} metrics - Object with metric keys (`totalOrders`, `totalCustomers`, `totalRevenue`), each mapping to an object containing `value`, `change` (percentage), and `trend` (`"up"` or `"down"`).
  */
 function MetricCards({ metrics = {} }) {
   return (

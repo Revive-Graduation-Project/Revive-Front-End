@@ -17,9 +17,9 @@ export function useMenuCategories() {
 }
 
 /**
- * Retrieves menu items with optional filtering.
- * @param {object} [filters={}] - Optional filter criteria for menu items.
- * @returns {object} Query result containing menu items.
+ * Queries menu items based on optional filter criteria.
+ * @param {object} [filters={}] - Filter criteria for the menu items.
+ * @returns {object} The menu items query result.
  */
 export function useMenuItems(filters = {}) {
   return useQuery({
@@ -29,8 +29,8 @@ export function useMenuItems(filters = {}) {
 }
 
 /**
- * Fetches recipe ingredients.
- * @return {object} A query result object containing recipe ingredients data.
+ * Retrieves recipe ingredients.
+ * @returns {object} The React Query result containing recipe ingredients data.
  */
 export function useRecipeIngredients() {
   return useQuery({ queryKey: menuKeys.ingredients(), queryFn: getRecipeIngredients });
@@ -67,8 +67,9 @@ export function useDeleteMenuItem() {
 
 /**
  * Mutation hook for updating a menu item.
- * @return {object} A mutation object that accepts an object with `id` and `data` properties.
+ * @return {object} A mutation object for updating a menu item when called with `{ id, data }`.
  */
+```
 export function useUpdateMenuItem() {
   const qc = useQueryClient();
   return useMutation({
@@ -78,9 +79,7 @@ export function useUpdateMenuItem() {
 }
 
 /**
- * Creates a menu item.
- * 
- * The mutation invalidates the menu cache on completion.
+ * Provides a mutation hook for creating menu items.
  * @returns {Object} A React Query mutation object.
  */
 export function useCreateMenuItem() {
@@ -92,8 +91,9 @@ export function useCreateMenuItem() {
 }
 
 /**
- * Creates a mutation to save a new recipe.
- * @returns {UseMutationResult} A mutation hook for saving recipes.
+ * Creates a mutation for saving recipes.
+ * Invalidates all menu queries when the recipe is successfully saved.
+ * @returns {UseMutationResult} The mutation object.
  */
 export function useSaveRecipe() {
   const qc = useQueryClient();

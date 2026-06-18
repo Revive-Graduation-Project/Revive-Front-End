@@ -32,25 +32,25 @@ export function useDashboardMetrics() {
 }
 
 /**
- * Fetches revenue data for a specified period.
- * @param {string} [period="6m"] - The time period to fetch revenue data for.
- * @returns {object} The query result containing revenue data.
+ * Provides revenue data for a specified period.
+ * @param {string} [period="6m"] - The time period for the revenue query (e.g., "6m", "12m").
+ * @returns {object} A query result object containing revenue data and query state.
  */
 export function useRevenueData(period = "6m") {
   return useQuery({ queryKey: dashboardKeys.revenue(period), queryFn: () => getRevenueData(period) });
 }
 
 /**
- * Fetches the top categories data.
- * @returns {Object} The React Query result object containing the categories.
+ * Retrieves the top categories.
+ * @return {Object} The query result containing categories data, loading state, and any errors.
  */
 export function useTopCategories() {
   return useQuery({ queryKey: dashboardKeys.categories(), queryFn: getTopCategories });
 }
 
 /**
- * Fetches the dashboard orders overview data.
- * @returns {UseQueryResult} The React Query result object with orders overview data.
+ * Retrieves orders overview data.
+ * @returns {UseQueryResult} The query result containing orders overview data.
  */
 export function useOrdersOverview() {
   return useQuery({ queryKey: dashboardKeys.ordersOverview(), queryFn: getOrdersOverview });
@@ -97,8 +97,8 @@ export function useCustomerReviews() {
 }
 
 /**
- * Returns a function that prefetches core dashboard data.
- * @returns {Function} A function that, when invoked, prefetches dashboard metrics, revenue, trending, and activity data.
+ * Creates a function to prefetch core dashboard data.
+ * @returns {Function} A function that prefetches dashboard metrics, revenue, trending, and activity data when invoked.
  */
 export function usePrefetchDashboard() {
   const qc = useQueryClient();

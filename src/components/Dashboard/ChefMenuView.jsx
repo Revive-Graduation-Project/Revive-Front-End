@@ -12,12 +12,12 @@ import SortMenu from "./shared/SortMenu";
 import MenuModal from "./shared/MenuModal";
 
 /**
- * Renders a circular progress metric card showing a percentage ring, name, and count.
- * @param {string} name - The metric name to display.
- * @param {number} percentage - The percentage value displayed in the center (clamped to 100 for the ring).
- * @param {number} count - The count value displayed below the name.
- * @param {number} [change] - Optional percentage change; displays with an up or down arrow, green if non-negative or red if negative.
- * @param {boolean} isTotal - Increases the card and text sizing when true.
+ * Displays a metric card with a circular progress ring and count.
+ * @param {string} name - The metric name.
+ * @param {number} percentage - The percentage displayed in the center; the ring shows at most 100%.
+ * @param {number} count - The count displayed below the name.
+ * @param {number} [change] - Optional percentage change; displays as an arrow (↑ or ↓) with green text for non-negative values and red text for negative values.
+ * @param {boolean} isTotal - Increases card and text sizing.
  */
 function CircleMetric({ name, percentage, count, change, isTotal }) {
   const r = isTotal ? 30 : 26;
@@ -63,7 +63,12 @@ function CircleMetric({ name, percentage, count, change, isTotal }) {
 }
 
 /**
- * Renders a menu management dashboard with items, category metrics, and editing controls.
+ * Displays a menu management dashboard with metrics, filtering, sorting, and item creation/editing capabilities.
+ * 
+ * Renders circular metric cards showing total meals and per-category item counts, a tabbed table of menu items
+ * filterable by category and sortable by multiple columns, and a modal for creating or editing items. Fetches
+ * menu categories, items, and trending data via custom hooks. Shows a loading skeleton while fetching and an
+ * error state if data fails to load. Optionally displays trending menus in a right sidebar.
  */
 function ChefMenuView() {
   const [activeTab, setActiveTab] = useState("All Menu");

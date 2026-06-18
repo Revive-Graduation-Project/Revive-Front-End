@@ -23,7 +23,7 @@ function StarRating({ rating }) {
 /**
  * Renders a responsive grid of customer review cards with ratings and images.
  * @param {Object} props - The component props.
- * @param {Array<Object>} props.data - Array of review objects, each containing title, comment, name, rating, date, time, and image.
+ * @param {Array<Object>} props.data - Array of review objects, each containing id, title, comment, name, rating, date, time, and image properties.
  */
 function CustomerReviews({ data }) {
   return (

@@ -2,7 +2,7 @@ import { FiMonitor, FiShoppingBag, FiTruck } from "react-icons/fi";
 import TimeFilter from "./shared/TimeFilter";
 
 /**
- * Display order type metrics including counts, percentages, and progress visualizations.
+ * Renders a card displaying order type metrics with counts, percentages, and progress bars.
  * @param {Array<{name: string, percentage: number, count: number}>} data - Order type metrics.
  */
 function OrderTypes({ data }) {

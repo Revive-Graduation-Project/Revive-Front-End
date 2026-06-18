@@ -10,7 +10,7 @@ export const orderKeys = {
 
 /**
  * Fetches order metrics data.
- * @returns {Object} The query result containing order metrics.
+ * @returns {Object} A React Query result object with order metrics in the `data` property.
  */
 export function useOrdersMetrics() {
   return useQuery({ queryKey: orderKeys.metrics(), queryFn: getOrdersMetrics });
@@ -40,8 +40,8 @@ export function useOrdersTrending() {
 }
 
 /**
- * Creates a mutation to update an order's status.
- * @returns {Object} A mutation object for updating order statuses.
+ * Creates a mutation for updating an order's status.
+ * @returns {Object} A mutation object. Call with `{ orderId, status }` to update an order's status.
  */
 export function useUpdateOrderStatus() {
   const qc = useQueryClient();

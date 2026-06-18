@@ -41,11 +41,11 @@ const useToastStore = create((set) => ({
 // ── Hook ──────────────────────────────────────────────────────────
 /**
  * Provides helper functions for creating toast notifications.
- * @returns {Object} An object containing methods to display toasts.
- * @returns {Function} returns.success - Display a success toast.
- * @returns {Function} returns.error - Display an error toast.
- * @returns {Function} returns.info - Display an info toast.
- * @returns {Function} returns.addToast - Display a toast of the specified type.
+ * @returns {Object} An object containing toast creation methods.
+ * @returns {Function} returns.success - Displays a success toast.
+ * @returns {Function} returns.error - Displays an error toast with a 5-second duration.
+ * @returns {Function} returns.info - Displays an info toast.
+ * @returns {Function} returns.addToast - Displays a toast of the specified type.
  */
 export function useToast() {
   const { addToast: _addToast } = useToastStore();

@@ -13,10 +13,10 @@ const COLUMNS = [
 ];
 
 /**
- * Renders an order card displaying order information and status transition buttons for the kitchen Kanban board.
- * @param {Object} order - The order object with id, time, name, items, and notes properties.
- * @param {string} columnKey - The Kanban column identifier (queue, preparing, or ready).
- * @param {Function} onAction - Callback invoked with (orderId, nextStatus) when a status button is clicked.
+ * Renders an order card with order details and status transition buttons.
+ * @param {Object} order - The order object with id, time, name, items, and notes.
+ * @param {string} columnKey - The current Kanban column (queue, preparing, or ready).
+ * @param {Function} onAction - Callback invoked with (orderId, nextStatus) when a button is clicked.
  */
 function OrderCard({ order, columnKey, onAction }) {
   const col = COLUMNS.find((c) => c.key === columnKey);
@@ -88,11 +88,8 @@ function OrderCard({ order, columnKey, onAction }) {
 }
 
 /**
- * Renders a live kitchen dashboard with a 3-column Kanban board for tracking and managing order statuses.
- * Displays orders organized by status (queue, preparing, ready) and a separate Done section for completed orders.
- * Includes a live connection indicator and manual refresh capability. Shows confirmation prompts before cancelling
- * orders or marking them as done. Displays loading skeletons while fetching, empty states when columns are empty,
- * and an error state with retry option on connection failure.
+ * Renders a live kitchen dashboard with a 3-column Kanban board for tracking and managing order statuses through queue, preparing, and ready stages.
+ * Provides a live connection indicator, manual refresh capability, and displays a separate Done section for completed orders. Requires confirmation before cancelling orders or marking them as done. Shows connection errors with a retry option.
  * @returns {React.ReactElement} The live kitchen dashboard component.
  */
 function LiveKitchenView() {

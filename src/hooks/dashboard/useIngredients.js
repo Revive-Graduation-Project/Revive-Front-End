@@ -51,7 +51,7 @@ export function useDeleteIngredient() {
 }
 
 /**
- * Creates a mutation hook for adding new ingredients.
+ * Provides a mutation for creating new ingredients.
  * @return {object} A mutation object for creating ingredients.
  */
 export function useCreateIngredient() {
@@ -64,7 +64,7 @@ export function useCreateIngredient() {
 
 /**
  * Creates a mutation hook for updating an ingredient.
- * @returns {UseMutationResult} A mutation that accepts an object with `id` (ingredient ID) and `data` (update payload) and invalidates ingredient-related queries when settled.
+ * @returns {UseMutationResult} A mutation that accepts `id` and `data` and invalidates ingredient queries when settled.
  */
 export function useUpdateIngredient() {
   const qc = useQueryClient();
@@ -75,8 +75,8 @@ export function useUpdateIngredient() {
 }
 
 /**
- * Creates a mutation for uploading ingredients from a CSV file.
- * @return {Object} A mutation object for triggering the ingredients upload.
+ * Prepares a mutation for uploading ingredients.
+ * @return {Object} A mutation object for uploading ingredients data.
  */
 export function useUploadIngredients() {
   const qc = useQueryClient();

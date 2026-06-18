@@ -45,14 +45,8 @@ export function useRealtimeKitchen() {
 }
 
 /**
- * Creates a mutation hook for updating an order's kitchen status.
- * 
- * Moves the order between kitchen board columns (queue, preparing, ready, done). Sets
- * `startedAt` when transitioning from queue to preparing, prepends to done, and removes
- * the order from the board when moving to cancelled. Includes optimistic updates with
- * error recovery.
- * 
- * @return {import('react-query').UseMutationResult} A mutation accepting `{orderId, nextStatus}`.
+ * Updates an order's kitchen status with optimistic UI changes and automatic error recovery.
+ * @return {import('react-query').UseMutationResult} A mutation hook result accepting `{orderId, nextStatus}`.
  */
 export function useUpdateKitchenStatus() {
   const qc = useQueryClient();

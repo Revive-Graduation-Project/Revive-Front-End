@@ -4,9 +4,9 @@ import { MdAttachMoney } from "react-icons/md";
 import TimeFilter from "./shared/TimeFilter";
 
 /**
- * Renders a star rating visualization.
+ * Displays a 5-star rating visualization.
  * @param {number} rating - The rating value to display.
- * @returns {JSX.Element} A row of 5 star icons, with filled stars for the rounded rating value.
+ * @returns {JSX.Element} A row of 5 star icons, with filled stars up to the rounded rating value.
  */
 function StarRating({ rating }) {
   return (

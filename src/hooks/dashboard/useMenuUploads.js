@@ -6,8 +6,8 @@ export const menuUploadKeys = {
 };
 
 /**
- * Fetches menu uploads.
- * @return {Object} A query result containing menu uploads data and query state.
+ * Retrieves menu uploads from the server.
+ * @return {Object} The query result containing the menu uploads and query state.
  */
 export function useMenuUploads() {
   return useQuery({
