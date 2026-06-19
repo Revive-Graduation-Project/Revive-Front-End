@@ -2,7 +2,7 @@ import { api } from './api';
 
 // Get all meals
 export const getMenu = () => {
-  return api.get('/menu');
+  return api.get('/api/menu');
 };
 
 // Get single meal

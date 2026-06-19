@@ -5,8 +5,10 @@ import PopularMenus from "./Sections/PopularMenus";
 import RegularFood from "./Sections/RegularFood";
 import SpecialOffer from "./Sections/SpecialOffer";
 import Testimonials from "./Sections/Testimonials";
-
+import { getMenu } from "../../services/menu.service";
 export default function Home() {
+  const { data: menu } = getMenu();
+  console.log(menu);
   return (
     <div
       className="
