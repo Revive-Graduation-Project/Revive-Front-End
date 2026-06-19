@@ -24,7 +24,7 @@ export default function Menu() {
     loading: mealsLoading,
     error: mealsError,
   } = useRestaurantStore();
-  const { meal, category } = useMenuStore();
+  const { selectedCategory } = useMenuStore();
 
   const isGuest = !user;
 
@@ -45,11 +45,9 @@ export default function Menu() {
 
   const filteredMenu = useMemo(() => {
     return sourceItems.filter((item) => {
-      const mealMatch = meal === "all" || item.mainCategory === meal;
-      const categoryMatch = category === "All" || item.category === category;
-      return mealMatch && categoryMatch;
+      return selectedCategory === "All" || item.category === selectedCategory;
     });
-  }, [meal, category, sourceItems]);
+  }, [selectedCategory, sourceItems]);
 
   if (isLoading)
     return (
