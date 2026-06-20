@@ -86,10 +86,10 @@ const SuggestedMeals = () => {
   }, []);
 
   // thoose three lines hide the suggested meals when no meal is suggested
-  // if you want to test the suggested meals comment it it
-  // if (loading) return <LoadingSpinner />;
-  // if (error) return <p className="text-red-500 text-center">{error}</p>;
-  // if (meals.length === 0) return null;
+  //if you want to test the suggested meals comment it it
+  if (loading) return <LoadingSpinner />;
+  if (error) return <p className="text-red-500 text-center">{error}</p>;
+  if (meals.length === 0) return null;
   //***********************************************************************/
   return (
     <section className="py-8 md:py-12">

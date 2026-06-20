@@ -46,7 +46,7 @@ const useAuthStore = create(
       token: null,
       expiresAt: null,
 
-      isAuthenticated: true,
+      isAuthenticated: false,
       loading: false,
       error: null,
 
