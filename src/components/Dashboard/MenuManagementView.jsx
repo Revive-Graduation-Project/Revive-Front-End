@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import DashboardHeader from "./DashboardHeader";
 import { useMenuUploads, useUploadMenu } from "../../hooks/dashboard/useMenuUploads";
-import { useToast } from "./shared/toastUtils";
+import { useToast } from "../../store/toastStore";
 import { FiUploadCloud, FiFileText, FiCheckCircle, FiXCircle } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
@@ -40,19 +40,38 @@ function MenuManagementView() {
     else if (e.type === "dragleave") setDragActive(false);
   };
 
+  const validateAndSetFile = (file) => {
+    if (!file) return;
+
+    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+    if (file.size > MAX_SIZE) {
+      addToast("File size exceeds 10MB limit.", "error");
+      return;
+    }
+
+    const allowedExtensions = ['csv', 'xlsx', 'xls'];
+    const extension = file.name.split('.').pop().toLowerCase();
+    if (!allowedExtensions.includes(extension)) {
+      addToast("Invalid file type. Only CSV and Excel files are allowed.", "error");
+      return;
+    }
+
+    setSelectedFile(file);
+  };
+
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setSelectedFile(e.dataTransfer.files[0]);
+      validateAndSetFile(e.dataTransfer.files[0]);
     }
   };
 
   const handleChange = (e) => {
     e.preventDefault();
     if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+      validateAndSetFile(e.target.files[0]);
     }
   };
 

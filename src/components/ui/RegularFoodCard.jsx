@@ -2,7 +2,6 @@ import { useOrderStore, useFavoritesStore } from "../../store";
 
 const RegularFoodCard = ({ meal }) => {
   const addItem = useOrderStore((state) => state.addItem);
-  const openCartDrawer = useOrderStore((state) => state.openCartDrawer);
   const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
   const isFavorite = useFavoritesStore((state) => state.isFavorite(meal.id));
 

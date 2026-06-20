@@ -74,7 +74,8 @@ export function useUpdateKitchenStatus() {
         
         if (!foundCol) return old;
         
-        const [order] = next[foundCol].splice(idx, 1);
+        const [splicedOrder] = next[foundCol].splice(idx, 1);
+        const order = { ...splicedOrder };
         
         if (nextStatus) {
           if (nextStatus === "preparing" && foundCol === "queue") order.startedAt = new Date().toISOString();

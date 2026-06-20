@@ -9,7 +9,14 @@
 
 const loadMock = (key, defaultData) => {
   const saved = localStorage.getItem(`mock_${key}`);
-  if (saved) return JSON.parse(saved);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      console.warn(`[MOCK] Corrupted localStorage data for mock_${key}. Resetting.`);
+      localStorage.removeItem(`mock_${key}`);
+    }
+  }
   localStorage.setItem(`mock_${key}`, JSON.stringify(defaultData));
   return defaultData;
 };

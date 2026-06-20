@@ -322,11 +322,9 @@ const useOrderStore = create(
        */
       submitOrder: async () => {
         set({ loading: true, error: null });
-        console.log('[ORDER] submitOrder started');
 
         try {
           const state = get();
-          console.log('[ORDER] cart items:', state.items);
           
           if (state.items.length === 0) {
              throw new Error("Cart is empty");
@@ -347,7 +345,6 @@ const useOrderStore = create(
           }
 
           // Make real API request to place the order
-          console.log('[ORDER] calling placeOrder API...');
           const response = await placeOrder({
              items: [...state.items],
              totalAmount: state.totalAmount,
@@ -357,7 +354,6 @@ const useOrderStore = create(
              paymentMethod: state.paymentMethod,
              note: state.note
           });
-          console.log('[ORDER] placeOrder response:', response.data);
 
           const newOrder = {
              id: response.data.id || Math.floor(10000 + Math.random() * 90000).toString(),
@@ -389,10 +385,8 @@ const useOrderStore = create(
           get().clearCart();
 
           // Invalidate dashboard caches so the new order appears immediately
-          console.log('[ORDER] invalidating kitchen + orders cache...');
           queryClient.invalidateQueries({ queryKey: ["kitchen"] });
           queryClient.invalidateQueries({ queryKey: ["orders"] });
-          console.log('[ORDER] done — order placed successfully:', newOrder.id);
 
           return true;
         } catch (err) {

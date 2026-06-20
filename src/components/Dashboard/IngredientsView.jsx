@@ -1,7 +1,7 @@
 import { useState } from "react";
 import DashboardHeader from "./DashboardHeader";
 import { useIngredientsMetrics, useIngredients, useUploadIngredients, useDeleteIngredient, useCreateIngredient, useUpdateIngredient } from "../../hooks/dashboard/useIngredients";
-import { useToast } from "./shared/toastUtils";
+import { useToast } from "../../store/toastStore";
 import { FiSearch, FiPlus, FiUploadCloud, FiTrash2, FiEdit2 } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
@@ -46,10 +46,9 @@ function CircleMetric({ pct, color, value, label, badge, change = 0 }) {
   );
 }
 
-const CATEGORY_TABS = ["All Ingredients", "Protien", "Vegetables", "Sauces", "Stock"];
+// Categories are derived dynamically inside the component
 
 function IngredientsView() {
-  const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All Ingredients");
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("asc");
@@ -140,14 +139,14 @@ function IngredientsView() {
 
   const allIngredients = ingredients || [];
   const categories      = [...new Set(allIngredients.map((i) => i.category))];
+  const categoryTabs    = ["All Ingredients", ...categories.filter(Boolean)];
 
   const filtered = (() => {
     let items = allIngredients.filter((item) => {
       const matchCat =
         activeCategory === "All Ingredients" ||
-        item.category.toLowerCase() === activeCategory.toLowerCase();
-      const matchSearch = item.name.toLowerCase().includes(search.toLowerCase());
-      return matchCat && matchSearch;
+        (item.category && item.category.toLowerCase() === activeCategory.toLowerCase());
+      return matchCat;
     });
     if (sortKey) {
       items.sort((a, b) => {
@@ -212,7 +211,7 @@ function IngredientsView() {
             <div className="flex flex-row items-center justify-between mb-4">
               {/* Category Tabs */}
               <div className="flex items-center gap-4 w-full overflow-x-auto">
-                {CATEGORY_TABS.map((tab) => (
+                {categoryTabs.map((tab) => (
                   <button
                     key={tab}
                     type="button"

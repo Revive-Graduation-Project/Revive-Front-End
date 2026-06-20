@@ -14,7 +14,7 @@ import OrdersOverviewChart from "./shared/OrdersOverviewChart";
 import SortMenu from "./shared/SortMenu";
 import OrderDetailsModal from "./shared/OrderDetailsModal";
 
-const TABS = ["All", "Preparing", "Ready", "Done", "Cancelled"];
+const TABS = ["All", "Pending", "Preparing", "Ready", "Done", "Cancelled"];
 
 function CircularProgress({ salesPct, orderPct, displayPct }) {
   const r1 = 36;
@@ -48,7 +48,6 @@ function OrdersView() {
   const [activeTab, setActiveTab] = useState("All");
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("asc");
-  const [hoveredBarIndex, setHoveredBarIndex] = useState(null);
   const [viewingOrder, setViewingOrder] = useState(null);
 
   const ORDER_SORT_COLS = [
@@ -177,9 +176,9 @@ function OrdersView() {
                 
                 <div className="absolute right-6 top-1/2 -translate-y-[40%]">
                   <CircularProgress 
-                    salesPct={(metrics.dailyGoal.salesCurrent / metrics.dailyGoal.salesTarget) * 100} 
-                    orderPct={(metrics.dailyGoal.ordersCurrent / metrics.dailyGoal.ordersTarget) * 100}
-                    displayPct={Math.round((metrics.dailyGoal.salesCurrent / metrics.dailyGoal.salesTarget) * 100)}
+                    salesPct={metrics.dailyGoal.salesTarget > 0 ? (metrics.dailyGoal.salesCurrent / metrics.dailyGoal.salesTarget) * 100 : 0} 
+                    orderPct={metrics.dailyGoal.ordersTarget > 0 ? (metrics.dailyGoal.ordersCurrent / metrics.dailyGoal.ordersTarget) * 100 : 0}
+                    displayPct={metrics.dailyGoal.salesTarget > 0 ? Math.round((metrics.dailyGoal.salesCurrent / metrics.dailyGoal.salesTarget) * 100) : 0}
                   />
                 </div>
 
@@ -235,7 +234,7 @@ function OrdersView() {
                   {filtered.length === 0 && (
                     <tr><td colSpan={7}><EmptyState title="No orders found" description={`No orders match "${activeTab}".`} /></td></tr>
                   )}
-                  {filtered.map((order, i) => (
+                  {filtered.map((order) => (
                     <tr 
                       key={order.id} 
                       className="group transition-colors border-b border-gray-100 last:border-none hover:bg-orange-50/30 cursor-pointer"

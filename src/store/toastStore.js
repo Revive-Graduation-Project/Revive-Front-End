@@ -19,7 +19,7 @@ export const useToastStore = create((set) => ({
 }));
 
 export function useToast() {
-  const { addToast: _addToast } = useToastStore();
+  const _addToast = useToastStore((state) => state.addToast);
 
   const success = useCallback(
     (message) => _addToast({ type: "success", message }),

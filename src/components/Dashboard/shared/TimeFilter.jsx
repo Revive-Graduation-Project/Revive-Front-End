@@ -4,9 +4,10 @@ function TimeFilter({ defaultValue = "This Week", onChange }) {
   return (
     <div className="relative flex items-center group">
       <select 
+        aria-label="Time filter"
         defaultValue={defaultValue}
         onChange={(e) => onChange && onChange(e.target.value)}
-        className="appearance-none pr-4 pl-1 py-0.5 text-[11px] font-medium text-gray-400 bg-transparent border-none cursor-pointer outline-none group-hover:text-gray-600 transition-colors z-10"
+        className="appearance-none pr-4 pl-1 py-0.5 text-[11px] font-medium text-gray-400 bg-transparent border-none cursor-pointer outline-none focus:outline-none focus:ring-2 focus:ring-orange-400 rounded group-hover:text-gray-600 transition-colors z-10"
       >
         <option>This Day</option>
         <option>This Week</option>

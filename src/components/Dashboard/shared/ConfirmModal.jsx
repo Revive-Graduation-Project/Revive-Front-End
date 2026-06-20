@@ -24,9 +24,13 @@ function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confirmLabel
               Cancel
             </button>
             <button
-              onClick={() => {
-                onConfirm();
-                onClose();
+              onClick={async () => {
+                try {
+                  await onConfirm?.();
+                  onClose();
+                } catch {
+                  // Keep modal open so the user can retry or see error feedback
+                }
               }}
               className={`flex-1 py-3 rounded-xl font-bold text-white transition-colors ${confirmClassName || "bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30"}`}
             >

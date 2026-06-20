@@ -1,15 +1,18 @@
-import { FiSearch, FiBell } from "react-icons/fi";
+import { FiBell } from "react-icons/fi";
 import useAuthStore from "../../store/authStore";
 
 function DashboardHeader({ title = "Dashboard", subtitle }) {
   const { user } = useAuthStore();
 
-  const firstName = user?.name ? user.name.split(" ")[0] : "";
-  const fullName  = user?.name || "Loading...";
-  const roleName  = user?.role || "Staff";
+  const safeName = typeof user?.name === 'string' ? user.name : '';
+  const safeRole = typeof user?.role === 'string' ? user.role : 'Staff';
+
+  const firstName = safeName ? safeName.split(" ")[0] : "";
+  const fullName  = safeName || "Loading...";
+  const roleName  = safeRole;
   
-  const initials = user?.name
-    ? user.name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()
+  const initials = safeName
+    ? safeName.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()
     : "U";
 
   const displaySubtitle = subtitle || (firstName ? `Hello ${firstName}, Welcome back` : "Welcome back");
@@ -24,15 +27,6 @@ function DashboardHeader({ title = "Dashboard", subtitle }) {
 
       {/* Right: search + bell + profile */}
       <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
-        {/* Search */}
-        <div className="hidden sm:flex items-center gap-3 bg-white rounded-full px-5 py-3 shadow-sm min-w-[200px] md:min-w-[320px]">
-          <FiSearch size={18} className="text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search"
-            className="border-none outline-none text-[13px] text-gray-700 bg-transparent w-full font-medium"
-          />
-        </div>
 
         <div className="flex items-center gap-5">
           {/* Bell */}

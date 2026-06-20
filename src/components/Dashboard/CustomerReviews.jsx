@@ -37,12 +37,8 @@ function CustomerReviews({ data }) {
               {/* Reviewer Footer */}
               <div className="flex items-end justify-between mt-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-[26px] h-[26px] rounded-full overflow-hidden shrink-0">
-                    <img 
-                      src={`https://ui-avatars.com/api/?name=${review.name.replace(' ', '+')}&background=F97316&color=fff`} 
-                      alt="avatar" 
-                      className="w-full h-full object-cover" 
-                    />
+                  <div className="w-[26px] h-[26px] rounded-full shrink-0 bg-[#F97316] text-white flex items-center justify-center text-[10px] font-bold tracking-wider">
+                    {review.name ? review.name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase() : "U"}
                   </div>
                   <div>
                     <p className="text-[11px] font-bold text-[#1a1a1a] m-0 leading-tight">{review.name}</p>

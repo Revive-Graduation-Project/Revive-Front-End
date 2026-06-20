@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import DashboardHeader from "./DashboardHeader";
 import { useRecipeIngredients, useSaveRecipe } from "../../hooks/dashboard/useMenuItems";
-import { useToast } from "./shared/toastUtils";
+import { useToast } from "../../store/toastStore";
 import { 
   FiPlus, FiTrash2, FiCamera, FiBookOpen, FiDollarSign, 
   FiClock, FiAlignLeft, FiChevronUp, FiChevronDown, FiShare2, FiTarget, FiUser, FiEye, FiGrid, FiUploadCloud
@@ -22,7 +22,7 @@ export default function RecipeBuilderView() {
 
   const { addToast } = useToast();
   const { data: initialIngredients, isLoading: loadIngredients, error: errIngredients } = useRecipeIngredients();
-  const { mutate: saveRecipe, isPending: saving, isSuccess: saved, reset: resetMutation } = useSaveRecipe();
+  const { mutate: saveRecipe, isSuccess: saved, reset: resetMutation } = useSaveRecipe();
 
   // Pre-fill form when editing an existing meal
   useEffect(() => {
@@ -183,31 +183,37 @@ export default function RecipeBuilderView() {
                 </div>
                 <div className="relative">
                   <p className="text-[14px] font-medium text-[#1a1a1a] mb-2">Category</p>
-                  <div 
+                  <button 
+                    type="button"
                     onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                    className="bg-white rounded-full px-5 py-3.5 flex items-center gap-3 shadow-sm border border-transparent hover:border-orange-200 focus-within:border-orange-200 transition-colors cursor-pointer"
+                    aria-haspopup="listbox"
+                    aria-expanded={isCategoryOpen}
+                    className="w-full text-left bg-white rounded-full px-5 py-3.5 flex items-center gap-3 shadow-sm border border-transparent hover:border-orange-200 focus:border-orange-200 focus:outline-none transition-colors cursor-pointer"
                   >
                     <FiGrid className="text-gray-400 shrink-0" size={16} />
                     <span className={`text-[13px] font-medium flex-1 ${form.category ? 'text-gray-700' : 'text-gray-400'}`}>
                       {form.category || "Select category..."}
                     </span>
                     <FiChevronDown className="text-gray-400 shrink-0" size={14} />
-                  </div>
+                  </button>
                   
                   {isCategoryOpen && (
                     <>
-                      <div className="fixed inset-0 z-40" onClick={() => setIsCategoryOpen(false)}></div>
-                      <div className="absolute top-[76px] left-0 w-full bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] py-2 z-50 border border-gray-100/50">
+                      <div className="fixed inset-0 z-40" onClick={() => setIsCategoryOpen(false)} aria-hidden="true" tabIndex={-1}></div>
+                      <div className="absolute top-[76px] left-0 w-full bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] py-2 z-50 border border-gray-100/50" role="listbox">
                         {["Chicken", "Meat", "Seafood", "Vegetarian", "Desserts", "Mixed"].map(cat => (
-                          <div 
+                          <button 
                             key={cat}
+                            type="button"
+                            role="option"
+                            aria-selected={form.category === cat}
                             onClick={() => { setForm(f => ({ ...f, category: cat })); setIsCategoryOpen(false); }}
-                            className={`px-5 py-2.5 text-[13px] font-medium cursor-pointer transition-colors flex items-center justify-between ${
+                            className={`w-full text-left px-5 py-2.5 text-[13px] font-medium cursor-pointer transition-colors flex items-center justify-between focus:outline-none focus:bg-gray-50 ${
                               form.category === cat ? "bg-orange-50 text-orange-600" : "text-gray-600 hover:bg-gray-50 hover:text-orange-500"
                             }`}
                           >
                             {cat}
-                          </div>
+                          </button>
                         ))}
                       </div>
                     </>

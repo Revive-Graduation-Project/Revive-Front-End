@@ -90,7 +90,7 @@ function OrderCard({ order, columnKey, onAction, onViewOrder }) {
 function LiveKitchenView() {
   const [revertingOrder, setRevertingOrder] = useState(null);
   const [viewingOrder, setViewingOrder] = useState(null);
-  const { boards, isConnected, isFetching, error, refetch } = useRealtimeKitchen();
+  const { boards, isFetching, error, refetch } = useRealtimeKitchen();
   const { mutate: updateStatus } = useUpdateKitchenStatus();
   const [orderToCancel, setOrderToCancel] = useState(null);
   const [orderToMarkDone, setOrderToMarkDone] = useState(null);
@@ -190,7 +190,10 @@ function LiveKitchenView() {
                           order={order}
                           columnKey={col.key}
                           onAction={handleAction}
-                          onViewOrder={() => setViewingOrder(order)}
+                          onViewOrder={() => setViewingOrder({ 
+                            ...order, 
+                            status: col.key === 'queue' ? 'Pending' : col.label 
+                          })}
                         />
                       ))
                     )}
@@ -219,7 +222,7 @@ function LiveKitchenView() {
                     <div 
                       key={order.id} 
                       className="group bg-white rounded-2xl p-4 border border-gray-100 shadow-md hover:shadow-lg transition-all duration-200 flex flex-col gap-3 min-w-[280px] shrink-0 cursor-pointer hover:border-orange-200"
-                      onClick={() => setViewingOrder(order)}
+                      onClick={() => setViewingOrder({ ...order, status: 'Done' })}
                     >
                     <div className="grid grid-cols-[44px_1fr] gap-x-2 gap-y-1 text-[11px] sm:text-[12px]">
                       <span className="text-gray-500 font-medium pt-0.5">Order</span>
@@ -251,15 +254,8 @@ function LiveKitchenView() {
                     </div>
                     <div className="flex justify-center mt-1">
                       <button
-                        onClick={(e) => { e.stopPropagation(); setOrderToRevert(order.id); }}
-                        className="flex items-center justify-center gap-1 bg-white text-[#1a1a1a] border border-[#d1d5db] hover:bg-gray-50 flex-1 py-2 rounded-xl text-[12px] font-bold transition-all shadow-sm"
-                        title="Undo Done Status"
-                      >
-                        <FiArrowLeft size={14} />
-                      </button>
-                      <button
                         disabled
-                        className="flex-3 py-2 rounded-xl text-[12px] font-bold transition-all shadow-sm bg-gray-100 text-gray-400 border border-gray-100 cursor-not-allowed ml-2"
+                        className="w-full py-2 rounded-xl text-[12px] font-bold transition-all shadow-sm bg-gray-100 text-gray-400 border border-gray-100 cursor-not-allowed"
                       >
                         Done
                       </button>

@@ -150,7 +150,7 @@ function IngredientModal({ isOpen, onClose, onSubmit, initialData }) {
             />
           </Field>
 
-          <Field label="Ingredient Image">
+          <Field label="Ingredient Image" id="imageInput">
             <div className="flex flex-col gap-3">
               <label
                 htmlFor="imageInput"

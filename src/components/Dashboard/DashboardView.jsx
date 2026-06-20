@@ -62,6 +62,16 @@ function DashboardView() {
     );
   }
 
+  const safeMetrics = metrics || {};
+  const safeRevenue = revenue || [];
+  const safeCategories = categories || [];
+  const safeOrdersOverview = ordersOverview || [];
+  const safeOrderTypes = orderTypes || [];
+  const safeTrending = trending || [];
+  const safeInventory = inventory || [];
+  const safeActivity = activity || [];
+  const safeReviews = reviews || [];
+
   return (
     <div>
       <DashboardHeader title="Dashboard" />
@@ -70,30 +80,30 @@ function DashboardView() {
         <div className="flex flex-col xl:flex-row gap-6 items-start">
           {/* Left Column */}
           <div className="flex-1 flex flex-col gap-6 w-full">
-            <MetricCards metrics={metrics} />
+            <MetricCards metrics={safeMetrics} />
             
             <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
-              <RevenueChart data={revenue} totalRevenue={metrics?.totalRevenue?.value} />
-              <TopCategories data={categories} />
+              <RevenueChart data={safeRevenue} totalRevenue={safeMetrics?.totalRevenue?.value} />
+              <TopCategories data={safeCategories} />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6">
-              <OrdersOverviewChart data={ordersOverview} />
-              <OrderTypes data={orderTypes} />
+              <OrdersOverviewChart data={safeOrdersOverview} />
+              <OrderTypes data={safeOrderTypes} />
             </div>
             
-            <InventoryAlerts data={inventory} />
+            <InventoryAlerts data={safeInventory} />
           </div>
 
           {/* Right Column */}
           <div className="w-full xl:w-[340px] flex flex-col gap-6">
-            <TrendingMenus data={trending} />
-            <RecentActivity data={activity} />
+            <TrendingMenus data={safeTrending} />
+            <RecentActivity data={safeActivity} />
           </div>
         </div>
 
         {/* Bottom Row (Full Width) */}
-        <CustomerReviews data={reviews} />
+        <CustomerReviews data={safeReviews} />
       </div>
     </div>
   );

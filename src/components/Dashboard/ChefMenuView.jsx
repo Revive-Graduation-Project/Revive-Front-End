@@ -4,7 +4,7 @@ import TrendingMenus from "./TrendingMenus";
 import { useMenuCategories, useMenuItems, useCreateMenuItem, useUpdateMenuItem, useDeleteMenuItem } from "../../hooks/dashboard/useMenuItems";
 import { useTrendingMenus } from "../../hooks/dashboard/useDashboard";
 import { FiEdit2, FiCheck, FiX, FiPlus, FiTrash2 } from "react-icons/fi";
-import { useToast } from "./shared/toastUtils";
+import { useToast } from "../../store/toastStore";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 import EmptyState from "./shared/EmptyState";

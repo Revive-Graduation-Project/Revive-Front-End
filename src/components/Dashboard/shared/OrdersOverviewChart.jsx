@@ -1,88 +1,54 @@
-import { useState } from "react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from "recharts";
+import { FiArrowUpRight, FiMoreHorizontal } from "react-icons/fi";
 import TimeFilter from "./TimeFilter";
 
-const DAY_MAP = {
-  Sat: "Saturday",
-  Sun: "Sunday",
-  Mon: "Monday",
-  Tue: "Tuesday",
-  Wed: "Wednesday",
-  Thu: "Thursday",
-  Fri: "Friday",
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-[#1a1a1a] rounded-xl px-3 py-2 text-[11px] text-white shadow-lg flex flex-col items-center">
+        <span className="font-semibold">{label}</span>
+        <span className="font-bold">{payload[0].value} Orders</span>
+      </div>
+    );
+  }
+  return null;
 };
 
-function OrdersOverviewChart({ data = [] }) {
-  const [hoveredIndex, setHoveredIndex] = useState(null);
-
-  const chartData = data.map((d) => ({
-    h: d.orders || d.value || 0,
-    day: d.day || "",
-    fullDay: DAY_MAP[d.day] || d.day || "Day",
-  }));
-
-  const MAX = Math.max(...chartData.map(d => d.h), 200);
+function OrdersOverviewChart({ data }) {
+  const maxValue = Math.max(...data.map(d => d.orders));
 
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-sm flex flex-col justify-between border border-gray-50 h-[240px]">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-2">
-        <h3 className="text-[15px] font-bold text-[#1a1a1a] m-0">Orders Overview</h3>
-        <TimeFilter defaultValue="This Week" />
+    <div className="bg-white rounded-3xl px-6 py-6 shadow-sm flex flex-col h-full border border-gray-50">
+      <div className="flex justify-between items-start mb-2">
+        <div>
+          <h3 className="text-[14px] font-bold text-[#1a1a1a] m-0">Orders overview</h3>
+          <p className="text-[11px] text-gray-400 mt-0.5">
+            <FiArrowUpRight className="text-orange-500 inline mr-1" />
+            <span className="font-semibold text-[#1a1a1a]">{data.reduce((acc, d) => acc + d.orders, 0)}</span> in this period
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <TimeFilter defaultValue="This Week" />
+          <button className="text-gray-400 hover:text-gray-600 bg-transparent border-none cursor-pointer p-0">
+            <FiMoreHorizontal size={16} />
+          </button>
+        </div>
       </div>
 
-      {/* Chart area */}
-      <div className="flex-1 relative w-full mt-4">
-        {/* Y-axis labels */}
-        <div className="absolute left-0 top-0 bottom-6 flex flex-col justify-between text-[10px] text-gray-400 py-1 font-medium z-10 w-6">
-          <span>{MAX}</span>
-          <span>{Math.round(MAX * 0.75)}</span>
-          <span>{Math.round(MAX * 0.5)}</span>
-          <span>{Math.round(MAX * 0.25)}</span>
-          <span>0</span>
-        </div>
-
-        {/* Grid lines */}
-        <div className="absolute left-8 right-0 top-2 bottom-6 flex flex-col justify-between z-0">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="border-b border-dashed border-gray-200 w-full" />
-          ))}
-        </div>
-
-        {/* Bars */}
-        <div className="absolute left-8 right-0 top-2 bottom-6 flex items-end justify-between z-10 pr-2">
-          {chartData.map(({ h, fullDay }, i) => {
-            const isActive = hoveredIndex === i;
-            return (
-              <div
-                key={`bar-${i}`}
-                className="w-[34px] relative h-full flex flex-col justify-end cursor-pointer"
-                onMouseEnter={() => setHoveredIndex(i)}
-                onMouseLeave={() => setHoveredIndex(null)}
-              >
-                {isActive && (
-                  <div className="absolute -top-[42px] bg-[#1a1a1a] text-white py-1.5 px-3 rounded-lg whitespace-nowrap z-20 flex flex-col items-center shadow-md left-1/2 -translate-x-1/2">
-                    <span className="block text-gray-300 text-[9px] mb-0.5">{fullDay}</span>
-                    <strong className="text-[11px]">{h} Orders</strong>
-                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#1a1a1a] rotate-45" />
-                  </div>
-                )}
-                <div
-                  className={`w-full rounded-t-lg transition-all duration-300 ${isActive ? "bg-[#F97316]" : "bg-[#FED7AA] hover:bg-orange-300"}`}
-                  style={{ height: `${(h / MAX) * 100}%` }}
-                />
-              </div>
-            );
-          })}
-        </div>
-
-        {/* X-axis labels */}
-        <div className="absolute left-8 right-0 bottom-0 h-6 flex items-end justify-between z-10 pr-2">
-          {chartData.map(({ day }, i) => (
-            <div key={`day-${i}`} className="w-[34px] flex justify-center text-[10px] text-gray-400 font-medium">
-              {day}
-            </div>
-          ))}
-        </div>
+      <div className="flex-1 min-h-[180px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 0, right: 0, left: -25, bottom: 0 }} barSize={32}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+            <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#9CA3AF" }} dy={10} />
+            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#9CA3AF" }} />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: "transparent" }} />
+            <Bar dataKey="orders" radius={[8, 8, 8, 8]}>
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.highlight ? "#F97316" : "#FDE68A"} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );

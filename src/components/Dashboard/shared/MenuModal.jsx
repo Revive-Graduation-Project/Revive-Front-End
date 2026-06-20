@@ -146,7 +146,7 @@ function MenuModal({ isOpen, onClose, onSubmit, initialData }) {
             />
           </Field>
 
-          <Field label="Meal Image">
+          <Field label="Meal Image" id="imageInput">
             <div className="flex flex-col gap-3">
               <label
                 htmlFor="imageInput"

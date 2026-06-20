@@ -214,7 +214,7 @@ export const MOCK_HANDLERS = [
           items: body.items?.length || 0,
           total: body.finalTotal || body.totalAmount,
           customer: currentUser?.name || "Guest",
-          status: "Preparing"
+          status: "Pending"
         });
         dash.saveMock("orders", dash.mockOrders);
       }
@@ -350,7 +350,21 @@ export const MOCK_HANDLERS = [
     return { status: 200, data: { orders, total: orders.length, pages: 1 } };
   }},
   { method: "patch", match: (url) => url.match(/\/dashboard\/orders\/.+\/status/), handler: (config) => {
+    const parts = config.url.split("/");
+    const orderId = decodeURIComponent(parts[parts.length - 2]);
     const body = JSON.parse(config.data || "{}");
+    
+    const saved = localStorage.getItem("mock_orders");
+    const orders = saved ? JSON.parse(saved) : dash.mockOrders;
+    
+    const targetId = orderId.startsWith('#') ? orderId : `#${orderId}`;
+    const order = orders.find((o) => o.id === targetId || o.id === orderId);
+    
+    if (order) {
+      order.status = body.status;
+      dash.saveMock("orders", orders);
+    }
+    
     return { status: 200, data: { success: true, status: body.status } };
   }},
 
@@ -491,11 +505,7 @@ export const MOCK_HANDLERS = [
     return { status: 201, data: newItem };
   }},
 
-  // ──────────────────────────────────────────────
-  // MENU MANAGEMENT
-  // ──────────────────────────────────────────────
-  { method: "get",  match: (url) => url.endsWith("/menu/uploads"), handler: () => ({ status: 200, data: dash.mockMenuUploads }) },
-  { method: "post", match: (url) => url.endsWith("/menu/upload"),  handler: () => ({ status: 200, data: { success: true, itemsImported: 42 } }) },
+
 
   // ──────────────────────────────────────────────
   // INGREDIENTS

@@ -32,9 +32,7 @@ export const updateOrderStatus     = (orderId, status) => api.patch(`/dashboard/
 // ── Kitchen ───────────────────────────────────────────────────────
 export const getKitchenOrders = () =>
   api.get("/kitchen/orders").then(r => {
-    console.log('[SVC] GET /kitchen/orders raw:', r.data);
     const mapped = Mappers.mapKitchenOrders(r.data);
-    console.log('[SVC] kitchen mapped queue length:', mapped.queue?.length);
     return mapped;
   });
 export const updateKitchenStatus   = (orderId, status) => api.patch(`/kitchen/orders/${encodeURIComponent(orderId)}/status`, { status }).then(r => r.data);
@@ -54,7 +52,7 @@ export const saveRecipe            = (data) => api.post("/recipes", data).then(r
 export const getMenuUploads        = () => api.get("/menu/uploads").then(r => Mappers.mapMenuUploads(r.data));
 export const uploadMenuFile        = (file) =>
   api.post("/menu/upload", (() => { const f = new FormData(); f.append("file", file); return f; })(), {
-    headers: { "Content-Type": "multipart/form-data", "X-File-Name": file.name }
+    headers: { "X-File-Name": file.name }
   }).then(r => r.data);
 
 // ── Ingredients ───────────────────────────────────────────────────
@@ -64,4 +62,4 @@ export const createIngredient      = (data) => api.post("/ingredients", data).th
 export const updateIngredient      = (id, data) => api.patch(`/ingredients/${id}`, data).then(r => r.data);
 export const deleteIngredient      = (id) => api.delete(`/ingredients/${id}`).then(r => r.data);
 export const uploadIngredientsFile = (formData) =>
-  api.post("/ingredients/upload", formData, { headers: { "Content-Type": "multipart/form-data" } }).then(r => r.data);
+  api.post("/ingredients/upload", formData).then(r => r.data);

@@ -1,10 +1,10 @@
 /**
- * Toast Store + Container
+ * Toast Container
  * ─────────────────────────────────────────────────────────────────
- * Lightweight toast system using Zustand. No third-party libraries.
+ * Mounts the toast UI. Place once in DashboardLayout.
  *
- * Usage (anywhere in dashboard):
- *   import { useToast } from "./shared/useToast";
+ * The hook and styles live in toastStore.js:
+ *   import { useToast } from "../../store/toastStore";
  *   const toast = useToast();
  *
  *   // Option A — named methods (preferred)
@@ -17,7 +17,7 @@
  *   toast.addToast("Failed!", "error");
  */
 
-import { useToastStore, TOAST_STYLES } from "./toastUtils";
+import { useToastStore, TOAST_STYLES } from "../../../store/toastStore";
 
 // ── Container (mounted once in DashboardLayout) ───────────────────
 export function ToastContainer() {
