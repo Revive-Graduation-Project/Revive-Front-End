@@ -1,4 +1,25 @@
+import { useNavigate } from "react-router-dom";
+
 const Hero = () => {
+  const navigate = useNavigate();
+
+  const handleOrderNow = () => {
+    const section = document.getElementById("popular-meals");
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handleExploreMore = () => {
+    navigate("/menu");
+    // After navigation, scroll to the regular-food section
+    setTimeout(() => {
+      const section = document.getElementById("regular-food");
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 400);
+  };
   return (
     <section className="relative overflow-hidden">
       <div
@@ -34,11 +55,17 @@ const Hero = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-              <button className="bg-(--color-orange) text-white px-6 py-3 rounded-full font-medium hover:bg-orange-600 transition cursor-pointer">
+              <button
+                onClick={handleExploreMore}
+                className="bg-(--color-orange) text-white px-6 py-3 rounded-full font-medium hover:bg-orange-600 transition cursor-pointer"
+              >
                 Order now
               </button>
 
-              <button className="border border-gray-300 px-6 py-3 rounded-full font-medium hover:bg-gray-100 transition cursor-pointer">
+              <button
+                onClick={handleOrderNow}
+                className="border border-gray-300 px-6 py-3 rounded-full font-medium hover:bg-gray-100 transition cursor-pointer"
+              >
                 Explore More
               </button>
             </div>

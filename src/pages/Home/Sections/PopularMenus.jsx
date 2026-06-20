@@ -49,27 +49,25 @@ const PopularMenus = () => {
   const popular = meals.slice(0, 6);
 
   return (
-    <section className="py-8 md:py-12">
+    <section id="popular-meals" className="py-8 md:py-12">
       <div className="container mx-auto px-4">
-        {/* Header row with title + arrow buttons */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
-              Popular Meals
-            </h2>
-            <span className="text-3xl">🔥</span>
-          </div>
+        {/* Header row with title */}
+        <div className="flex items-center gap-3 mb-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
+            Popular Meals
+          </h2>
+          <span className="text-3xl">🔥</span>
+        </div>
 
+        {/* Scrollable card row */}
+        <div className="relative">
           <ScrollArrows
             onScrollLeft={scrollLeft}
             onScrollRight={scrollRight}
             canScrollLeft={canScrollLeft}
             canScrollRight={canScrollRight}
           />
-        </div>
 
-        {/* Scrollable card row */}
-        <div className="relative">
           <div
             ref={scrollRef}
             className="flex gap-5 md:gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory"
