@@ -1,19 +1,21 @@
+import { useAuthStore } from "../../store";
 import AboutUs from "./Sections/AboutUs";
 import FAQSection from "./Sections/FAQSection";
 import Hero from "./Sections/Hero";
 import PopularMenus from "./Sections/PopularMenus";
-import RegularFood from "./Sections/RegularFood";
+
 import SpecialOffer from "./Sections/SpecialOffer";
+import SuggestedMeals from "./Sections/SuggestedMeals";
 import Testimonials from "./Sections/Testimonials";
-import { getMenu } from "../../services/menu.service";
+
 export default function Home() {
-  const { data: menu } = getMenu();
-  console.log(menu);
+  const { isAuthenticated } = useAuthStore();
+
   return (
     <div
       className="
-        home-page 
-        bg-white 
+        home-page
+        bg-white
         min-h-screen
         px-4 md:px-10 lg:px-20
         overflow-hidden
@@ -21,8 +23,14 @@ export default function Home() {
     >
       <div className="py-12 md:py-16 lg:py-20 space-y-16 md:space-y-20 lg:space-y-24">
         <Hero />
+
+        {/* Suggested Meals — only shown to authenticated users */}
+        {isAuthenticated && <SuggestedMeals />}
+
+        {/* Popular Meals — always visible */}
         <PopularMenus />
-        <RegularFood />
+
+
         <SpecialOffer />
         <AboutUs />
         <FAQSection />
