@@ -16,7 +16,7 @@ import { resolveMockHandler } from "../mocks/handlers";
 //   3. That's it — no service files need to change.
 // ============================================================
 
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
 
 const mockAdapter = async (config) => {
     // Simulate realistic network delay (100–350ms)

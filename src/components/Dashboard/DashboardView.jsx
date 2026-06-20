@@ -68,7 +68,7 @@ function DashboardView() {
   const safeOrdersOverview = ordersOverview || [];
   const safeOrderTypes = orderTypes || [];
   const safeTrending = trending || [];
-  const safeInventory = inventory || [];
+  const safeInventory = inventory || {};
   const safeActivity = activity || [];
   const safeReviews = reviews || [];
 

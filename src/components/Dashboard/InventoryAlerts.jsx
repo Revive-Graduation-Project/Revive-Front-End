@@ -16,9 +16,9 @@ function AlertItem({ emoji, name, daysLeft }) {
 
 function InventoryAlerts({ data }) {
   const sections = [
-    { key: "lowStock",  label: "Low Stock",                  items: data.lowStock,  showDays: false },
-    { key: "shelfLife", label: "Shelf-life: less than 3 days", items: data.shelfLife, showDays: true  },
-    { key: "inSeason",  label: "In Season",                  items: data.inSeason,  showDays: false },
+    { key: "lowStock",  label: "Low Stock",                  items: data?.lowStock || [],  showDays: false },
+    { key: "shelfLife", label: "Shelf-life: less than 3 days", items: data?.shelfLife || [], showDays: true  },
+    { key: "inSeason",  label: "In Season",                  items: data?.inSeason || [],  showDays: false },
   ];
 
   return (
