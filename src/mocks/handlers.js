@@ -532,6 +532,7 @@ export const MOCK_HANDLERS = [
     return { status: 200, data: { message: "Deleted" } };
   }},
   { method: "post",   match: (url) => url.endsWith("/ingredients/upload"),              handler: () => ({ status: 200, data: { success: true, count: 15 } }) },
+  { method: "post",   match: (url) => url.endsWith("/inventory/upload"),                handler: () => ({ status: 200, data: { success: true, count: 15 } }) },
 ];
 
 /**

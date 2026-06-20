@@ -70,6 +70,7 @@ function IngredientsView() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingIngredient, setEditingIngredient] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const { data: ingredients, isLoading: loadIngredients, error } = useIngredients();
   const { mutate: uploadFile, isPending: isUploading } = useUploadIngredients();
@@ -82,11 +83,19 @@ function IngredientsView() {
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    uploadFile(file, {
-      onSuccess: () => addToast("Ingredients updated successfully!", "success"),
+    setSelectedFile(file);
+    e.target.value = "";
+  };
+
+  const handleSubmitFile = () => {
+    if (!selectedFile) return;
+    uploadFile(selectedFile, {
+      onSuccess: () => {
+        addToast("Ingredients updated successfully!", "success");
+        setSelectedFile(null);
+      },
       onError:   () => addToast("Failed to upload ingredients.", "error"),
     });
-    e.target.value = "";
   };
 
   const handleDelete = (id) => {
@@ -294,12 +303,21 @@ function IngredientsView() {
         </div>
 
         {/* Upload Button sitting on the yellow background */}
-        <div className="flex justify-start">
+        <div className="flex flex-col gap-4 justify-start items-start">
           <label className={`bg-[#38761d] hover:bg-green-800 text-white px-6 py-3 rounded-full flex items-center gap-2 shadow-lg cursor-pointer transition-transform hover:scale-105 ${isUploading ? "opacity-50" : ""}`}>
             <FiUploadCloud size={20} className="text-[#F97316]" />
-            <span className="text-[14px] font-bold">{isUploading ? "Uploading..." : "Upload ingredients file"}</span>
+            <span className="text-[14px] font-bold">{selectedFile ? selectedFile.name : "Upload Menu csv"}</span>
             <input type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
           </label>
+          {selectedFile && (
+            <button
+              onClick={handleSubmitFile}
+              disabled={isUploading}
+              className={`bg-[#F97316] hover:bg-orange-600 text-white px-6 py-2 rounded-full font-bold shadow-lg transition-transform hover:scale-105 ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
+            >
+              {isUploading ? "Uploading..." : "Submit"}
+            </button>
+          )}
         </div>
       </div>
 

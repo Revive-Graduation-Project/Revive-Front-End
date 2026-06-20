@@ -12,6 +12,8 @@
 
 import { api } from "./api";
 import * as Mappers from "./mappers/dashboardMappers";
+import { useAuthStore } from "../store";
+import axios from "axios";
 
 // ── Dashboard Overview ────────────────────────────────────────────
 export const getDashboardMetrics   = () => api.get("/dashboard/metrics").then(r => Mappers.mapDashboardMetrics(r.data));
@@ -61,5 +63,17 @@ export const getIngredients        = (params = {}) => api.get("/ingredients", { 
 export const createIngredient      = (data) => api.post("/ingredients", data).then(r => r.data);
 export const updateIngredient      = (id, data) => api.patch(`/ingredients/${id}`, data).then(r => r.data);
 export const deleteIngredient      = (id) => api.delete(`/ingredients/${id}`).then(r => r.data);
-export const uploadIngredientsFile = (formData) =>
-  api.post("/ingredients/upload", formData).then(r => r.data);
+
+
+export const uploadIngredientsFile = (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const headers = {};
+  const user = useAuthStore.getState().user;
+  if (user && user.role) {
+    headers["X-User-Role"] = user.role;
+  }
+
+  return api.post("/api/inventory/upload", formData, { headers }).then(r => r.data);
+};
