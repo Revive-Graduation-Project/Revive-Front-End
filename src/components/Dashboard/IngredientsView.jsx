@@ -2,7 +2,7 @@ import { useState } from "react";
 import DashboardHeader from "./DashboardHeader";
 import { useIngredientsMetrics, useIngredients, useUploadIngredients, useDeleteIngredient, useCreateIngredient, useUpdateIngredient } from "../../hooks/dashboard/useIngredients";
 import { useToast } from "../../store/toastStore";
-import { FiSearch, FiPlus, FiUploadCloud, FiTrash2, FiEdit2 } from "react-icons/fi";
+import { FiSearch, FiPlus, FiUploadCloud, FiEdit2 } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 import EmptyState from "./shared/EmptyState";
@@ -178,15 +178,15 @@ function IngredientsView() {
   const getCategoryCount = (catName) => allIngredients.filter(i => i.category === catName).length;
   const getCategoryPct = (catName) => allIngredients.length ? Math.round((getCategoryCount(catName) / allIngredients.length) * 100) : 0;
 
-  const metricRows = metrics
-    ? [
-        { label: "Total Ingredients", value: metrics.total || 0, pct: 100, change: metrics.totalChange || 1.58 },
+  const getOutOfStockCount = () => allIngredients.filter(i => i.stock === 0 || i.stock === "0").length;
+
+  const metricRows = [
+        { label: "Total Ingredients", value: allIngredients.length, pct: 100, change: metrics?.totalChange || 1.58 },
         { label: "Protien",           value: getCategoryCount("Protein"),    pct: getCategoryPct("Protein"),  change: 0.92 },
         { label: "Vegetables",        value: getCategoryCount("Vegetables"), pct: getCategoryPct("Vegetables"),  change: 0.12 },
         { label: "Sauces",            value: getCategoryCount("Sauces"),     pct: getCategoryPct("Sauces"),  change: 0.92 },
-        { label: "Out of stock",      value: metrics.outOfStock || 0, pct: metrics.total ? Math.round((metrics.outOfStock / metrics.total) * 100) : 0,  badge: true, change: metrics.outOfStockChange || 0.42 },
-      ]
-    : [];
+        { label: "Out of stock",      value: getOutOfStockCount(), pct: allIngredients.length ? Math.round((getOutOfStockCount() / allIngredients.length) * 100) : 0,  badge: true, change: metrics?.outOfStockChange || 0.42 },
+      ];
 
   return (
     <div>
@@ -195,13 +195,11 @@ function IngredientsView() {
       <div className="p-4 md:p-8 flex flex-col gap-6">
 
         {/* Top Metric Circle Cards */}
-        {metrics && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-            {metricRows.map((m, i) => (
-              <CircleMetric key={i} pct={m.pct} value={m.value} label={m.label} badge={m.badge} />
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          {metricRows.map((m, i) => (
+            <CircleMetric key={i} pct={m.pct} value={m.value} label={m.label} badge={m.badge} change={m.change} />
+          ))}
+        </div>
 
         {/* Table Card */}
         <div className="bg-white rounded-3xl shadow-sm relative pb-10">
@@ -280,14 +278,6 @@ function IngredientsView() {
                             title="Edit"
                           >
                             <FiEdit2 size={14} /> Edit
-                          </button>
-                          <button
-                            type="button"
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-red-50 text-gray-500 hover:text-red-500 rounded-lg text-[12px] font-bold border border-gray-100 transition-all cursor-pointer shadow-sm"
-                            onClick={() => handleDelete(item.id)}
-                            title="Delete"
-                          >
-                            <FiTrash2 size={14} /> Delete
                           </button>
                         </div>
                       </td>

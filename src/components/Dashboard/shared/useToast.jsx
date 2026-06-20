@@ -17,6 +17,7 @@
  *   toast.addToast("Failed!", "error");
  */
 
+import { FiX } from "react-icons/fi";
 import { useToastStore, TOAST_STYLES } from "../../../store/toastStore";
 
 // ── Container (mounted once in DashboardLayout) ───────────────────

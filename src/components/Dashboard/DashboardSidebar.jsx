@@ -8,7 +8,6 @@ import {
   MdOutlineSetMeal,
 } from "react-icons/md";
 import { FiShoppingBag, FiLogOut } from "react-icons/fi";
-import { HiSparkles } from "react-icons/hi2";
 import useAuthStore from "../../store/authStore";
 
 const navItems = [
@@ -65,35 +64,6 @@ function DashboardSidebar() {
         </ul>
       </nav>
 
-      {/* AI Intelligence Card */}
-      <div className="px-3 pb-4 mt-auto">
-        <div className="bg-linear-to-br from-[#1a3a2a] to-[#2d5a3d] rounded-2xl p-[18px] relative overflow-hidden">
-          {/* Decorative circle */}
-          <div className="absolute -bottom-5 -right-5 w-20 h-20 rounded-full bg-white/5" />
-
-          {/* Badge */}
-          <div className="inline-flex items-center gap-1.5 bg-green-300/15 border border-green-300/30 rounded-full px-2.5 py-0.5 mb-2.5">
-            <HiSparkles size={12} className="text-green-300" />
-            <span className="text-[11px] text-green-300 font-semibold tracking-wide uppercase">AI Intelligence</span>
-          </div>
-
-          <p className="text-white text-[13px] font-bold mb-1.5 leading-snug">
-            Refine the Avocado Glow Bowl?
-          </p>
-          <p className="text-amber-400 text-[11px] mb-3.5 leading-relaxed font-medium">
-            Supply costs for hass avocados are up 12%. Suggest swapping for regional sunflower-hummus base to maintain 45% margin.
-          </p>
-
-          <button
-            type="button"
-            onClick={() => alert("Optimization logic applied!")}
-            className="w-full bg-white text-[#1a3a2a] rounded-2xl text-xs font-bold py-2 px-3 cursor-pointer hover:bg-green-50 transition-colors shadow-sm border-none"
-          >
-            <div>Apply</div> 
-            Optimization
-          </button>
-        </div>
-      </div>
 
       {/* Logout */}
       <div className="px-3 pb-6 mt-4">

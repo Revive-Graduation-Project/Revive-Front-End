@@ -84,35 +84,33 @@ const SuggestedMeals = () => {
   const scrollRight = useCallback(() => {
     scrollRef.current?.scrollBy({ left: SCROLL_AMOUNT, behavior: "smooth" });
   }, []);
-  
+
   // thoose three lines hide the suggested meals when no meal is suggested
-  // if you want to test the suggested meals comment it it
+  //if you want to test the suggested meals comment it it
   if (loading) return <LoadingSpinner />;
   if (error) return <p className="text-red-500 text-center">{error}</p>;
   if (meals.length === 0) return null;
-//***********************************************************************/
+  //***********************************************************************/
   return (
     <section className="py-8 md:py-12">
       <div className="container mx-auto px-4">
-        {/* Header row with title + arrow buttons */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
-              Suggested For You
-            </h2>
-            <span className="text-3xl">✨</span>
-          </div>
+        {/* Header row with title */}
+        <div className="flex items-center gap-3 mb-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
+            Suggested For You
+          </h2>
+          <span className="text-3xl">✨</span>
+        </div>
 
+        {/* Horizontally scrollable card row */}
+        <div className="relative">
           <ScrollArrows
             onScrollLeft={scrollLeft}
             onScrollRight={scrollRight}
             canScrollLeft={canScrollLeft}
             canScrollRight={canScrollRight}
           />
-        </div>
 
-        {/* Horizontally scrollable card row */}
-        <div className="relative">
           <div
             ref={scrollRef}
             className="flex gap-5 md:gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory"

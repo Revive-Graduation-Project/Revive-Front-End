@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import RegularFoodCard from "../../../components/UI/RegularFoodCard";
+import ScrollArrows from "../../../components/UI/ScrollArrows";
 
 const OffersSection = ({ items = [] }) => {
   const offersMeals = useMemo(
@@ -50,21 +51,10 @@ const OffersSection = ({ items = [] }) => {
           </div>
         </div>
 
-        {/* ===== DESKTOP: Carousel (unchanged) ===== */}
+        {/* ===== DESKTOP: Carousel ===== */}
         <div className="hidden md:block">
           <div className="relative flex items-center justify-center">
-            {/* Left Arrow */}
-            <button
-              onClick={goPrev}
-              className="
-                absolute md:-left-10 lg:-left-16 top-1/2 -translate-y-1/2
-                text-green-700 text-5xl font-bold
-                hover:scale-110 transition
-              "
-              aria-label="Previous"
-            >
-              ‹
-            </button>
+            <ScrollArrows onScrollLeft={goPrev} onScrollRight={goNext} />
 
             {/* Cards Wrapper */}
             <div className="flex items-end justify-center gap-8">
@@ -83,19 +73,6 @@ const OffersSection = ({ items = [] }) => {
                 <RegularFoodCard meal={offersMeals[nextIndex]} />
               </div>
             </div>
-
-            {/* Right Arrow */}
-            <button
-              onClick={goNext}
-              className="
-                absolute md:-right-10 lg:-right-16 top-1/2 -translate-y-1/2
-                text-green-700 text-5xl font-bold
-                hover:scale-110 transition
-              "
-              aria-label="Next"
-            >
-              ›
-            </button>
           </div>
         </div>
       </div>
