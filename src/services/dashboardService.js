@@ -41,10 +41,11 @@ export const updateKitchenStatus   = (orderId, status) => api.patch(`/kitchen/or
 
 // ── Menu (Chef Menu page) ─────────────────────────────────────────
 export const getMenuCategories     = () => api.get("/menu/categories").then(r => Mappers.mapMenuCategories(r.data));
-export const getMenuItems          = (params = {}) => api.get("/menu/items", { params }).then(r => Mappers.mapMenuItems(r.data));
-export const deleteMenuItem        = (id) => api.delete(`/menu/items/${id}`).then(r => r.data);
-export const updateMenuItem        = (id, data) => api.patch(`/menu/items/${id}`, data).then(r => r.data);
-export const createMenuItem        = (data) => api.post("/menu/items", data).then(r => r.data);
+export const getMenuItems          = (params = {}) => api.get("/api/menu", { params }).then(r => Mappers.mapMenuItems(r.data));
+export const deleteMenuItem        = (id) => api.delete(`/api/menu/${id}`).then(r => r.data);
+export const updateMenuItem        = (id, data) => api.put(`/api/menu/${id}`, data).then(r => r.data);
+export const createMenuItem        = (data) => api.post("/api/menu", data).then(r => r.data);
+export const updateMenuDiscount    = (id, data) => api.patch(`/api/menu/${id}/discount`, data).then(r => r.data);
 
 // ── Recipe Builder ────────────────────────────────────────────────
 export const getRecipeIngredients  = () => api.get("/recipes/ingredients").then(r => r.data);
@@ -52,17 +53,23 @@ export const saveRecipe            = (data) => api.post("/recipes", data).then(r
 
 // ── Menu Management ───────────────────────────────────────────────
 export const getMenuUploads        = () => api.get("/menu/uploads").then(r => Mappers.mapMenuUploads(r.data));
-export const uploadMenuFile        = (file) =>
-  api.post("/menu/upload", (() => { const f = new FormData(); f.append("file", file); return f; })(), {
-    headers: { "X-File-Name": file.name }
-  }).then(r => r.data);
+export const uploadMenuFile = (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  return api.post("/menu/upload", formData, {
+    headers: { "X-File-Name": file.name },
+  }).then((r) => r.data);
+};
 
 // ── Ingredients ───────────────────────────────────────────────────
 export const getIngredientsMetrics = () => api.get("/ingredients/metrics").then(r => Mappers.mapIngredientsMetrics(r.data));
-export const getIngredients        = (params = {}) => api.get("/ingredients", { params }).then(r => Mappers.mapIngredients(r.data));
-export const createIngredient      = (data) => api.post("/ingredients", data).then(r => r.data);
-export const updateIngredient      = (id, data) => api.patch(`/ingredients/${id}`, data).then(r => r.data);
-export const deleteIngredient      = (id) => api.delete(`/ingredients/${id}`).then(r => r.data);
+export const getIngredients        = (params = {}) => api.get("/api/ingredients", { params }).then(r => Mappers.mapIngredients(r.data));
+export const createIngredient      = (data) => Promise.reject(new Error("POST /api/ingredients not implemented by backend"));
+export const updateIngredient      = (id, data) => api.patch(`/api/ingredients/${id}/stock`, data).then(r => r.data);
+export const deleteIngredient      = (id) => Promise.reject(new Error("DELETE /api/ingredients not implemented by backend"));
+export const bulkUpdateIngredientsStock = (data) => api.patch("/api/ingredients/bulk/stock", data).then(r => r.data);
+export const reserveIngredientsStock    = (data) => api.post("/api/ingredients/reserve", data).then(r => r.data);
+export const revertIngredientsStock     = (data) => api.post("/api/ingredients/revert", data).then(r => r.data);
 
 
 export const uploadIngredientsFile = (file) => {

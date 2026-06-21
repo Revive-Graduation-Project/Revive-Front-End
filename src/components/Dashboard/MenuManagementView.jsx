@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import DashboardHeader from "./DashboardHeader";
 import { useMenuUploads, useUploadMenu } from "../../hooks/dashboard/useMenuUploads";
 import { useToast } from "../../store/toastStore";
-import { FiUploadCloud, FiFileText, FiCheckCircle, FiXCircle } from "react-icons/fi";
+import { FiUploadCloud, FiFileText } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 import EmptyState from "./shared/EmptyState";
@@ -13,24 +13,27 @@ function MenuManagementView() {
 
   const { addToast } = useToast();
 
-  // Dynamic calendar
-  const today = new Date();
-  const todayDate = today.getDate();
-  const monthName = today.toLocaleString("en", { month: "long" });
-  const dayDisplay = String(todayDate).padStart(2, "0");
-
-  const calendarDays = useMemo(() => {
-    const year = today.getFullYear();
-    const month = today.getMonth();
-    const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+  // Dynamic calendar — `new Date()` is inside the memo so the snapshot
+  // is taken once on mount and is never stale with respect to the closure.
+  const { today, todayDate, monthName, dayDisplay, calendarDays } = useMemo(() => {
+    const now        = new Date();
+    const year       = now.getFullYear();
+    const month      = now.getMonth();
+    const firstDay   = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const cells = [];
-    for (let i = 0; i < firstDay; i++) cells.push(null); // empty leading cells
+    const cells      = [];
+    for (let i = 0; i < firstDay; i++) cells.push(null);
     for (let d = 1; d <= daysInMonth; d++) cells.push(d);
-    return cells;
+    return {
+      today:       now,
+      todayDate:   now.getDate(),
+      monthName:   now.toLocaleString("en", { month: "long" }),
+      dayDisplay:  String(now.getDate()).padStart(2, "0"),
+      calendarDays: cells,
+    };
   }, []);
 
-  const { data: uploads, isLoading, error } = useMenuUploads();
+  const { data: uploads, isLoading, error, refetch } = useMenuUploads();
   const { mutate: uploadFile, isPending: isUploading } = useUploadMenu();
 
   const handleDrag = (e) => {
@@ -101,7 +104,8 @@ function MenuManagementView() {
     return (
       <div>
         <DashboardHeader title="Menu Management" />
-        <ErrorState message="Failed to load upload history." onRetry={() => window.location.reload()} />
+        {/* Use refetch so the page state (dragActive, selectedFile) is preserved */}
+        <ErrorState message="Failed to load upload history." onRetry={refetch} />
       </div>
     );
   }

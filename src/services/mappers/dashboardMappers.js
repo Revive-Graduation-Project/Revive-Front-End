@@ -120,6 +120,43 @@ export const mapOrders = (data) => {
   }));
 };
 
+/**
+ * mapOrderResponse
+ * Maps the real OrderResponse from the Order Service (POST /api/order, GET /api/order/:id).
+ *
+ * Real status enum: PENDING | AWAITING_PAYMENT | PAID | CONFIRMED | CANCELLED | READY_FOR_PICKUP
+ */
+export const ORDER_STATUS_LABELS = {
+  PENDING:            "Pending",
+  AWAITING_PAYMENT:   "Awaiting Payment",
+  PAID:               "Paid",
+  CONFIRMED:          "Confirmed",
+  CANCELLED:          "Cancelled",
+  READY_FOR_PICKUP:   "Ready for Pickup",
+};
+
+export const mapOrderResponse = (data) => ({
+  id:                 data.id,
+  customerId:         data.customerId,
+  status:             data.status || "PENDING",
+  statusLabel:        ORDER_STATUS_LABELS[data.status] || data.status,
+  totalPrice:         data.totalPrice || 0,
+  discount:           data.discount   || 0,
+  createdAt:          data.createdAt  || null,
+  // Stripe client secret — pass to Stripe.js to collect payment
+  stripeClientSecret: data.stripeClientSecret || null,
+  items: Array.isArray(data.items)
+    ? data.items.map((item) => ({
+        id:            item.id,
+        mealId:        item.mealId,
+        name:          item.snapshotName  || "",
+        price:         item.snapshotPrice || 0,
+        quantity:      item.quantity      || 1,
+      }))
+    : [],
+});
+
+
 // ── Live Kitchen Mappers ──────────────────────────────────────────
 
 export const mapKitchenOrders = (data) => {
@@ -176,8 +213,12 @@ export const mapMenuItems = (data) => {
     fat: item.fat || "0g",
     sugar: item.sugar || "0g",
     rating: item.rating || 0,
-    status: item.status || "Active",
+    status: item.isActive !== undefined ? (item.isActive ? "Active" : "Inactive") : (item.status || "Active"),
     image: item.image || null,
+    description: item.description || "",
+    hasDiscount: item.hasDiscount || false,
+    discountPercentage: item.discountPercentage || 0,
+    mealIngredients: item.mealIngredients || [],
   }));
 };
 
@@ -207,7 +248,7 @@ export const mapIngredients = (data) => {
     stock: item.stock || 0,
     unit: item.unit || "unit",
     costPerUnit: item.costPerUnit || "$0.00",
-    status: item.status || "In Stock",
+    status: item.stock > 0 ? "In Stock" : "Out of Stock",
   }));
 };
 

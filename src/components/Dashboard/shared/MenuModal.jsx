@@ -3,15 +3,15 @@ import { FiX, FiAlertCircle, FiUploadCloud } from "react-icons/fi";
 
 // ── Regex validators ────────────────────────────────────────────────
 const VALIDATORS = {
-  name:     { pattern: /^[a-zA-Z\u0600-\u06FF\s]{2,60}$/, msg: "2–60 letters only" },
-  price:    { pattern: /^\d+(\.\d{1,2})?$/,               msg: "e.g. 15 or 15.99" },
-  nutrient: { pattern: /^\d+(\.\d+)?g?$/,                 msg: "e.g. 25 or 25g" },
+  name: { pattern: /^[a-zA-Z\u0600-\u06FF\s]{2,60}$/, msg: "2–60 letters only" },
+  price: { pattern: /^\d+(\.\d{1,2})?$/, msg: "e.g. 15 or 15.99" },
+  nutrient: { pattern: /^\d+(\.\d+)?g?$/, msg: "e.g. 25 or 25g" },
 };
 
 // ── Character-level blockers ────────────────────────────────────────
 const FILTERS = {
-  name:     (v) => v.replace(/[^a-zA-Z\u0600-\u06FF\s]/g, ""),
-  price:    (v) => v.replace(/[^\d.]/g, "").replace(/(\..*)\./g, "$1").replace(/(\.\d{2})\d+/, "$1"),
+  name: (v) => v.replace(/[^a-zA-Z\u0600-\u06FF\s]/g, ""),
+  price: (v) => v.replace(/[^\d.]/g, "").replace(/(\..*)\./g, "$1").replace(/(\.\d{2})\d+/, "$1"),
   nutrient: (v) => v.replace(/[^\d.g]/g, "").replace(/(\.\d+)g?.*/, "$1g"),
 };
 
@@ -37,8 +37,8 @@ function Field({ label, id, error, children }) {
 function MenuModal({ isOpen, onClose, onSubmit, initialData }) {
   const isEditing = !!initialData;
   const [formData, setFormData] = useState(EMPTY_FORM);
-  const [errors, setErrors]     = useState({});
-  const [touched, setTouched]   = useState({});
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
 
   useEffect(() => {
     if (isOpen) {
@@ -52,9 +52,9 @@ function MenuModal({ isOpen, onClose, onSubmit, initialData }) {
 
   const validate = (field, value) => {
     const v = String(value).trim();
-    if (field === "name")  return VALIDATORS.name.pattern.test(v)  ? "" : VALIDATORS.name.msg;
+    if (field === "name") return VALIDATORS.name.pattern.test(v) ? "" : VALIDATORS.name.msg;
     if (field === "price") return VALIDATORS.price.pattern.test(v) ? "" : VALIDATORS.price.msg;
-    if (["fat","calories","protein","sugar"].includes(field)) {
+    if (["fat", "calories", "protein", "sugar"].includes(field)) {
       if (!v) return ""; // optional
       return VALIDATORS.nutrient.pattern.test(v) ? "" : VALIDATORS.nutrient.msg;
     }
@@ -62,9 +62,9 @@ function MenuModal({ isOpen, onClose, onSubmit, initialData }) {
   };
 
   const getFilter = (field) => {
-    if (field === "name")  return FILTERS.name;
+    if (field === "name") return FILTERS.name;
     if (field === "price") return FILTERS.price;
-    if (["fat","calories","protein","sugar"].includes(field)) return FILTERS.nutrient;
+    if (["fat", "calories", "protein", "sugar"].includes(field)) return FILTERS.nutrient;
     return (v) => v;
   };
 
@@ -110,12 +110,15 @@ function MenuModal({ isOpen, onClose, onSubmit, initialData }) {
       if (normalized[f] && !/g$/.test(normalized[f])) normalized[f] += "g";
     });
 
+    // Add required backend fields with defaults if not present
+    if (normalized.description === undefined) normalized.description = "";
+    if (normalized.ingredients === undefined) normalized.ingredients = [];
+
     onSubmit(normalized);
   };
 
   const inputClass = (field) =>
-    `w-full bg-gray-50 border rounded-xl px-4 py-2 text-[14px] focus:outline-none transition-colors ${
-      errors[field] ? "border-red-400 focus:border-red-400" : "border-gray-200 focus:border-orange-400"
+    `w-full bg-gray-50 border rounded-xl px-4 py-2 text-[14px] focus:outline-none transition-colors ${errors[field] ? "border-red-400 focus:border-red-400" : "border-gray-200 focus:border-orange-400"
     }`;
 
   return (
