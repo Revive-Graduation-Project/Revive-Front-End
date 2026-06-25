@@ -19,17 +19,17 @@ import {
 
 const TOKEN_LIFETIME = 1000 * 60 * 60 * 24; // 24 hours
 
-const isValidUser = (user) => {
-  if (!user || typeof user !== "object") return false;
+// const isValidUser = (user) => {
+//   if (!user || typeof user !== "object") return false;
 
-  return (
-    (typeof user.id === "string" || typeof user.id === "number") &&
-    typeof user.email === "string" &&
-    user.email.includes("@") &&
-    (user.health === undefined || typeof user.health === "string") &&
-    (user.preferences === undefined || Array.isArray(user.preferences))
-  );
-};
+//   return (
+//     (typeof user.id === "string" || typeof user.id === "number") &&
+//     typeof user.email === "string" &&
+//     user.email.includes("@") &&
+//     (user.health === undefined || typeof user.health === "string") &&
+//     (user.preferences === undefined || Array.isArray(user.preferences))
+//   );
+// };
 
 const isValidToken = (token) => {
   return typeof token === "string" && token.trim().length > 0;
@@ -62,42 +62,31 @@ const useAuthStore = create(
        * @param {Number} [payload.expiresAt] - Optional absolute timestamp
        */
       login: async (credentials) => {
-        // Reset previous errors
         set({ error: null, loading: true });
 
-        let response;
         try {
-          response = await loginService(credentials);
+          const response = await loginService(credentials);
+          const { token, role, userId, emailString, firstName, lastName } =
+            response.data;
+
+          if (!isValidToken(token)) {
+            set({ error: "Invalid authentication token", loading: false });
+            return;
+          }
+
+          set({
+            token,
+            user: { id: userId, email: emailString, role, firstName, lastName },
+            expiresAt: Date.now() + TOKEN_LIFETIME,
+            isAuthenticated: true,
+            loading: false,
+          });
         } catch (error) {
-          // user is not registered
-          console.error("Login failed:", error);
-          set({ error });
-          return;
+          set({
+            error: error.response?.data?.message ?? "Login failed",
+            loading: false,
+          });
         }
-
-        const { user, token, expiresAt } = response.data;
-
-        // Validation
-        if (!isValidToken(token)) {
-          set({ error: "Invalid authentication token" });
-          return;
-        }
-
-        if (!isValidUser(user)) {
-          set({ error: "Invalid user object" });
-          return;
-        }
-
-        // Use provided expiration or default to 24h
-        const sessionExpiry = expiresAt || Date.now() + TOKEN_LIFETIME;
-
-        set({
-          user,
-          token,
-          expiresAt: sessionExpiry,
-          isAuthenticated: true,
-          loading: false,
-        });
       },
 
       /**
