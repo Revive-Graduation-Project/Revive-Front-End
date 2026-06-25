@@ -74,7 +74,7 @@ export default function Menu() {
     <div className="bg-white min-h-screen px-4 md:px-10 lg:px-20 overflow-hidden">
       <div className="py-12 md:py-16 lg:py-20 space-y-5 md:space-y-2 lg:space-y-2">
         <MenuFilter />
-        <OffersSection items={filteredMenu} />
+        <OffersSection />
         {isGuest ? (
           <RegularFood items={filteredMenu} />
         ) : (

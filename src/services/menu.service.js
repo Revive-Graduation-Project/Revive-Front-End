@@ -1,8 +1,10 @@
 import { api } from "./api";
 
 // Get all meals
-export const getMenu = () => {
-  return api.get("/api/menu");
+export const getMenu = (hasDiscount) => {
+  return api.get("/api/menu", {
+    params: hasDiscount !== undefined ? { hasDiscount } : {},
+  });
 };
 
 // Get single meal
