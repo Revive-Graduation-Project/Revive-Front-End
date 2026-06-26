@@ -1,4 +1,5 @@
-import { Link, useNavigate } from "react-router";
+import { useEffect } from "react";
+import { useNavigate } from "react-router";
 import { useAuthStore } from "../store";
 
 /**
@@ -7,8 +8,8 @@ import { useAuthStore } from "../store";
  * Wraps any route that requires authentication.
  *
  * - Authenticated  → renders children normally
- * - NOT authenticated → shows a branded page prompting
- *                       the user to log in (no auto-redirect)
+ * - NOT authenticated → shows a friendly message for 2 seconds,
+ *                       then redirects the user to the Login page
  */
 function ProtectedRoute({ children }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
