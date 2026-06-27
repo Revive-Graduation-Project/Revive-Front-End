@@ -37,3 +37,32 @@ export const CURRENCY_SYMBOL = "$";
  * @type {'PRE' | 'POST'} 
  */
 export const CURRENCY_FORMAT = "POST";
+
+// Allergy and health condition options for user profiles
+export const HEALTH_CONDITIONS = [
+    "Diabetes",
+    "High blood pressure",
+    "High cholesterol",
+    "Kidney or liver condition",
+    "Gluten intolerance / Celiac",
+    "Lactose intolerance",
+  ];
+
+// --- Health Profile Options ---
+export const GENDER_OPTIONS = ["MALE", "FEMALE", "OTHER"];
+export const GOAL_OPTIONS = ["LOSE_WEIGHT", "MAINTAIN", "GAIN_MUSCLE"];
+export const HEIGHT_UNITS = ["m", "ft", "cm", "in"];
+export const WEIGHT_UNITS = ["kg", "lb"];
+
+// --- Order history (profile) ---
+export const NON_CANCELLABLE_ORDER_STATUSES = [
+  "PREPARING",
+  "READY",
+];
+
+export const ACTIVE_TRACKING_ORDER_STATUSES = [
+  "PENDING",
+  "CONFIRMED",
+  "PREPARING",
+  "READY",
+];
