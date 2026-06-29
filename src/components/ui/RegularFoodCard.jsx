@@ -17,16 +17,17 @@ const RegularFoodCard = ({ meal }) => {
     name,
     description,
     price,
-    finalPrice,
+    hasDiscount,
+    discountPercentage,
     imageUrl,
-    calories,
-    protein,
-    fat,
-    sugar = 0,
+    nutrients = [],
   } = meal;
 
-  const hasDiscount = finalPrice < price;
-  const displayPrice = finalPrice ?? price;
+  const { calories, protein, fat, sugar } = parseNutrients(nutrients);
+
+  const displayPrice = hasDiscount
+    ? price - (price * discountPercentage) / 100
+    : price;
 
   return (
     <div className="group relative bg-white rounded-xl sm:rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 w-full flex flex-col overflow-hidden border border-gray-100">
