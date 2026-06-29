@@ -1,22 +1,64 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import useRestaurantStore from "../../../store/restaurantStore";
+import { useAuthStore } from "../../../store";
+import { getSuggestedMeals } from "../../../services/recommendation.service";
 import PopularMenuCard from "../../../components/UI/PopularMenuCard";
 import LoadingSpinner from "../../../components/UI/LoadingSpinner";
 import ScrollArrows from "../../../components/UI/ScrollArrows";
-
 const SCROLL_AMOUNT = 340; // px per button click
 
-const PopularMenus = () => {
-  const { meals, fetchMeals, loading, error } = useRestaurantStore();
+/**
+ * SuggestedMeals
+ * ---------------
+ * Shown only when the user is authenticated (gated in Home.jsx).
+ * Fetches personalised meal recommendations from the service layer.
+ *
+ * Mock mode: getSuggestedMeals returns local mock data — no backend needed.
+ * API integration: when ready, just swap recommendation.service.js — no
+ * changes needed here.
+ */
+const SuggestedMeals = () => {
+  const { user } = useAuthStore();
+
+  const [meals, setMeals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const scrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
   useEffect(() => {
-    if (meals.length === 0) {
-      fetchMeals();
-    }
-  }, [meals.length, fetchMeals]);
+    // Do not fetch until we have a real user ID — the API endpoint requires it
+    if (!user?.id) return;
+
+    let cancelled = false;
+
+    const fetchSuggestions = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await getSuggestedMeals(user.id);
+        if (!cancelled) {
+          setMeals(response.data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err.message || "Failed to load suggestions");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchSuggestions();
+
+    // Cleanup: prevent state updates after unmount
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   // Track scroll position so buttons hide/show at the edges
   const updateScrollState = useCallback(() => {
@@ -43,23 +85,24 @@ const PopularMenus = () => {
     scrollRef.current?.scrollBy({ left: SCROLL_AMOUNT, behavior: "smooth" });
   }, []);
 
+  // thoose three lines hide the suggested meals when no meal is suggested
+  //if you want to test the suggested meals comment it it
   if (loading) return <LoadingSpinner />;
-  if (error) return <p>{error}</p>;
-
-  const popular = meals.slice(0, 6);
-
+  if (error) return <p className="text-red-500 text-center">{error}</p>;
+  if (meals.length === 0) return null;
+  //***********************************************************************/
   return (
-    <section id="popular-meals" className="py-8 md:py-12">
+    <section className="py-8 md:py-12">
       <div className="container mx-auto px-4">
         {/* Header row with title */}
         <div className="flex items-center gap-3 mb-6">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
-            Popular Meals
+            Suggested For You
           </h2>
-          <span className="text-3xl">🔥</span>
+          <span className="text-3xl">✨</span>
         </div>
 
-        {/* Scrollable card row */}
+        {/* Horizontally scrollable card row */}
         <div className="relative">
           <ScrollArrows
             onScrollLeft={scrollLeft}
@@ -72,7 +115,7 @@ const PopularMenus = () => {
             ref={scrollRef}
             className="flex gap-5 md:gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory"
           >
-            {popular.map((meal) => (
+            {meals.map((meal) => (
               <PopularMenuCard
                 key={meal.id}
                 name={meal.name}
@@ -81,7 +124,8 @@ const PopularMenus = () => {
               />
             ))}
 
-            {popular.length < 4 && (
+            {/* Spacer so short lists don't look broken on wide screens */}
+            {meals.length < 4 && (
               <div className="shrink-0 w-64 sm:w-72 md:w-80" />
             )}
           </div>
@@ -91,4 +135,4 @@ const PopularMenus = () => {
   );
 };
 
-export default PopularMenus;
+export default SuggestedMeals;

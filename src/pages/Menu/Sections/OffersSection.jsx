@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import RegularFoodCard from "../../../components/UI/RegularFoodCard";
 import { getMenu } from "../../../services/menu.service";
+import ScrollArrows from "../../../components/UI/ScrollArrows";
 
 const OffersSection = () => {
   const [offersMeals, setOffersMeals] = useState([]);
@@ -90,39 +91,4 @@ const OffersSection = () => {
 
         {/* ===== DESKTOP: Carousel ===== */}
         <div className="hidden md:block">
-          <div className="relative flex items-center justify-center">
-            <button
-              onClick={goPrev}
-              className="absolute md:-left-10 lg:-left-16 top-1/2 -translate-y-1/2 text-green-700 text-5xl font-bold hover:scale-110 transition"
-              aria-label="Previous"
-            >
-              ‹
-            </button>
-
-            <div className="flex items-end justify-center gap-8">
-              <div className="w-85 lg:w-90 scale-95 opacity-80 translate-y-6 transition-all duration-300">
-                <RegularFoodCard meal={offersMeals[prevIndex]} />
-              </div>
-              <div className="w-95 lg:w-105 scale-105 opacity-100 -translate-y-4 transition-all duration-300">
-                <RegularFoodCard meal={offersMeals[current]} />
-              </div>
-              <div className="w-85 lg:w-90 scale-95 opacity-80 translate-y-6 transition-all duration-300">
-                <RegularFoodCard meal={offersMeals[nextIndex]} />
-              </div>
-            </div>
-
-            <button
-              onClick={goNext}
-              className="absolute md:-right-10 lg:-right-16 top-1/2 -translate-y-1/2 text-green-700 text-5xl font-bold hover:scale-110 transition"
-              aria-label="Next"
-            >
-              ›
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-export default OffersSection;
+          <div className="relative flex

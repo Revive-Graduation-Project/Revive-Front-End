@@ -1,6 +1,7 @@
 import { mockMeals } from "./meals";
 import { mockOrders } from "./orders";
 import { mockUsers } from "./users";
+import * as dash from "./dashboardMock";
 
 /**
  * ============================================================
@@ -180,15 +181,47 @@ export const MOCK_HANDLERS = [
     match: (url) => url.endsWith("/orders"),
     handler: (config) => {
       const body = JSON.parse(config.data || "{}");
+      const newOrderId = Date.now();
+      const newOrder = {
+        id: newOrderId,
+        userId: CURRENT_USER_ID,
+        status: "PENDING",
+        createdAt: new Date().toISOString(),
+        ...body,
+      };
+
+      // Push to Live Kitchen Queue mock
+      if (!dash.mockKitchenOrders.queue) dash.mockKitchenOrders.queue = [];
+      const shortId = `#${newOrderId.toString().slice(-5)}`;
+      const kitchenEntry = {
+        id: shortId,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        items: body.items?.map(i => `${i.name} x${i.quantity}`) || [],
+        notes: body.note || "",
+        customer: currentUser?.name || "Guest"
+      };
+      dash.mockKitchenOrders.queue.push(kitchenEntry);
+      dash.saveMock("kitchenOrders", dash.mockKitchenOrders);
+      console.log('[MOCK] POST /orders — pushed to kitchen queue:', kitchenEntry);
+      console.log('[MOCK] kitchen queue is now:', dash.mockKitchenOrders.queue.length, 'items');
+
+      // Push to Dashboard Orders mock
+      if (dash.mockOrders) {
+        dash.mockOrders.unshift({
+          id: shortId,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          name: body.items?.map(i => i.quantity > 1 ? `${i.name} (x${i.quantity})` : i.name).join(', ') || "Custom Order",
+          items: body.items?.length || 0,
+          total: body.finalTotal || body.totalAmount,
+          customer: currentUser?.name || "Guest",
+          status: "Pending"
+        });
+        dash.saveMock("orders", dash.mockOrders);
+      }
+
       return {
         status: 201,
-        data: {
-          id: Date.now(),
-          userId: CURRENT_USER_ID,
-          status: "PENDING",
-          createdAt: new Date().toISOString(),
-          ...body,
-        },
+        data: newOrder,
       };
     },
   },
@@ -292,6 +325,214 @@ export const MOCK_HANDLERS = [
       data: { message: "Reward redeemed", pointsRemaining: 320 },
     }),
   },
+
+  // ──────────────────────────────────────────────
+  // DASHBOARD OVERVIEW
+  // ──────────────────────────────────────────────
+  { method: "get", match: (url) => url.endsWith("/dashboard/metrics"),         handler: () => ({ status: 200, data: dash.mockMetrics          }) },
+  { method: "get", match: (url) => url.includes("/dashboard/revenue"),         handler: () => ({ status: 200, data: dash.mockRevenueData       }) },
+  { method: "get", match: (url) => url.endsWith("/dashboard/categories"),      handler: () => ({ status: 200, data: dash.mockTopCategories     }) },
+  { method: "get", match: (url) => url.includes("/dashboard/orders-overview"), handler: () => ({ status: 200, data: dash.mockOrdersOverview    }) },
+  { method: "get", match: (url) => url.endsWith("/dashboard/order-types"),     handler: () => ({ status: 200, data: dash.mockOrderTypes        }) },
+  { method: "get", match: (url) => url.endsWith("/dashboard/trending-menus"),  handler: () => ({ status: 200, data: dash.mockTrendingMenus     }) },
+  { method: "get", match: (url) => url.endsWith("/dashboard/inventory-alerts"),handler: () => ({ status: 200, data: dash.mockInventoryAlerts   }) },
+  { method: "get", match: (url) => url.endsWith("/dashboard/activity"),        handler: () => ({ status: 200, data: dash.mockRecentActivity    }) },
+  { method: "get", match: (url) => url.endsWith("/dashboard/reviews"),         handler: () => ({ status: 200, data: dash.mockCustomerReviews   }) },
+
+  // ──────────────────────────────────────────────
+  // DASHBOARD ORDERS
+  // ──────────────────────────────────────────────
+  { method: "get",   match: (url) => url.endsWith("/dashboard/orders/metrics"), handler: () => ({ status: 200, data: dash.mockOrdersMetrics }) },
+  { method: "get",   match: (url) => url.includes("/dashboard/orders") && !url.includes("metrics"), handler: () => {
+    // Read directly from localStorage to ensure cross-tab sync
+    const saved = localStorage.getItem("mock_orders");
+    const orders = saved ? JSON.parse(saved) : dash.mockOrders;
+    return { status: 200, data: { orders, total: orders.length, pages: 1 } };
+  }},
+  { method: "patch", match: (url) => url.match(/\/dashboard\/orders\/.+\/status/), handler: (config) => {
+    const parts = config.url.split("/");
+    const orderId = decodeURIComponent(parts[parts.length - 2]);
+    const body = JSON.parse(config.data || "{}");
+    
+    const saved = localStorage.getItem("mock_orders");
+    const orders = saved ? JSON.parse(saved) : dash.mockOrders;
+    
+    const targetId = orderId.startsWith('#') ? orderId : `#${orderId}`;
+    const order = orders.find((o) => o.id === targetId || o.id === orderId);
+    
+    if (order) {
+      order.status = body.status;
+      dash.saveMock("orders", orders);
+    }
+    
+    return { status: 200, data: { success: true, status: body.status } };
+  }},
+
+  // ──────────────────────────────────────────────
+  // KITCHEN
+  // ──────────────────────────────────────────────
+  { method: "get",   match: (url) => url.endsWith("/kitchen/orders"), handler: () => {
+    const saved = localStorage.getItem("mock_kitchenOrders");
+    const kitchenOrders = saved ? JSON.parse(saved) : dash.mockKitchenOrders;
+    return { status: 200, data: kitchenOrders };
+  }},
+  { method: "patch", match: (url) => url.match(/\/kitchen\/orders\/.+\/status/), handler: (config) => {
+    const parts = config.url.split("/");
+    const orderId = decodeURIComponent(parts[parts.length - 2]);
+    const { status } = JSON.parse(config.data || "{}");
+    
+    // Load fresh from localStorage
+    const saved = localStorage.getItem("mock_kitchenOrders");
+    const kitchenOrders = saved ? JSON.parse(saved) : dash.mockKitchenOrders;
+    
+    let orderToMove = null;
+    ["queue", "preparing", "ready", "done"].forEach((col) => {
+      if (!kitchenOrders[col]) kitchenOrders[col] = [];
+      const idx = kitchenOrders[col].findIndex((o) => o.id === orderId || o.id === `#${orderId}` || `#${o.id}` === orderId);
+      if (idx !== -1) {
+        orderToMove = kitchenOrders[col].splice(idx, 1)[0];
+      }
+    });
+
+    if (orderToMove && status) {
+      if (!kitchenOrders[status]) kitchenOrders[status] = [];
+      if (status === "done") {
+        kitchenOrders[status].unshift(orderToMove);
+      } else {
+        kitchenOrders[status].push(orderToMove);
+      }
+    }
+    
+    // Save back to localStorage so it persists
+    dash.saveMock("kitchenOrders", kitchenOrders);
+    
+    // Synchronize with Dashboard Orders list
+    const savedOrders = localStorage.getItem("mock_orders");
+    if (savedOrders) {
+      const ordersArray = JSON.parse(savedOrders);
+      // Kitchen ID might have a '#' prefix, strip it if necessary to match Orders list ID
+      const targetId = orderId.startsWith('#') ? orderId : `#${orderId}`;
+      const orderInList = ordersArray.find(o => o.id === targetId || o.id === orderId);
+      
+      if (orderInList) {
+        // Map kitchen status (queue, preparing, ready, done) to Title Case (Preparing, Ready, Done)
+        const mappedStatus = status.charAt(0).toUpperCase() + status.slice(1);
+        orderInList.status = mappedStatus === "Queue" ? "Pending" : mappedStatus;
+        dash.saveMock("orders", ordersArray);
+      }
+    }
+    
+    return { status: 200, data: { success: true } };
+  } },
+
+  // ──────────────────────────────────────────────
+  // MENU MANAGEMENT (uploads)
+  // ──────────────────────────────────────────────
+  { method: "get",  match: (url) => url.endsWith("/menu/uploads"), handler: () => ({ status: 200, data: dash.mockMenuUploads }) },
+  { method: "post", match: (url) => url.endsWith("/menu/upload"),  handler: (config) => {
+    const now = new Date();
+    const dateStr = `${now.getDate()} ${now.toLocaleString("en", { month: "short" })} ${now.getFullYear()}`;
+    const timeStr = now.toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit" });
+    const newUpload = {
+      id: Date.now(),
+      filename: config.headers?.["X-File-Name"] || "Uploaded_file.xlsx",
+      date: dateStr,
+      time: timeStr,
+      added: Math.floor(Math.random() * 30) + 1,
+      updated: Math.floor(Math.random() * 10),
+      status: "Success",
+    };
+    dash.mockMenuUploads.unshift(newUpload);
+    return { status: 201, data: newUpload };
+  }},
+
+  // ──────────────────────────────────────────────
+  // MENU (Chef Menu page)
+  // ──────────────────────────────────────────────
+  { method: "get",    match: (url) => url.endsWith("/menu/categories"),       handler: () => ({ status: 200, data: dash.mockMenuCategories }) },
+  { method: "get",    match: (url) => url.includes("/menu/items") && !url.match(/\/menu\/items\/\d+/), handler: () => ({ status: 200, data: dash.mockMenuItems }) },
+  { method: "post",   match: (url) => url.endsWith("/menu/items"),            handler: (config) => {
+    const body = JSON.parse(config.data || "{}");
+    const newItem = {
+      id: Date.now(),
+      name: body.name || "Unnamed Meal",
+      image: body.image || "",
+      category: body.category || "Mixed",
+      price: parseFloat(body.price) || 0,
+      calories: body.calories || "0g",
+      protein: body.protein || "0g",
+      fat: body.fat || "0g",
+      sugar: body.sugar || "0g",
+      rating: 0,
+      status: "Active"
+    };
+    dash.mockMenuItems.push(newItem);
+    return { status: 201, data: newItem };
+  }},
+  { method: "patch",  match: (url) => url.match(/\/menu\/items\/\d+/),        handler: (config) => {
+    const body = JSON.parse(config.data || "{}");
+    const id = parseInt(config.url?.match(/\/menu\/items\/(\d+)/)?.[1]);
+    const idx = dash.mockMenuItems.findIndex(i => i.id === id);
+    if (idx !== -1) dash.mockMenuItems[idx] = { ...dash.mockMenuItems[idx], ...body };
+    return { status: 200, data: idx !== -1 ? dash.mockMenuItems[idx] : body };
+  }},
+  { method: "delete", match: (url) => url.match(/\/menu\/items\/\d+/),        handler: (config) => {
+    const id = parseInt(config.url?.match(/\/menu\/items\/(\d+)/)?.[1]);
+    const idx = dash.mockMenuItems.findIndex(i => i.id === id);
+    if (idx !== -1) dash.mockMenuItems.splice(idx, 1);
+    return { status: 200, data: { message: "Deleted" } };
+  }},
+
+  // ──────────────────────────────────────────────
+  // RECIPE BUILDER
+  // ──────────────────────────────────────────────
+  { method: "get",  match: (url) => url.endsWith("/recipes/ingredients"), handler: () => ({ status: 200, data: dash.mockRecipeIngredients }) },
+  { method: "post", match: (url) => url.endsWith("/recipes"),             handler: (config) => {
+    const body = JSON.parse(config.data || "{}");
+    const newItem = {
+      id: Date.now(),
+      name: body.name || "Unnamed Meal",
+      category: body.category || "Mixed",
+      price: parseFloat(body.price) || 0,
+      calories: parseInt(body.calories) || 0,
+      protein: body.protein || "0g",
+      fat: body.fat || "0g",
+      sugar: body.sugar || "0g",
+      rating: 0,
+      status: "Active"
+    };
+    dash.mockMenuItems.push(newItem);
+    return { status: 201, data: newItem };
+  }},
+
+
+
+  // ──────────────────────────────────────────────
+  // INGREDIENTS
+  // ──────────────────────────────────────────────
+  { method: "get",    match: (url) => url.endsWith("/ingredients/metrics"),             handler: () => ({ status: 200, data: dash.mockIngredientsMetrics }) },
+  { method: "get",    match: (url) => url.includes("/ingredients") && !url.includes("metrics") && !url.match(/\/ingredients\/\d+/), handler: () => ({ status: 200, data: dash.mockIngredients }) },
+  { method: "post",   match: (url) => url.endsWith("/ingredients"),                     handler: (config) => {
+    const body = JSON.parse(config.data || "{}");
+    const newIngredient = { id: Date.now(), ...body };
+    dash.mockIngredients.push(newIngredient);
+    return { status: 201, data: newIngredient };
+  }},
+  { method: "patch",  match: (url) => url.match(/\/ingredients\/\d+/),                 handler: (config) => {
+    const body = JSON.parse(config.data || "{}");
+    const id = parseInt(config.url?.match(/\/ingredients\/(\d+)/)?.[1]);
+    const idx = dash.mockIngredients.findIndex(i => i.id === id);
+    if (idx !== -1) dash.mockIngredients[idx] = { ...dash.mockIngredients[idx], ...body };
+    return { status: 200, data: idx !== -1 ? dash.mockIngredients[idx] : body };
+  }},
+  { method: "delete", match: (url) => url.match(/\/ingredients\/\d+/),                 handler: (config) => {
+    const id = parseInt(config.url?.match(/\/ingredients\/(\d+)/)?.[1]);
+    const idx = dash.mockIngredients.findIndex(i => i.id === id);
+    if (idx !== -1) dash.mockIngredients.splice(idx, 1);
+    return { status: 200, data: { message: "Deleted" } };
+  }},
+  { method: "post",   match: (url) => url.endsWith("/ingredients/upload"),              handler: () => ({ status: 200, data: { success: true, count: 15 } }) },
+  { method: "post",   match: (url) => url.endsWith("/inventory/upload"),                handler: () => ({ status: 200, data: { success: true, count: 15 } }) },
 ];
 
 /**
