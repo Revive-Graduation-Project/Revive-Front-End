@@ -49,33 +49,24 @@ export default function Menu() {
     });
   }, [selectedCategory, sourceItems]);
 
-  if (isLoading)
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <p className="text-lg font-medium">Loading...</p>
-      </div>
-    );
-
-  if (error)
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <p className="text-lg font-medium text-red-500">{error}</p>
-      </div>
-    );
-
-  if (sourceItems.length === 0)
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <p className="text-lg font-medium">No meals available</p>
-      </div>
-    );
-
   return (
     <div className="bg-white min-h-screen px-4 md:px-10 lg:px-20 overflow-hidden">
       <div className="py-12 md:py-16 lg:py-20 space-y-5 md:space-y-2 lg:space-y-2">
         <MenuFilter />
         <OffersSection />
-        {isGuest ? (
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <p className="text-lg font-medium">Loading...</p>
+          </div>
+        ) : error ? (
+          <div className="flex justify-center items-center h-64">
+            <p className="text-lg font-medium text-red-500">{error}</p>
+          </div>
+        ) : sourceItems.length === 0 ? (
+          <div className="flex justify-center items-center h-64">
+            <p className="text-lg font-medium">No meals available</p>
+          </div>
+        ) : isGuest ? (
           <RegularFood items={filteredMenu} />
         ) : (
           <SuggestedMealsSection items={filteredMenu} />

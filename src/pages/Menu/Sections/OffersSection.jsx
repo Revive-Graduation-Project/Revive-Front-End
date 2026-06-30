@@ -91,21 +91,35 @@ const OffersSection = () => {
 
         {/* ===== DESKTOP: Carousel ===== */}
         <div className="hidden md:block">
-          <div className="relative flex items-center justify-center">
-            <ScrollArrows onScrollLeft={goPrev} onScrollRight={goNext} />
-
+          {offersMeals.length < 3 ? (
+            // Fallback: render only available cards without duplication
             <div className="flex items-end justify-center gap-8">
-              <div className="w-85 lg:w-90 scale-95 opacity-80 translate-y-6 transition-all duration-300">
-                <RegularFoodCard meal={offersMeals[prevIndex]} />
-              </div>
-              <div className="w-95 lg:w-105 scale-105 opacity-100 -translate-y-4 transition-all duration-300">
-                <RegularFoodCard meal={offersMeals[current]} />
-              </div>
-              <div className="w-85 lg:w-90 scale-95 opacity-80 translate-y-6 transition-all duration-300">
-                <RegularFoodCard meal={offersMeals[nextIndex]} />
+              {offersMeals.map((meal) => (
+                <div
+                  key={meal.id}
+                  className="w-95 lg:w-105 transition-all duration-300"
+                >
+                  <RegularFoodCard meal={meal} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="relative flex items-center justify-center">
+              <ScrollArrows onScrollLeft={goPrev} onScrollRight={goNext} />
+
+              <div className="flex items-end justify-center gap-8">
+                <div className="w-85 lg:w-90 scale-95 opacity-80 translate-y-6 transition-all duration-300">
+                  <RegularFoodCard meal={offersMeals[prevIndex]} />
+                </div>
+                <div className="w-95 lg:w-105 scale-105 opacity-100 -translate-y-4 transition-all duration-300">
+                  <RegularFoodCard meal={offersMeals[current]} />
+                </div>
+                <div className="w-85 lg:w-90 scale-95 opacity-80 translate-y-6 transition-all duration-300">
+                  <RegularFoodCard meal={offersMeals[nextIndex]} />
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </section>

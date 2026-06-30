@@ -13,13 +13,21 @@ const useRestaurantStore = create(
       fetchMeals: async () => {
         set({ loading: true, error: null });
         try {
-          const [mealsRes, ingredientsRes] = await Promise.all([
+          const [mealsRes, ingredientsRes] = await Promise.allSettled([
             getMenu(),
             getIngredients(),
           ]);
+
+          if (mealsRes.status !== "fulfilled") {
+            throw mealsRes.reason;
+          }
+
           set({
-            meals: mealsRes.data,
-            ingredients: ingredientsRes.data,
+            meals: mealsRes.value.data,
+            ingredients:
+              ingredientsRes.status === "fulfilled"
+                ? ingredientsRes.value.data
+                : [],
             loading: false,
           });
         } catch (error) {

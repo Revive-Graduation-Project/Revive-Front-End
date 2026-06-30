@@ -12,7 +12,7 @@ const MenuFilter = () => {
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={`px-1 py-.5 md:px-4 md:py-1.5 rounded-full text-xs md:text-sm font-medium transition-all duration-200 cursor-pointer
+            className={`px-1 py-0.5 md:px-4 md:py-1.5 rounded-full text-xs md:text-sm font-medium transition-all duration-200 cursor-pointer
               ${
                 selectedCategory === cat
                   ? "bg-orange-500 text-white shadow-md shadow-orange-200"

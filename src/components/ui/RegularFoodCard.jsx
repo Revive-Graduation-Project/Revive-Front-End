@@ -25,9 +25,10 @@ const RegularFoodCard = ({ meal }) => {
 
   const { calories, protein, fat, sugar } = parseNutrients(nutrients);
 
+  const basePrice = Number(price);
   const displayPrice = hasDiscount
-    ? price - (price * discountPercentage) / 100
-    : price;
+    ? Number((basePrice - (basePrice * discountPercentage) / 100).toFixed(2))
+    : Number(basePrice.toFixed(2));
 
   return (
     <div className="group relative bg-white rounded-xl sm:rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 w-full flex flex-col overflow-hidden border border-gray-100">
@@ -139,7 +140,7 @@ const RegularFoodCard = ({ meal }) => {
               addItem({
                 id: meal.id,
                 name,
-                price: parseFloat(displayPrice),
+                price: displayPrice,
                 imageUrl,
               })
             }

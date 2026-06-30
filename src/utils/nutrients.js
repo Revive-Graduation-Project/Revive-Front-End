@@ -4,8 +4,9 @@
  * Output: { calories: 362, protein: 11.27, fat: 22.35, sugar: 2.14 }
  */
 export const parseNutrients = (nutrients = []) => {
+  const safeNutrients = Array.isArray(nutrients) ? nutrients : [];
   const map = {};
-  nutrients.forEach(({ nutrientName, value }) => {
+  safeNutrients.forEach(({ nutrientName, value }) => {
     map[nutrientName] = value;
   });
 
