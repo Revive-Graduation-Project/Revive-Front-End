@@ -54,15 +54,26 @@ export function useUpdateMenuItem() {
         description: data.description || "",
         price: parseFloat(data.price),
         category: data.category,
-        ingredients: Array.isArray(data.ingredients) ? data.ingredients : []
+        ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],
+        time: data.time || "",
+        fat: data.fat || "",
+        calories: data.calories || "",
+        protein: data.protein || "",
+        sugar: data.sugar || "",
       };
-      
+
       const res = await updateMenuItem(id, payload);
-      
+
+      // Image upload is a partial-success step: a failed upload should not
+      // roll back the already-committed meal update.
       if (data.imageFile) {
-        await uploadMealImage(id, data.imageFile);
+        try {
+          await uploadMealImage(id, data.imageFile);
+        } catch (imgErr) {
+          console.warn("[useUpdateMenuItem] Image upload failed (meal saved):", imgErr);
+        }
       }
-      
+
       return res;
     },
     onSettled:  () => qc.invalidateQueries({ queryKey: menuKeys.all }),
@@ -79,17 +90,26 @@ export function useCreateMenuItem() {
         description: data.description || "",
         price: parseFloat(data.price),
         category: data.category,
-        ingredients: Array.isArray(data.ingredients) ? data.ingredients : []
+        ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],
+        time: data.time || "",
+        fat: data.fat || "",
+        calories: data.calories || "",
+        protein: data.protein || "",
+        sugar: data.sugar || "",
       };
-      
+
       const meal = await createMenuItem(payload);
-      
-      // If the backend returns the created meal with an ID, upload the image
-      // Assuming the backend returns the created object or at least { id: ... }
+
+      // Image upload is a partial-success step: a failed upload should not
+      // roll back the already-committed meal create.
       if (data.imageFile && meal && (meal.id || meal._id)) {
-        await uploadMealImage(meal.id || meal._id, data.imageFile);
+        try {
+          await uploadMealImage(meal.id || meal._id, data.imageFile);
+        } catch (imgErr) {
+          console.warn("[useCreateMenuItem] Image upload failed (meal saved):", imgErr);
+        }
       }
-      
+
       return meal;
     },
     onSettled: () => qc.invalidateQueries({ queryKey: menuKeys.all }),

@@ -97,9 +97,11 @@ function ChefMenuView() {
   // Per-category counts — reconcile API count with live item data
   const categoryCounts = categoryItems.map((cat) => ({
     ...cat,
+    // Use the live match count directly; 0 is a valid value and must not
+    // fall back to the backend's stale count.
     count: activeItems.filter(
       (i) => i.category?.toLowerCase() === cat.name?.toLowerCase()
-    ).length || cat.count,
+    ).length,
   }));
 
   // Category tabs built from live item data
@@ -153,8 +155,8 @@ function ChefMenuView() {
                     key={tab}
                     onClick={() => setActiveTab(tab)}
                     className={`px-4 py-2 text-[13px] font-semibold rounded-full border-none cursor-pointer transition-all whitespace-nowrap ${activeTab === tab
-                        ? "bg-orange-500 text-white shadow-sm"
-                        : "bg-transparent text-gray-500 hover:text-orange-500"
+                      ? "bg-orange-500 text-white shadow-sm"
+                      : "bg-transparent text-gray-500 hover:text-orange-500"
                       }`}
                   >
                     {tab}
@@ -205,9 +207,12 @@ function ChefMenuView() {
                   {filtered.map((item, i) => (
                     <tr
                       key={item.id}
+                      role="button"
+                      tabIndex={0}
                       className={`group transition-colors hover:bg-orange-50/30 cursor-pointer ${i < filtered.length - 1 ? "border-b border-gray-50" : ""
                         }`}
                       onClick={() => setViewingItem(item)}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setViewingItem(item); } }}
                     >
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">

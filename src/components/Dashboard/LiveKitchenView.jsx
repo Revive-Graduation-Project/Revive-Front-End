@@ -21,34 +21,34 @@ import { KitchenTicketsTable } from "./LiveKitchen/KitchenTicketsTable";
 import { ChefManagement } from "./LiveKitchen/ChefManagement";
 
 function LiveKitchenView() {
-  const [viewingOrder,    setViewingOrder]    = useState(null);
-  const [orderToCancel,   setOrderToCancel]   = useState(null);
+  const [viewingOrder, setViewingOrder] = useState(null);
+  const [orderToCancel, setOrderToCancel] = useState(null);
   const [orderToMarkDone, setOrderToMarkDone] = useState(null);
-  const [orderToRevert,   setOrderToRevert]   = useState(null);
+  const [orderToRevert, setOrderToRevert] = useState(null);
 
   // ── Kitchen-service state ──
-  const [ticketConfirm, setTicketConfirm]   = useState(null); // { ticketId, status, label }
+  const [ticketConfirm, setTicketConfirm] = useState(null); // { ticketId, status, label }
 
   const { boards, isFetching, error, refetch } = useRealtimeKitchen();
   const { mutate: updateStatus } = useUpdateKitchenStatus();
 
   // ── Kitchen-service hooks ──
   const { data: tickets, isLoading: ticketsLoading, error: ticketsError, refetch: refetchTickets, isFetching: ticketsFetching } = useActiveTickets();
-  const { mutate: mutateTicketStatus }   = useUpdateTicketStatus();
-  const { mutate: mutateChefStatus }     = useUpdateChefStatus();
-  const { mutate: mutateChefStation }    = useUpdateChefStation();
-  const { mutate: mutateChefName }       = useUpdateChefDisplayName();
+  const { mutate: mutateTicketStatus } = useUpdateTicketStatus();
+  const { mutate: mutateChefStatus } = useUpdateChefStatus();
+  const { mutate: mutateChefStation } = useUpdateChefStation();
+  const { mutate: mutateChefName } = useUpdateChefDisplayName();
 
   // ── Action handler — routes to confirmation modals for destructive actions ──
   const handleAction = useCallback((orderId, nextStatus) => {
-    if (nextStatus === "cancelled") { setOrderToCancel(orderId);   return; }
-    if (nextStatus === "done")      { setOrderToMarkDone(orderId); return; }
+    if (nextStatus === "cancelled") { setOrderToCancel(orderId); return; }
+    if (nextStatus === "done") { setOrderToMarkDone(orderId); return; }
     updateStatus({ orderId, nextStatus });
   }, [updateStatus]);
 
-  const confirmCancel   = () => { if (orderToCancel)   { updateStatus({ orderId: orderToCancel,   nextStatus: "cancelled" }); setOrderToCancel(null);   } };
-  const confirmMarkDone = () => { if (orderToMarkDone) { updateStatus({ orderId: orderToMarkDone, nextStatus: "done"      }); setOrderToMarkDone(null); } };
-  const confirmRevert   = () => { if (orderToRevert)   { updateStatus({ orderId: orderToRevert,   nextStatus: "ready"     }); setOrderToRevert(null);   } };
+  const confirmCancel = () => { if (orderToCancel) { updateStatus({ orderId: orderToCancel, nextStatus: "cancelled" }); setOrderToCancel(null); } };
+  const confirmMarkDone = () => { if (orderToMarkDone) { updateStatus({ orderId: orderToMarkDone, nextStatus: "done" }); setOrderToMarkDone(null); } };
+  const confirmRevert = () => { if (orderToRevert) { updateStatus({ orderId: orderToRevert, nextStatus: "ready" }); setOrderToRevert(null); } };
 
   const handleTicketAction = useCallback((ticketId, status, label) => {
     setTicketConfirm({ ticketId, status, label });
@@ -127,6 +127,7 @@ function LiveKitchenView() {
                       key={order.id}
                       order={order}
                       onViewOrder={() => setViewingOrder({ ...order, status: "Done" })}
+                      onRevert={() => setOrderToRevert(order.id)}
                     />
                   ))}
                 </div>
@@ -139,23 +140,25 @@ function LiveKitchenView() {
           {/* ══════════════════════════════════════════════════════
               SECTION: Kitchen Service — Active Tickets
           ═══════════════════════════════════════════════════════ */}
-          <KitchenTicketsTable 
-            tickets={tickets} 
-            isLoading={ticketsLoading} 
-            error={ticketsError} 
-            isFetching={ticketsFetching} 
-            onRetry={refetchTickets} 
-            onAction={handleTicketAction} 
+          <KitchenTicketsTable
+            tickets={tickets}
+            isLoading={ticketsLoading}
+            error={ticketsError}
+            isFetching={ticketsFetching}
+            onRetry={refetchTickets}
+            onAction={handleTicketAction}
           />
 
           {/* ══════════════════════════════════════════════════════
               SECTION: Chef Management
           ═══════════════════════════════════════════════════════ */}
-          <ChefManagement 
-            tickets={tickets} 
-            onUpdateStatus={mutateChefStatus} 
-            onUpdateStation={mutateChefStation} 
-            onUpdateName={mutateChefName} 
+          <ChefManagement
+            tickets={tickets}
+            isLoading={ticketsLoading}
+            error={ticketsError}
+            onUpdateStatus={mutateChefStatus}
+            onUpdateStation={mutateChefStation}
+            onUpdateName={mutateChefName}
           />
 
         </div>

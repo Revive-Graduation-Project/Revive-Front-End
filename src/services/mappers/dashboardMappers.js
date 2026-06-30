@@ -139,7 +139,7 @@ export const mapOrderResponse = (data) => ({
   id:                 data.id,
   customerId:         data.customerId,
   status:             data.status || "PENDING",
-  statusLabel:        ORDER_STATUS_LABELS[data.status] || data.status,
+  statusLabel:        ORDER_STATUS_LABELS[data.status || "PENDING"] ?? (data.status || "PENDING"),
   totalPrice:         data.totalPrice || 0,
   discount:           data.discount   || 0,
   createdAt:          data.createdAt  || null,
@@ -219,6 +219,7 @@ export const mapMenuItems = (data) => {
     hasDiscount: item.hasDiscount || false,
     discountPercentage: item.discountPercentage || 0,
     mealIngredients: item.mealIngredients || [],
+    ingredients: Array.isArray(item.ingredients) ? item.ingredients : (item.mealIngredients || []),
   }));
 };
 

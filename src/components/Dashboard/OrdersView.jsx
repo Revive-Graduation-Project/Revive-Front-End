@@ -23,13 +23,26 @@ import { sortItems } from "../../utils/sortItems";
 const TABS = ["All", "Pending", "Preparing", "Ready", "Done", "Cancelled"];
 
 const ORDER_SORT_COLS = [
-  { key: "id",       label: "Order ID"      },
-  { key: "time",     label: "Time"          },
-  { key: "name",     label: "Order"         },
-  { key: "items",    label: "Items"         },
-  { key: "total",    label: "Total"         },
+  { key: "id", label: "Order ID" },
+  { key: "time", label: "Time", comparator: (a, b) => {
+    // Parse "HH:MM AM/PM" → minutes-since-midnight for correct clock ordering
+    const toMin = (str) => {
+      const m = String(str).match(/(\d+):(\d+)\s*(AM|PM)/i);
+      if (!m) return NaN;
+      let h = parseInt(m[1], 10);
+      const min = parseInt(m[2], 10);
+      const isPM = m[3].toUpperCase() === "PM";
+      if (isPM && h !== 12) h += 12;
+      if (!isPM && h === 12) h = 0;
+      return h * 60 + min;
+    };
+    return toMin(a.time) - toMin(b.time);
+  }},
+  { key: "name", label: "Order" },
+  { key: "items", label: "Items" },
+  { key: "total", label: "Total" },
   { key: "customer", label: "Customer Name" },
-  { key: "status",   label: "Status"        },
+  { key: "status", label: "Status" },
 ];
 
 // ── Dual-ring circular progress — specific to the Daily Goal widget ──
@@ -39,17 +52,22 @@ function CircularProgress({ salesPct, orderPct, displayPct }) {
   const c1 = 2 * Math.PI * r1;
   const c2 = 2 * Math.PI * r2;
 
+  // Clamp to [0, 100] for geometry only — prevents negative strokeDashoffset
+  // when targets are exceeded. The displayed label (displayPct) is unchanged.
+  const salesGeo = Math.min(100, Math.max(0, salesPct));
+  const orderGeo = Math.min(100, Math.max(0, orderPct));
+
   return (
     <div className="relative w-[100px] h-[100px] flex items-center justify-center">
       <svg width="100" height="100" style={{ transform: "rotate(-90deg)" }} className="absolute inset-0">
         {/* Sales track */}
         <circle cx="50" cy="50" r={r1} fill="none" stroke="#F3F4F6" strokeWidth="6" />
         <circle cx="50" cy="50" r={r1} fill="none" stroke="#F97316" strokeWidth="6"
-          strokeDasharray={c1} strokeDashoffset={c1 - (salesPct / 100) * c1} strokeLinecap="round" />
+          strokeDasharray={c1} strokeDashoffset={c1 - (salesGeo / 100) * c1} strokeLinecap="round" />
         {/* Order track */}
         <circle cx="50" cy="50" r={r2} fill="none" stroke="#F3F4F6" strokeWidth="6" />
         <circle cx="50" cy="50" r={r2} fill="none" stroke="#16A34A" strokeWidth="6"
-          strokeDasharray={c2} strokeDashoffset={c2 - (orderPct / 100) * c2} strokeLinecap="round" />
+          strokeDasharray={c2} strokeDashoffset={c2 - (orderGeo / 100) * c2} strokeLinecap="round" />
       </svg>
       <div className="text-center z-10">
         <p className="text-[18px] font-bold text-[#1a1a1a] m-0 leading-none">
@@ -61,20 +79,20 @@ function CircularProgress({ salesPct, orderPct, displayPct }) {
 }
 
 function OrdersView() {
-  const [activeTab, setActiveTab]     = useState("All");
-  const [sortKey, setSortKey]         = useState(null);
-  const [sortDir, setSortDir]         = useState("asc");
+  const [activeTab, setActiveTab] = useState("All");
+  const [sortKey, setSortKey] = useState(null);
+  const [sortDir, setSortDir] = useState("asc");
   const [viewingOrder, setViewingOrder] = useState(null);
 
   // ── Data fetching ──────────────────────────────────────────────────────────
-  const { data: metrics,        isLoading: loadMetrics,  error: errMetrics,  refetch: refetchMetrics  } = useOrdersMetrics();
-  const { data: ordersResponse, isLoading: loadOrders,   error: errOrders,   refetch: refetchOrders   } = useOrders();
-  const { data: trending,       isLoading: loadTrending, error: errTrending, refetch: refetchTrending } = useOrdersTrending();
-  const { data: activity,       isLoading: loadAct,      error: errAct,      refetch: refetchAct      } = useRecentActivity();
-  const { data: ordersOverview, isLoading: loadOrdOv,    error: errOrdOv,    refetch: refetchOrdOv    } = useOrdersOverview();
+  const { data: metrics, isLoading: loadMetrics, error: errMetrics, refetch: refetchMetrics } = useOrdersMetrics();
+  const { data: ordersResponse, isLoading: loadOrders, error: errOrders, refetch: refetchOrders } = useOrders();
+  const { data: trending, isLoading: loadTrending, error: errTrending, refetch: refetchTrending } = useOrdersTrending();
+  const { data: activity, isLoading: loadAct, error: errAct, refetch: refetchAct } = useRecentActivity();
+  const { data: ordersOverview, isLoading: loadOrdOv, error: errOrdOv, refetch: refetchOrdOv } = useOrdersOverview();
 
   const isLoading = loadMetrics || loadOrders || loadTrending || loadAct || loadOrdOv;
-  const hasError  = errMetrics  || errOrders  || errTrending  || errAct  || errOrdOv;
+  const hasError = errMetrics || errOrders || errTrending || errAct || errOrdOv;
 
   // ── Loading / error states ─────────────────────────────────────────────────
   if (isLoading) {
@@ -112,8 +130,8 @@ function OrdersView() {
     ? [...allOrders]
     : allOrders.filter((o) => o.status === activeTab);
 
-  // Sort using shared utility
-  const filtered = sortItems(tabFiltered, sortKey, sortDir);
+  // Sort using shared utility — pass column config so the time comparator is used
+  const filtered = sortItems(tabFiltered, sortKey, sortDir, ORDER_SORT_COLS);
 
   const totalCount = allOrders.length;
   const countsByStatus = allOrders.reduce((acc, order) => {
@@ -123,10 +141,10 @@ function OrdersView() {
 
   const metricCards = metrics
     ? [
-        { label: "Total Orders",    value: metrics.totalOrders, icon: FiShoppingBag, bgBox: "bg-[#FFF7ED]", iconColor: "#F97316", pct: Math.abs(metrics.totalOrdersChange), up: metrics.totalOrdersChange >= 0 },
-        { label: "Order Preparing", value: metrics.preparing,   icon: FiClock,       bgBox: "bg-[#FFF7ED]", iconColor: "#F97316", pct: Math.abs(metrics.preparingChange),   up: metrics.preparingChange   >= 0 },
-        { label: "Total Completed", value: metrics.completed,   icon: FiCheckCircle, bgBox: "bg-green-50",  iconColor: "#16A34A", pct: Math.abs(metrics.completedChange),   up: metrics.completedChange   >= 0 },
-      ]
+      { label: "Total Orders", value: metrics.totalOrders, icon: FiShoppingBag, bgBox: "bg-[#FFF7ED]", iconColor: "#F97316", pct: Math.abs(metrics.totalOrdersChange), up: metrics.totalOrdersChange >= 0 },
+      { label: "Order Preparing", value: metrics.preparing, icon: FiClock, bgBox: "bg-[#FFF7ED]", iconColor: "#F97316", pct: Math.abs(metrics.preparingChange), up: metrics.preparingChange >= 0 },
+      { label: "Total Completed", value: metrics.completed, icon: FiCheckCircle, bgBox: "bg-green-50", iconColor: "#16A34A", pct: Math.abs(metrics.completedChange), up: metrics.completedChange >= 0 },
+    ]
     : [];
 
   return (
@@ -206,19 +224,18 @@ function OrdersView() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 pb-4 border-b border-gray-100 gap-4 sm:gap-0">
               <div className="flex items-center gap-6 overflow-x-auto w-full">
                 {TABS.map((tab) => {
-                  const count    = tab === "All" ? totalCount : (countsByStatus[tab] || 0);
+                  const count = tab === "All" ? totalCount : (countsByStatus[tab] || 0);
                   const isActive = activeTab === tab;
-                  const label    = tab === "All" ? "All Orders" : tab;
+                  const label = tab === "All" ? "All Orders" : tab;
                   return (
                     <button
                       type="button"
                       key={tab}
                       onClick={() => setActiveTab(tab)}
-                      className={`px-4 py-1.5 rounded-full cursor-pointer text-[13px] font-semibold transition-all duration-200 whitespace-nowrap border ${
-                        isActive
+                      className={`px-4 py-1.5 rounded-full cursor-pointer text-[13px] font-semibold transition-all duration-200 whitespace-nowrap border ${isActive
                           ? "border-orange-500 text-[#1a1a1a] bg-white"
                           : "border-transparent text-gray-500 hover:text-gray-700 bg-transparent"
-                      }`}
+                        }`}
                     >
                       {label} <span className={isActive ? "text-orange-500" : "text-orange-400"}>({count})</span>
                     </button>

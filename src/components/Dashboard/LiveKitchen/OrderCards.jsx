@@ -46,8 +46,11 @@ export function OrderCard({ order, columnKey, onAction, onViewOrder }) {
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       className="group bg-white rounded-2xl p-4 shadow-md flex flex-col gap-3 cursor-pointer hover:shadow-lg transition-all duration-200 border border-transparent hover:border-orange-200"
       onClick={onViewOrder}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onViewOrder(); } }}
     >
       <OrderInfoGrid order={order} />
       <ViewDetailsHint />
@@ -73,20 +76,23 @@ export function OrderCard({ order, columnKey, onAction, onViewOrder }) {
   );
 }
 
-export function DoneCard({ order, onViewOrder }) {
+export function DoneCard({ order, onViewOrder, onRevert }) {
   return (
     <div
+      role="button"
+      tabIndex={0}
       className="group bg-white rounded-2xl p-4 border border-gray-100 shadow-md hover:shadow-lg transition-all duration-200 flex flex-col gap-3 min-w-[280px] shrink-0 cursor-pointer hover:border-orange-200"
       onClick={onViewOrder}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onViewOrder(); } }}
     >
       <OrderInfoGrid order={order} />
       <ViewDetailsHint />
       <div className="flex justify-center mt-1">
         <button
-          disabled
-          className="w-full py-2 rounded-xl text-[12px] font-bold transition-all shadow-sm bg-gray-100 text-gray-400 border border-gray-100 cursor-not-allowed"
+          onClick={(e) => { e.stopPropagation(); if (onRevert) onRevert(); }}
+          className="w-full py-2 rounded-xl text-[12px] font-bold transition-all shadow-sm bg-gray-100 hover:bg-orange-50 text-gray-400 hover:text-orange-500 border border-gray-100 hover:border-orange-200 cursor-pointer"
         >
-          Done
+          Not Done
         </button>
       </div>
     </div>

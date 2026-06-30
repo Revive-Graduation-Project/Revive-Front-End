@@ -7,7 +7,7 @@
 export const COLUMNS = [
   { key: "queue",     label: "Order Queue", action: "Start Preparing", nextStatus: "preparing", prevStatus: null        },
   { key: "preparing", label: "Preparing",   action: "Prepared",        nextStatus: "ready",     prevStatus: "queue"     },
-  { key: "ready",     label: "Ready",       action: "Ready",           nextStatus: "done",      prevStatus: "preparing" },
+  { key: "ready",     label: "Ready",       action: "Mark Done",      nextStatus: "done",      prevStatus: "preparing" },
 ];
 
 // ── Kitchen ticket constants ───────────────────────────────────────
@@ -25,7 +25,7 @@ export const STATUS_FLOW = {
 export function getActionButtonStyle(action) {
   if (action === "Start Preparing") return "bg-white text-[#1a1a1a] border border-[#d1d5db] hover:bg-gray-50";
   if (action === "Prepared")        return "bg-[#F97316] text-white border border-transparent hover:bg-orange-600 shadow-sm";
-  if (action === "Ready")           return "bg-[#16A34A] text-white border border-transparent hover:bg-green-700 shadow-sm";
+  if (action === "Mark Done")       return "bg-[#16A34A] text-white border border-transparent hover:bg-green-700 shadow-sm";
   return "";
 }
 
@@ -68,6 +68,12 @@ export function buildChefsFromTickets(tickets) {
       });
     }
     chefsMap.get(t.assignedChefId).ticketCount += 1;
+    // Merge latest non-fallback metadata so subsequent tickets can update
+    // display name, station, or status if earlier tickets had fallback values.
+    const entry = chefsMap.get(t.assignedChefId);
+    if (t.chefDisplayName) entry.displayName = t.chefDisplayName;
+    if (t.chefStation)     entry.station     = t.chefStation;
+    if (t.chefStatus)      entry.status      = t.chefStatus;
   });
 
   return Array.from(chefsMap.values());

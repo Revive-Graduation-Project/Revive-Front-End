@@ -446,10 +446,11 @@ export const MOCK_HANDLERS = [
       if (!kitchenOrders[colName]) return;
       kitchenOrders[colName].forEach((o, i) => {
         tickets.push({
-          id: o.id.replace('#', ''),
-          orderId: o.id,
+          id: o.id.replace('#', ''),          // numeric ticket id
+          orderId: o.id.replace('#', ''),     // rendered as #{ticket.orderId} — no double prefix
           status: statusName,
-          assignedChef: o.assignedChef || (o.startedAt ? "Chef John" : "Unassigned"),
+          chefDisplayName: o.assignedChef || (o.startedAt ? "Chef John" : null),
+          assignedChefId: o.assignedChefId || (o.startedAt ? 1 : null),
           createdAt: o.createdAt || new Date(Date.now() - (i*5 + 2) * 60000).toISOString()
         });
       });
@@ -462,7 +463,7 @@ export const MOCK_HANDLERS = [
     
     return { status: 200, data: tickets };
   }},
-  { method: "patch", match: (url) => url.match(/\/api\/kitchen\/tickets\/\d+\/status/), handler: (config) => {
+  { method: "patch", match: (url) => url.match(/\/api\/kitchen\/tickets\/[\w-]+\/status/), handler: (config) => {
     const id = config.url.split("/")[4];
     const { status } = JSON.parse(config.data || "{}"); // e.g. "Preparing"
     

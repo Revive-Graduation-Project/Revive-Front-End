@@ -9,7 +9,7 @@ import {
   useUpdateIngredient,
 } from "../../hooks/dashboard/useIngredients";
 import { useToast } from "../../store/toastStore";
-import { FiSearch, FiPlus, FiUploadCloud, FiEdit2 } from "react-icons/fi";
+import { FiSearch, FiPlus, FiUploadCloud, FiEdit2, FiTrash2 } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 import EmptyState from "./shared/EmptyState";
@@ -22,14 +22,14 @@ import { sortItems } from "../../utils/sortItems";
 
 // ── Sort columns — defined outside the component so they are never recreated ──
 const ING_SORT_COLS = [
-  { key: "name",        label: "Name"     },
-  { key: "category",   label: "Category" },
-  { key: "fat",        label: "Fat"      },
-  { key: "calories",   label: "Calories" },
-  { key: "protein",    label: "Protein"  },
-  { key: "sugar",      label: "Sugar"    },
-  { key: "stock",      label: "Stock"    },
-  { key: "costPerUnit",label: "Price"    },
+  { key: "name", label: "Name" },
+  { key: "category", label: "Category" },
+  { key: "fat", label: "Fat" },
+  { key: "calories", label: "Calories" },
+  { key: "protein", label: "Protein" },
+  { key: "sugar", label: "Sugar" },
+  { key: "stock", label: "Stock" },
+  { key: "costPerUnit", label: "Price" },
 ];
 
 // Table column headers (9 total)
@@ -37,16 +37,16 @@ const TABLE_HEADERS = ["Name", "Category", "Fat", "Cal", "Pro", "Sug", "Stock", 
 
 function IngredientsView() {
   const [activeCategory, setActiveCategory] = useState("All Ingredients");
-  const [sortKey, setSortKey]   = useState(null);
-  const [sortDir, setSortDir]   = useState("asc");
-  const [isModalOpen, setIsModalOpen]           = useState(false);
+  const [sortKey, setSortKey] = useState(null);
+  const [sortDir, setSortDir] = useState("asc");
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingIngredient, setEditingIngredient] = useState(null);
-  const [deletingId, setDeletingId]             = useState(null);
-  const [selectedFile, setSelectedFile]         = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const { addToast } = useToast();
 
-  const { data: metrics,     isLoading: loadMetrics } = useIngredientsMetrics();
+  const { data: metrics, isLoading: loadMetrics } = useIngredientsMetrics();
   const {
     data: ingredients,
     isLoading: loadIngredients,
@@ -54,10 +54,10 @@ function IngredientsView() {
     refetch,
   } = useIngredients();
 
-  const { mutate: uploadFile,       isPending: isUploading  } = useUploadIngredients();
-  const { mutate: deleteIngredient }                           = useDeleteIngredient();
-  const { mutate: createIngredient }                           = useCreateIngredient();
-  const { mutate: updateIngredient }                           = useUpdateIngredient();
+  const { mutate: uploadFile, isPending: isUploading } = useUploadIngredients();
+  const { mutate: deleteIngredient } = useDeleteIngredient();
+  const { mutate: createIngredient } = useCreateIngredient();
+  const { mutate: updateIngredient } = useUpdateIngredient();
 
   const isLoading = loadMetrics || loadIngredients;
 
@@ -73,7 +73,7 @@ function IngredientsView() {
     if (!selectedFile) return;
     uploadFile(selectedFile, {
       onSuccess: () => { addToast("Ingredients updated successfully!", "success"); setSelectedFile(null); },
-      onError:   () => addToast("Failed to upload ingredients.", "error"),
+      onError: () => addToast("Failed to upload ingredients.", "error"),
     });
   };
 
@@ -84,7 +84,7 @@ function IngredientsView() {
     if (!deletingId) return;
     deleteIngredient(deletingId, {
       onSuccess: () => addToast("Ingredient deleted", "success"),
-      onError:   () => addToast("Failed to delete ingredient", "error"),
+      onError: () => addToast("Failed to delete ingredient", "error"),
     });
     setDeletingId(null);
   };
@@ -95,20 +95,20 @@ function IngredientsView() {
         { id: editingIngredient.id, data: formData },
         {
           onSuccess: () => { addToast("Ingredient updated!", "success"); setIsModalOpen(false); },
-          onError:   () => addToast("Failed to update ingredient", "error"),
+          onError: () => addToast("Failed to update ingredient", "error"),
         }
       );
     } else {
       createIngredient(formData, {
         onSuccess: () => { addToast("Ingredient added!", "success"); setIsModalOpen(false); },
-        onError:   () => addToast("Failed to add ingredient", "error"),
+        onError: () => addToast("Failed to add ingredient", "error"),
       });
     }
   };
 
-  const openAddModal  = () => { setEditingIngredient(null);  setIsModalOpen(true); };
+  const openAddModal = () => { setEditingIngredient(null); setIsModalOpen(true); };
   const openEditModal = (item) => { setEditingIngredient(item); setIsModalOpen(true); };
-  const closeModal    = () => setIsModalOpen(false);
+  const closeModal = () => setIsModalOpen(false);
 
   // ── Loading / error states ─────────────────────────────────────────────────
   if (isLoading) {
@@ -132,8 +132,8 @@ function IngredientsView() {
 
   // ── Derived data ───────────────────────────────────────────────────────────
   const allIngredients = ingredients || [];
-  const categories     = [...new Set(allIngredients.map((i) => i.category))];
-  const categoryTabs   = ["All Ingredients", ...categories.filter(Boolean)];
+  const categories = [...new Set(allIngredients.map((i) => i.category))];
+  const categoryTabs = ["All Ingredients", ...categories.filter(Boolean)];
 
   const getCategoryCount = (catName) =>
     allIngredients.filter((i) => i.category === catName).length;
@@ -153,19 +153,19 @@ function IngredientsView() {
 
   // Metric cards configuration
   const metricRows = [
-    { label: "Total Ingredients", value: allIngredients.length, pct: 100,                       change: metrics?.totalChange      ?? 1.58 },
-    { label: "Protein",           value: getCategoryCount("Protein"),    pct: getCategoryPct("Protein"),    change: 0.92 },
-    { label: "Vegetables",        value: getCategoryCount("Vegetables"), pct: getCategoryPct("Vegetables"), change: 0.12 },
-    { label: "Sauces",            value: getCategoryCount("Sauces"),     pct: getCategoryPct("Sauces"),     change: 0.92 },
-    { label: "Out of stock",      value: outOfStockCount,                pct: outOfStockPct,                change: metrics?.outOfStockChange ?? 0.42, badge: true },
+    { label: "Total Ingredients", value: allIngredients.length, pct: 100, change: metrics?.totalChange ?? 1.58 },
+    { label: "Protein", value: getCategoryCount("Protein"), pct: getCategoryPct("Protein"), change: 0.92 },
+    { label: "Vegetables", value: getCategoryCount("Vegetables"), pct: getCategoryPct("Vegetables"), change: 0.12 },
+    { label: "Sauces", value: getCategoryCount("Sauces"), pct: getCategoryPct("Sauces"), change: 0.92 },
+    { label: "Out of stock", value: outOfStockCount, pct: outOfStockPct, change: metrics?.outOfStockChange ?? 0.42, badge: true },
   ];
 
   // Filter by active category
   const categoryFiltered = activeCategory === "All Ingredients"
     ? allIngredients
     : allIngredients.filter(
-        (item) => item.category?.toLowerCase() === activeCategory.toLowerCase()
-      );
+      (item) => item.category?.toLowerCase() === activeCategory.toLowerCase()
+    );
 
   // Sort using shared utility (returns a new array, never mutates)
   const filtered = sortItems(categoryFiltered, sortKey, sortDir);
@@ -204,11 +204,10 @@ function IngredientsView() {
                     key={tab}
                     type="button"
                     onClick={() => setActiveCategory(tab)}
-                    className={`px-4 py-1.5 text-[13px] font-bold cursor-pointer transition-all whitespace-nowrap ${
-                      activeCategory === tab
+                    className={`px-4 py-1.5 text-[13px] font-bold cursor-pointer transition-all whitespace-nowrap ${activeCategory === tab
                         ? "text-[#1a1a1a] border border-[#F97316] rounded-full bg-transparent"
                         : "text-[#1a1a1a] border border-transparent hover:text-orange-500 bg-transparent"
-                    }`}
+                      }`}
                   >
                     {tab}
                   </button>
@@ -234,9 +233,8 @@ function IngredientsView() {
                   {TABLE_HEADERS.map((h, idx) => (
                     <th
                       key={h}
-                      className={`px-4 py-2.5 text-[12px] font-bold text-[#1a1a1a] text-center ${
-                        idx === 0 ? "rounded-l-xl text-left pl-6" : ""
-                      } ${idx === TABLE_HEADERS.length - 1 ? "rounded-r-xl" : ""}`}
+                      className={`px-4 py-2.5 text-[12px] font-bold text-[#1a1a1a] text-center ${idx === 0 ? "rounded-l-xl text-left pl-6" : ""
+                        } ${idx === TABLE_HEADERS.length - 1 ? "rounded-r-xl" : ""}`}
                     >
                       {h === "Actions" ? "" : h}
                     </th>
@@ -270,10 +268,10 @@ function IngredientsView() {
                         </div>
                       </td>
                       <td className="px-4 py-4 text-[12px] font-medium text-[#1a1a1a] text-center">{item.category}</td>
-                      <td className="px-4 py-4 text-[12px] font-bold text-[#22C55E] text-center">{item.fat        || "-"}</td>
-                      <td className="px-4 py-4 text-[12px] font-bold text-[#22C55E] text-center">{item.calories   || "-"}</td>
-                      <td className="px-4 py-4 text-[12px] font-bold text-[#22C55E] text-center">{item.protein    || "-"}</td>
-                      <td className="px-4 py-4 text-[12px] font-bold text-[#22C55E] text-center">{item.sugar      || "-"}</td>
+                      <td className="px-4 py-4 text-[12px] font-bold text-[#22C55E] text-center">{item.fat || "-"}</td>
+                      <td className="px-4 py-4 text-[12px] font-bold text-[#22C55E] text-center">{item.calories || "-"}</td>
+                      <td className="px-4 py-4 text-[12px] font-bold text-[#22C55E] text-center">{item.protein || "-"}</td>
+                      <td className="px-4 py-4 text-[12px] font-bold text-[#22C55E] text-center">{item.sugar || "-"}</td>
                       <td className={`px-4 py-4 text-[12px] font-bold text-center ${item.stock < 20 ? "text-red-500" : "text-[#1a1a1a]"}`}>
                         {item.stock >= 1000 ? `${(item.stock / 1000).toFixed(0)}k` : item.stock}
                       </td>
@@ -287,6 +285,14 @@ function IngredientsView() {
                             title={`Edit ${item.name}`}
                           >
                             <FiEdit2 size={14} /> Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-red-50 text-gray-500 hover:text-red-500 rounded-lg text-[12px] font-bold border border-gray-100 transition-all cursor-pointer shadow-sm"
+                            onClick={() => handleDelete(item.id)}
+                            title={`Delete ${item.name}`}
+                          >
+                            <FiTrash2 size={14} /> Delete
                           </button>
                         </div>
                       </td>
@@ -310,13 +316,12 @@ function IngredientsView() {
         {/* ── CSV upload ── */}
         <div className="flex flex-col gap-4 justify-start items-start">
           <label
-            className={`bg-[#38761d] hover:bg-green-800 text-white px-6 py-3 rounded-full flex items-center gap-2 shadow-lg cursor-pointer transition-transform hover:scale-105 ${
-              isUploading ? "opacity-50 pointer-events-none" : ""
-            }`}
+            className={`bg-[#38761d] hover:bg-green-800 text-white px-6 py-3 rounded-full flex items-center gap-2 shadow-lg cursor-pointer transition-transform hover:scale-105 ${isUploading ? "opacity-50 pointer-events-none" : ""
+              }`}
           >
             <FiUploadCloud size={20} className="text-[#F97316]" />
             <span className="text-[14px] font-bold">
-              {selectedFile ? selectedFile.name : "Upload Menu csv"}
+              {selectedFile ? selectedFile.name : "Upload ingredients csv"}
             </span>
             <input
               type="file"
@@ -331,9 +336,8 @@ function IngredientsView() {
             <button
               onClick={handleSubmitFile}
               disabled={isUploading}
-              className={`bg-[#F97316] hover:bg-orange-600 text-white px-6 py-2 rounded-full font-bold shadow-lg transition-transform hover:scale-105 ${
-                isUploading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+              className={`bg-[#F97316] hover:bg-orange-600 text-white px-6 py-2 rounded-full font-bold shadow-lg transition-transform hover:scale-105 ${isUploading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
             >
               {isUploading ? "Uploading…" : "Submit"}
             </button>

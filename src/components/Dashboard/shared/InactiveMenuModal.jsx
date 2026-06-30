@@ -12,6 +12,8 @@ export default function InactiveMenuModal({ isOpen, onClose, inactiveItems }) {
   if (!isOpen) return null;
 
   const handleAddPhotoClick = (id) => {
+    // Do not allow switching items while an upload is in progress
+    if (isPending) return;
     setSelectedItemId(id);
     if (fileInputRef.current) {
       fileInputRef.current.click();

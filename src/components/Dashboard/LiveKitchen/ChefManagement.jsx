@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiUsers, FiEdit2, FiCheck, FiX } from "react-icons/fi";
 import { STATIONS, buildChefsFromTickets } from "./constants";
 import EmptyState from "../shared/EmptyState";
@@ -6,7 +6,13 @@ import StatusBadge from "../shared/StatusBadge";
 
 function EditableChefName({ chefId, currentName, onSave }) {
   const [editing, setEditing] = useState(false);
-  const [value, setValue]     = useState(currentName);
+  const [value, setValue] = useState(currentName);
+
+  // Keep the edit buffer in sync with server-side name updates
+  // (e.g. after a successful save refetches data with a new displayName).
+  useEffect(() => {
+    if (!editing) setValue(currentName);
+  }, [currentName, editing]);
 
   const handleSave = () => {
     const trimmed = value.trim();
@@ -20,6 +26,7 @@ function EditableChefName({ chefId, currentName, onSave }) {
       <div className="flex items-center gap-2 group/name">
         <span className="text-[14px] font-bold text-[#1a1a1a] truncate">{currentName || "Unnamed"}</span>
         <button type="button" onClick={() => setEditing(true)}
+          aria-label={`Edit name for ${currentName || "chef"}`}
           className="opacity-0 group-hover/name:opacity-100 bg-transparent border-none cursor-pointer p-1 rounded hover:bg-orange-50 transition-all">
           <FiEdit2 size={13} className="text-orange-500" />
         </button>
@@ -31,17 +38,17 @@ function EditableChefName({ chefId, currentName, onSave }) {
       <input type="text" value={value} onChange={(e) => setValue(e.target.value)}
         onKeyDown={(e) => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") handleCancel(); }}
         autoFocus className="text-[13px] font-medium text-[#1a1a1a] border border-orange-300 rounded-lg px-2 py-1 outline-none focus:border-orange-500 w-[140px]" />
-      <button type="button" onClick={handleSave} className="bg-transparent border-none cursor-pointer p-1 rounded hover:bg-green-50 transition-colors">
+      <button type="button" onClick={handleSave} aria-label="Save name" className="bg-transparent border-none cursor-pointer p-1 rounded hover:bg-green-50 transition-colors">
         <FiCheck size={14} className="text-green-600" />
       </button>
-      <button type="button" onClick={handleCancel} className="bg-transparent border-none cursor-pointer p-1 rounded hover:bg-red-50 transition-colors">
+      <button type="button" onClick={handleCancel} aria-label="Cancel name edit" className="bg-transparent border-none cursor-pointer p-1 rounded hover:bg-red-50 transition-colors">
         <FiX size={14} className="text-red-500" />
       </button>
     </div>
   );
 }
 
-export function ChefManagement({ tickets, onUpdateStatus, onUpdateStation, onUpdateName }) {
+export function ChefManagement({ tickets, isLoading, error, onUpdateStatus, onUpdateStation, onUpdateName }) {
   const chefs = buildChefsFromTickets(tickets);
 
   return (
@@ -51,7 +58,8 @@ export function ChefManagement({ tickets, onUpdateStatus, onUpdateStation, onUpd
         Chef Management
       </h3>
 
-      {chefs.length === 0 ? (
+      {/* Only show empty state after the query has finished successfully */}
+      {!isLoading && !error && chefs.length === 0 ? (
         <div className="bg-white rounded-3xl shadow-sm">
           <EmptyState icon={FiUsers} title="No chefs found"
             description="Chef data will appear here once tickets with assigned chefs are loaded." />
@@ -67,7 +75,7 @@ export function ChefManagement({ tickets, onUpdateStatus, onUpdateStation, onUpd
                 </div>
                 <StatusBadge status={chef.status} />
               </div>
-              
+
               <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Station</label>
                 <select value={chef.station} onChange={(e) => onUpdateStation({ chefId: chef.id, station: e.target.value })}
@@ -82,9 +90,8 @@ export function ChefManagement({ tickets, onUpdateStatus, onUpdateStation, onUpd
                 </span>
                 <button type="button"
                   onClick={() => onUpdateStatus({ chefId: chef.id, status: chef.status === "ACTIVE" ? "INACTIVE" : "ACTIVE" })}
-                  className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer border-none shadow-sm ${
-                    chef.status === "ACTIVE" ? "bg-red-50 text-red-500 hover:bg-red-100" : "bg-green-50 text-green-600 hover:bg-green-100"
-                  }`}>
+                  className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer border-none shadow-sm ${chef.status === "ACTIVE" ? "bg-red-50 text-red-500 hover:bg-red-100" : "bg-green-50 text-green-600 hover:bg-green-100"
+                    }`}>
                   {chef.status === "ACTIVE" ? "Deactivate" : "Activate"}
                 </button>
               </div>
