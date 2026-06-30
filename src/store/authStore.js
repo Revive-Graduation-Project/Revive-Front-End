@@ -66,18 +66,27 @@ const useAuthStore = create(
 
         try {
           const response = await loginService(credentials);
-          const { token, role, userId, emailString, firstName, lastName } =
-            response.data;
+          const data = response.data;
+
+          const token = data.token;
 
           if (!isValidToken(token)) {
             set({ error: "Invalid authentication token", loading: false });
             return;
           }
 
+          const user = data.user ?? {
+            id: data.userId,
+            email: data.emailString,
+            role: data.role,
+            firstName: data.firstName,
+            lastName: data.lastName,
+          };
+
           set({
             token,
-            user: { id: userId, email: emailString, role, firstName, lastName },
-            expiresAt: Date.now() + TOKEN_LIFETIME,
+            user,
+            expiresAt: data.expiresAt ?? Date.now() + TOKEN_LIFETIME,
             isAuthenticated: true,
             loading: false,
           });

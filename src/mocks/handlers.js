@@ -59,18 +59,13 @@ export const MOCK_HANDLERS = [
   },
   {
     method: "post",
-    match: (url) => url.endsWith("/auth/register"),
-    handler: (config) => {
-      const body = JSON.parse(config.data || "{}");
-      return {
-        status: 201,
-        data: {
-          token: MOCK_TOKEN,
-          expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
-          user: { id: 99, ...body, role: "CLIENT" },
-        },
-      };
-    },
+    match: (url) => url.endsWith("/auth/signup"),
+    handler: () => ({
+      status: 200,
+      data: {
+        message: "User registered successfully. Profile creation is pending.",
+      },
+    }),
   },
   {
     method: "post",

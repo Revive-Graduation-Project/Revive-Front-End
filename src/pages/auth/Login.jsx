@@ -39,7 +39,7 @@ function Login() {
         </div>
 
         <div className="flex justify-center items-center">
-          <div className="bg-white w-[350px] rounded-2xl shadow-md p-8 flex flex-col items-center">
+          <div className="bg-white w-87.5 rounded-2xl shadow-md p-8 flex flex-col items-center">
             <h2 className="text-center text-2xl font-semibold mb-6 text-gray-800">
               Welcome Back
             </h2>
@@ -55,6 +55,7 @@ function Login() {
                     id="email"
                     name="email"
                     type="email"
+                    autoComplete="email"
                     placeholder="Enter your email"
                     value={formData.email}
                     onChange={handleChange}
@@ -73,6 +74,7 @@ function Login() {
                     id="password"
                     name="password"
                     type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
                     placeholder="Enter your password"
                     value={formData.password}
                     onChange={handleChange}

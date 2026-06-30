@@ -1,4 +1,4 @@
-function StepTwo({ formData, onChange, onNext, onBack }) {
+function StepTwo({ formData, onChange, onNext, onBack, error }) {
   return (
     <>
       <h2 className="text-center text-2xl font-semibold mb-6 text-gray-800">
@@ -119,7 +119,7 @@ function StepTwo({ formData, onChange, onNext, onBack }) {
             ))}
           </div>
         </div>
-
+        {error && <p className="text-red-500 text-xs text-center">{error}</p>}
         <div className="flex justify-between">
           <button
             type="button"

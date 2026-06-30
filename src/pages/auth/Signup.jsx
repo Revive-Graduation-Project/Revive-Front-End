@@ -38,15 +38,51 @@ function Signup() {
     setFormData((prev) => ({ ...prev, healthConditions: conditions }));
   };
 
-  const nextStep = () => setStep((prev) => prev + 1);
+  const nextStep = () => {
+    if (step === 1) {
+      if (!formData.email || !formData.password || !formData.phoneNumber) {
+        setError("Please fill in all fields");
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setError("Passwords do not match");
+        return;
+      }
+      if (formData.password.length < 6) {
+        setError("Password must be at least 6 characters");
+        return;
+      }
+    }
+
+    if (step === 2) {
+      if (!formData.age || !formData.height || !formData.weight) {
+        setError("Please fill in all fields");
+        return;
+      }
+      if (
+        isNaN(Number(formData.age)) ||
+        isNaN(Number(formData.height)) ||
+        isNaN(Number(formData.weight))
+      ) {
+        setError("Age, height, and weight must be valid numbers");
+        return;
+      }
+      if (
+        Number(formData.age) <= 0 ||
+        Number(formData.height) <= 0 ||
+        Number(formData.weight) <= 0
+      ) {
+        setError("Age, height, and weight must be greater than 0");
+        return;
+      }
+    }
+
+    setError(null);
+    setStep((prev) => prev + 1);
+  };
   const prevStep = () => setStep((prev) => prev - 1);
 
   const handleSubmit = async () => {
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
@@ -101,6 +137,7 @@ function Signup() {
                 onChange={handleChange}
                 onNext={nextStep}
                 onBack={prevStep}
+                error={error}
               />
             )}
             {step === 3 && (
