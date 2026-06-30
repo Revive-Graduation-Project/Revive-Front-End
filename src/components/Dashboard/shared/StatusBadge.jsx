@@ -15,6 +15,7 @@ const STATUS_MAP = {
   Done:           "bg-gray-400  text-white",
   Cancelled:      "bg-red-500   text-white",
   Pending:        "bg-yellow-500 text-white",
+  Queue:          "bg-yellow-500 text-white",
   // Menu statuses
   Active:         "bg-green-50   text-green-600",
   Inactive:       "bg-gray-100   text-gray-500",

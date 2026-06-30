@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getMenuCategories, getMenuItems, deleteMenuItem, updateMenuItem, createMenuItem, saveRecipe, getRecipeIngredients } from "../../services/dashboardService";
+import { getMenuCategories, getMenuItems, deleteMenuItem, updateMenuItem, createMenuItem, saveRecipe, getRecipeIngredients, uploadMealImage } from "../../services/dashboardService";
 
 export const menuKeys = {
   all:         ["menu"],
@@ -48,7 +48,23 @@ export function useDeleteMenuItem() {
 export function useUpdateMenuItem() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }) => updateMenuItem(id, data),
+    mutationFn: async ({ id, data }) => {
+      const payload = {
+        name: data.name,
+        description: data.description || "",
+        price: parseFloat(data.price),
+        category: data.category,
+        ingredients: Array.isArray(data.ingredients) ? data.ingredients : []
+      };
+      
+      const res = await updateMenuItem(id, payload);
+      
+      if (data.imageFile) {
+        await uploadMealImage(id, data.imageFile);
+      }
+      
+      return res;
+    },
     onSettled:  () => qc.invalidateQueries({ queryKey: menuKeys.all }),
   });
 }
@@ -57,8 +73,26 @@ export function useUpdateMenuItem() {
 export function useCreateMenuItem() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: createMenuItem,
-    onSettled:  () => qc.invalidateQueries({ queryKey: menuKeys.all }),
+    mutationFn: async (data) => {
+      const payload = {
+        name: data.name,
+        description: data.description || "",
+        price: parseFloat(data.price),
+        category: data.category,
+        ingredients: Array.isArray(data.ingredients) ? data.ingredients : []
+      };
+      
+      const meal = await createMenuItem(payload);
+      
+      // If the backend returns the created meal with an ID, upload the image
+      // Assuming the backend returns the created object or at least { id: ... }
+      if (data.imageFile && meal && (meal.id || meal._id)) {
+        await uploadMealImage(meal.id || meal._id, data.imageFile);
+      }
+      
+      return meal;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: menuKeys.all }),
   });
 }
 

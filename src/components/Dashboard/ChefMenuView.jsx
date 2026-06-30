@@ -1,11 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import DashboardHeader from "./DashboardHeader";
 import TrendingMenus from "./TrendingMenus";
 import {
   useMenuCategories,
   useMenuItems,
-  useCreateMenuItem,
-  useUpdateMenuItem,
   useDeleteMenuItem,
 } from "../../hooks/dashboard/useMenuItems";
 import { useTrendingMenus } from "../../hooks/dashboard/useDashboard";
@@ -15,10 +14,10 @@ import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 import EmptyState from "./shared/EmptyState";
 import SortMenu from "./shared/SortMenu";
-import MenuModal from "./shared/MenuModal";
 import ConfirmModal from "./shared/ConfirmModal";
 import DishDetailsModal from "./shared/DishDetailsModal";
 import MetricRingCard from "./shared/MetricRingCard";
+import InactiveMenuModal from "./shared/InactiveMenuModal";
 import { sortItems } from "../../utils/sortItems";
 
 // ── Sort columns — defined outside the component so they are never recreated ──
@@ -38,14 +37,12 @@ function ChefMenuView() {
   const [activeTab, setActiveTab] = useState("All Menu");
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("asc");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [viewingItem, setViewingItem] = useState(null);
+  const [isInactiveModalOpen, setIsInactiveModalOpen] = useState(false);
 
+  const navigate = useNavigate();
   const { addToast } = useToast();
-  const { mutate: createItem } = useCreateMenuItem();
-  const { mutate: updateItem } = useUpdateMenuItem();
   const { mutate: deleteItem } = useDeleteMenuItem();
 
   // ── CRUD handlers ──────────────────────────────────────────────────────────
@@ -57,27 +54,6 @@ function ChefMenuView() {
     });
     setDeletingId(null);
   };
-
-  const handleModalSubmit = (formData) => {
-    if (editingItem) {
-      updateItem(
-        { id: editingItem.id, data: formData },
-        {
-          onSuccess: () => { addToast("Menu item updated!", "success"); setIsModalOpen(false); },
-          onError: () => addToast("Failed to update item", "error"),
-        }
-      );
-    } else {
-      createItem(formData, {
-        onSuccess: () => { addToast("Menu item added!", "success"); setIsModalOpen(false); },
-        onError: () => addToast("Failed to add item", "error"),
-      });
-    }
-  };
-
-  const openAddModal = () => { setEditingItem(null); setIsModalOpen(true); };
-  const openEditModal = (item) => { setEditingItem(item); setIsModalOpen(true); };
-  const closeModal = () => setIsModalOpen(false);
 
   // ── Data fetching ──────────────────────────────────────────────────────────
   const { data: categories, isLoading: loadCats, error: errCats, refetch: refetchCats } = useMenuCategories();
@@ -110,7 +86,9 @@ function ChefMenuView() {
 
   // ── Derived data ───────────────────────────────────────────────────────────
   const allItems = menuItems || [];
-  const totalMeals = allItems.length;
+  const activeItems = allItems.filter(item => item.image);
+  const inactiveItems = allItems.filter(item => !item.image);
+  const totalMeals = activeItems.length;
 
   const totalChange = categories?.totalChange ?? 0;
   const totalPercentage = categories?.totalPercentage ?? 100;
@@ -119,18 +97,18 @@ function ChefMenuView() {
   // Per-category counts — reconcile API count with live item data
   const categoryCounts = categoryItems.map((cat) => ({
     ...cat,
-    count: allItems.filter(
+    count: activeItems.filter(
       (i) => i.category?.toLowerCase() === cat.name?.toLowerCase()
     ).length || cat.count,
   }));
 
   // Category tabs built from live item data
-  const CATEGORY_TABS = ["All Menu", ...new Set(allItems.map((i) => i.category).filter(Boolean))];
+  const CATEGORY_TABS = ["All Menu", ...new Set(activeItems.map((i) => i.category).filter(Boolean))];
 
   // Filter then sort using shared utility
   const tabFiltered = activeTab === "All Menu"
-    ? allItems
-    : allItems.filter((item) => item.category?.toLowerCase() === activeTab.toLowerCase());
+    ? activeItems
+    : activeItems.filter((item) => item.category?.toLowerCase() === activeTab.toLowerCase());
 
   const filtered = sortItems(tabFiltered, sortKey, sortDir);
 
@@ -183,12 +161,25 @@ function ChefMenuView() {
                   </button>
                 ))}
               </div>
-              <SortMenu
-                columns={MENU_SORT_COLS}
-                sortKey={sortKey}
-                sortDir={sortDir}
-                onChange={(k, d) => { setSortKey(k); setSortDir(d); }}
-              />
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsInactiveModalOpen(true)}
+                  className="relative flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-full text-[13px] font-bold transition-colors shadow-sm cursor-pointer"
+                >
+                  INACTIVE MENU
+                  {inactiveItems.length > 0 && (
+                    <span className="flex items-center justify-center w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full absolute -top-1 -right-1 shadow-sm border-2 border-white">
+                      {inactiveItems.length}
+                    </span>
+                  )}
+                </button>
+                <SortMenu
+                  columns={MENU_SORT_COLS}
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onChange={(k, d) => { setSortKey(k); setSortDir(d); }}
+                />
+              </div>
             </div>
 
             {/* Table */}
@@ -248,7 +239,7 @@ function ChefMenuView() {
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={(e) => { e.stopPropagation(); openEditModal(item); }}
+                            onClick={(e) => { e.stopPropagation(); navigate("/dashboard/recipe-builder", { state: { editMeal: item } }); }}
                             className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-orange-50 text-gray-500 hover:text-orange-500 rounded-lg text-[12px] font-bold border border-gray-100 transition-all cursor-pointer shadow-sm"
                             title={`Edit ${item.name}`}
                           >
@@ -271,7 +262,7 @@ function ChefMenuView() {
 
             {/* Floating add button */}
             <button
-              onClick={openAddModal}
+              onClick={() => navigate("/dashboard/recipe-builder")}
               className="absolute bottom-6 right-6 w-12 h-12 bg-[#38761d] hover:bg-green-800 text-white rounded-full flex items-center justify-center shadow-lg border-none cursor-pointer transition-transform hover:scale-105 z-10"
               title="Add menu item"
             >
@@ -287,12 +278,6 @@ function ChefMenuView() {
       </div>
 
       {/* ── Modals ── */}
-      <MenuModal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        onSubmit={handleModalSubmit}
-        initialData={editingItem}
-      />
 
       <ConfirmModal
         isOpen={!!deletingId}
@@ -306,6 +291,12 @@ function ChefMenuView() {
         isOpen={!!viewingItem}
         onClose={() => setViewingItem(null)}
         dish={viewingItem}
+      />
+
+      <InactiveMenuModal
+        isOpen={isInactiveModalOpen}
+        onClose={() => setIsInactiveModalOpen(false)}
+        inactiveItems={inactiveItems}
       />
     </div>
   );
