@@ -23,7 +23,7 @@ describe("Session Logic & Security Tests", () => {
   });
 
   afterEach(() => {
-    mock.reset();
+    mock.restore();
   });
 
   // TEST 1: Security - Ensure token is NOT persisted

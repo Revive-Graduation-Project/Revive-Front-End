@@ -75,13 +75,38 @@ const useAuthStore = create(
             return;
           }
 
-          const user = data.user ?? {
+          const rawUser = data.user ?? {
             id: data.userId,
             email: data.emailString,
             role: data.role,
             firstName: data.firstName,
             lastName: data.lastName,
           };
+
+          const user =
+            rawUser?.id != null &&
+            typeof rawUser.email === "string" &&
+            rawUser.email.trim().length > 0
+              ? {
+                  id: rawUser.id,
+                  email: rawUser.email,
+                  role: rawUser.role,
+                  firstName: rawUser.firstName,
+                  lastName: rawUser.lastName,
+                }
+              : null;
+
+          if (!user) {
+            set({
+              user: null,
+              token: null,
+              expiresAt: null,
+              isAuthenticated: false,
+              error: "Invalid user payload",
+              loading: false,
+            });
+            return;
+          }
 
           set({
             token,
