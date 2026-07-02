@@ -53,17 +53,16 @@ function Navbar() {
   const isChief = userRole === "chief" || userRole === "chef";
   const isStaff = user && ["admin", "manager", "chief", "chef"].includes(userRole);
 
-  // Dynamically include Dashboard (or Live Kitchen for Chief) if user has staff role
+  // Dynamically include Dashboard (or Live Kitchen + Orders for Chief) if user has staff role
   const dynamicMoreLinks = [
     ...MORE_LINKS,
     ...(isStaff
-      ? [
-          {
-            to: isChief ? "/dashboard/live-kitchen" : "/dashboard",
-            label: isChief ? "Live Kitchen" : "Dashboard",
-            icon: MdDashboard,
-          },
-        ]
+      ? isChief
+        ? [
+            { to: "/dashboard/live-kitchen", label: "Live Kitchen", icon: MdDashboard },
+            { to: "/dashboard/orders", label: "Orders", icon: MdDashboard },
+          ]
+        : [{ to: "/dashboard", label: "Dashboard", icon: MdDashboard }]
       : []),
   ];
 
