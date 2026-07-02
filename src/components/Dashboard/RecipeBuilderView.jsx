@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "react-router";
 import DashboardHeader from "./DashboardHeader";
-import { useRecipeIngredients, useSaveRecipe } from "../../hooks/dashboard/useMenuItems";
+import { useCreateMenuItem, useUpdateMenuItem } from "../../hooks/dashboard/useMenuItems";
 import { useToast } from "../../store/toastStore";
 import { 
   FiPlus, FiTrash2, FiCamera, FiBookOpen, FiDollarSign, 
@@ -18,11 +18,13 @@ export default function RecipeBuilderView() {
   const [localIngredients, setLocalIngredients] = useState([]);
   const [newIngredient, setNewIngredient] = useState({ name: "", amount: "", imagePreview: null });
   const [mealImagePreview, setMealImagePreview] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
 
   const { addToast } = useToast();
-  const { data: initialIngredients, isLoading: loadIngredients, error: errIngredients } = useRecipeIngredients();
-  const { mutate: saveRecipe, isSuccess: saved, reset: resetMutation } = useSaveRecipe();
+  const { mutate: createMeal, isSuccess: created, reset: resetCreate } = useCreateMenuItem();
+  const { mutate: updateMeal, isSuccess: updated, reset: resetUpdate } = useUpdateMenuItem();
+  const saved = created || updated;
 
   // Pre-fill form when editing an existing meal
   useEffect(() => {
@@ -43,11 +45,7 @@ export default function RecipeBuilderView() {
     }
   }, [editMeal]);
 
-  useEffect(() => {
-    if (initialIngredients && localIngredients.length === 0 && !editMeal) {
-      setLocalIngredients(initialIngredients);
-    }
-  }, [initialIngredients, localIngredients.length, editMeal]);
+  // Initial ingredients was removed because it hit a mock endpoint
 
   const handleChange = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
@@ -96,6 +94,7 @@ export default function RecipeBuilderView() {
   const handleMealImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setImageFile(file);
       const reader = new FileReader();
       reader.onload = (ev) => setMealImagePreview(ev.target.result);
       reader.readAsDataURL(file);
@@ -113,23 +112,32 @@ export default function RecipeBuilderView() {
 
   const handleSave = () => {
     if (!form.name.trim()) return;
-    saveRecipe(
-      { ...form, ingredients: localIngredients },
-      {
-        onSuccess: () => {
-          addToast("Recipe saved successfully!", "success");
-          setTimeout(() => {
+    
+    const payload = { ...form, ingredients: localIngredients, imageFile };
+    const options = {
+      onSuccess: () => {
+        addToast(editMeal ? "Recipe updated successfully!" : "Recipe saved successfully!", "success");
+        setTimeout(() => {
+          if (!editMeal) {
             setForm({ name: "", category: "", price: "", time: "", description: "", fat: "", calories: "", protein: "", sugar: "" });
             setMealImagePreview(null);
+            setImageFile(null);
             setLocalIngredients([]);
-            resetMutation();
-          }, 2000);
-        },
-        onError: () => {
-          addToast("Failed to save recipe. Please try again.", "error");
-        }
+          }
+          resetCreate();
+          resetUpdate();
+        }, 2000);
+      },
+      onError: () => {
+        addToast(editMeal ? "Failed to update recipe. Please try again." : "Failed to save recipe. Please try again.", "error");
       }
-    );
+    };
+
+    if (editMeal) {
+      updateMeal({ id: editMeal.id || editMeal._id, data: payload }, options);
+    } else {
+      createMeal(payload, options);
+    }
   };
 
   const isFormComplete = 
@@ -144,9 +152,6 @@ export default function RecipeBuilderView() {
     form.sugar !== "" &&
     localIngredients.length > 0 &&
     mealImagePreview !== null;
-
-  if (loadIngredients && !editMeal) return <div><DashboardHeader title={editMeal ? "Edit Meal" : "Recipe Builder"} /><DashboardPageSkeleton /></div>;
-  if (errIngredients) return <div><DashboardHeader title={editMeal ? "Edit Meal" : "Recipe Builder"} /><ErrorState message="Failed to load recipe data." onRetry={() => window.location.reload()} /></div>;
 
   const pageTitle = editMeal ? `Editing: ${editMeal.name}` : "Recipe Builder";
   const pageSubtitle = editMeal
@@ -355,7 +360,7 @@ export default function RecipeBuilderView() {
                 { key: 'fat', label: 'Fat', color: 'text-blue-500', Icon: FiShare2 },
                 { key: 'calories', label: 'Calories', color: 'text-green-500', Icon: FiTarget },
                 { key: 'protein', label: 'Protein', color: 'text-blue-400', Icon: FiUser },
-                { key: 'sugar', label: 'Suger', color: 'text-orange-400', Icon: FiEye }
+                { key: 'sugar', label: 'Sugar', color: 'text-orange-400', Icon: FiEye }
               ].map(nut => (
                 <div key={nut.key} className="bg-white rounded-3xl pt-5 pb-6 px-4 flex flex-col items-center justify-center relative shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-gray-50/50">
                   <p className="text-[14px] font-medium text-[#1a1a1a] mb-3">{nut.label}</p>

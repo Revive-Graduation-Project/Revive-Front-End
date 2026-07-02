@@ -51,6 +51,15 @@ function IngredientModal({ isOpen, onClose, onSubmit, initialData }) {
     }
   }, [isOpen, initialData]);
 
+  useEffect(() => {
+    const blobUrl = formData.image;
+    return () => {
+      if (blobUrl?.startsWith("blob:")) {
+        URL.revokeObjectURL(blobUrl);
+      }
+    };
+  }, [formData.image]);
+
   if (!isOpen) return null;
 
   const validate = (field, value) => {
@@ -84,10 +93,13 @@ function IngredientModal({ isOpen, onClose, onSubmit, initialData }) {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setFormData((prev) => ({ ...prev, image: url }));
+    if (!file) return;
+    // Revoke previous blob URL before creating a new one
+    if (formData.image?.startsWith("blob:")) {
+      URL.revokeObjectURL(formData.image);
     }
+    const url = URL.createObjectURL(file);
+    setFormData((prev) => ({ ...prev, image: url }));
   };
 
   const handleBlur = (e) => {
