@@ -21,7 +21,7 @@ import {
   MenuManagement,
   Ingredients,
 } from "./pages";
-import { ProfileLayout, Orders, Rewards } from "./pages/Profile";
+import { ProfileLayout, ProfileOrders, Rewards } from "./pages/Profile";
 import { useAuthInit } from "./hooks/useAuthInit";
 import Menu from "./pages/Menu/Menu";
 import { useRestaurantInit } from "./hooks/useRestaurantInit";
@@ -63,9 +63,9 @@ export default function App() {
           <Route path="payment"   element={<Payment />} />
           <Route path="thanks"    element={<Thanks />} />
           
-          <Route path="profile" element={<ProtectedRoute><ProfileLayout/></ProtectedRoute>}>
+          <Route path="profile" element={<ProfileLayout/>}>
             <Route index element={<Profile />} />
-            <Route path="orders" element={<Orders />} />
+            <Route path="orders" element={<ProfileOrders />} />
             <Route path="rewards" element={<Rewards />} />
           </Route>
 

@@ -363,6 +363,13 @@ const useOrderStore = create(
           .getMergedOrders()
           .find((order) => String(order.id) === String(orderId));
 
+        if (!orderToCancel) {
+          return {
+            ok: false,
+            message: "Order not found.",
+          };
+        }
+
         if (!isOrderCancellable(orderToCancel)) {
           return {
             ok: false,

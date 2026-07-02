@@ -1,10 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { FaCheck, FaUtensils, FaBoxOpen, FaClock } from "react-icons/fa6";
-import { isOrderCancellable } from "../../../utils/orderHelpers";
+import { isOrderCancellable, formatOrderTime } from "../../../utils/orderHelpers";
 import OrderDetailsModal from "./OrderDetailsModal";
+import { toast } from "sonner";
 
 const OrderTracking = ({ order, onCancelOrder }) => {
   const [showOrderDetails, setShowOrderDetails] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   const steps = [
     { key: "pending", label: "Pending", icon: <FaClock /> },
@@ -84,17 +86,7 @@ const OrderTracking = ({ order, onCancelOrder }) => {
 
   const friendlyTime = useMemo(() => {
     if (order?.time) return order.time;
-    if (!order?.createdAt) return "11:45";
-    try {
-      const date = new Date(order.createdAt);
-      return date.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      });
-    } catch {
-      return "11:45";
-    }
+    return formatOrderTime(order?.createdAt, "11:45");
   }, [order?.time, order?.createdAt]);
 
   const estimatedDeliveryTime = useMemo(() => {
@@ -116,6 +108,19 @@ const OrderTracking = ({ order, onCancelOrder }) => {
       return "12:45";
     }
   }, [order?.time, order?.createdAt]);
+
+  const handleCancelOrder = async () => {
+    if (isCancelling) return;
+    
+    setIsCancelling(true);
+    try {
+      await onCancelOrder?.(order.id);
+    } catch (error) {
+      toast.error("Cancellation failed:", error.message || "Please try again.");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -334,10 +339,11 @@ const OrderTracking = ({ order, onCancelOrder }) => {
 
             {isOrderCancellable(order) ? (
               <button
-                onClick={() => onCancelOrder?.(order.id)}
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 px-4 rounded-xl transition-colors cursor-pointer text-sm shadow-md hover:shadow-lg"
+                onClick={handleCancelOrder}
+                disabled={isCancelling}
+                className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 px-4 rounded-xl transition-colors cursor-pointer text-sm shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Cancel Order
+                {isCancelling ? "Cancelling..." : "Cancel Order"}
               </button>
             ) : (
               <div

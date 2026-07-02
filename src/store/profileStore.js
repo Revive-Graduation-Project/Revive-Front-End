@@ -26,7 +26,7 @@ const useProfileStore = create(
           set({ user, loading: false, error: null });
           return user;
         } catch (error) {
-          set({ error, loading: false });
+          set({ error: error.message, loading: false });
           return null;
         }
       },
@@ -40,7 +40,7 @@ const useProfileStore = create(
           else set({ loading: false });
           return user;
         } catch (error) {
-          set({ error, loading: false });
+          set({ error: error.message, loading: false });
           return null;
         }
       },
@@ -53,8 +53,10 @@ const useProfileStore = create(
           if (user) set({ user, loading: false, error: null });
           return user;
         } catch (error) {
-          set({ error, loading: false });
+          set({ error: error.message, loading: false });
           return null;
+        } finally {
+          set({ loading: false });
         }
       },
 

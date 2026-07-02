@@ -11,6 +11,11 @@
   --color-orange: #ff9800;
 }
 
+@layer base {
+  button {
+    cursor: pointer;
+  }
+}
 html {
   font-family: "open-sans", sans-serif;
   line-height: 2;

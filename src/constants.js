@@ -58,6 +58,7 @@ export const WEIGHT_UNITS = ["kg", "lb"];
 export const NON_CANCELLABLE_ORDER_STATUSES = [
   "PREPARING",
   "READY",
+  "CANCELED",
 ];
 
 export const ACTIVE_TRACKING_ORDER_STATUSES = [

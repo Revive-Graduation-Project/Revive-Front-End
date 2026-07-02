@@ -49,5 +49,19 @@ export const mockOrders = [
     items: [
       { mealId: 2, name: "Chicken Salad", quantity: 1, price: 199.0 }
     ]
+  },
+  {
+    id: 1003,
+    userId: 1,
+    date: "Monday",
+    time: "5:45",
+    status: OrderStatus.PREPARING,
+    totalPrice: 199,
+    quantity: 40,
+    image: "/images/bowl.png",
+    createdAt: "2024-05-15T19:00:00Z",
+    items: [
+      { mealId: 2, name: "Chicken Salad", quantity: 1, price: 199.0 }
+    ]
   }
 ];

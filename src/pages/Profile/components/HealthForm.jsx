@@ -50,7 +50,7 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
       weightUnit: form.weightUnit || null,
       goal: form.goal || null,
       healthConditions: form.healthConditions || [],
-      phoneNumber: form.phoneNumber || null,
+      phoneNumber: form.phoneNumber?.trim() || null,
     };
 
     onSave(payload);
@@ -63,6 +63,7 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
           <label className="text-xs font-medium text-gray-600">Age</label>
           <input
             type="number"
+            min="0"
             value={form.age}
             onChange={update("age")}
             className="w-full mt-1 px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none transition-all"
@@ -114,6 +115,7 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
           <div className="flex gap-2 mt-1">
             <input
               type="number"
+              min="0"
               value={form.height}
               onChange={update("height")}
               className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none transition-all"
@@ -136,6 +138,7 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
           <label className="text-xs font-medium text-gray-600">Weight</label>
           <div className="flex gap-2 mt-1">
             <input
+              min="0"
               type="number"
               value={form.weight}
               onChange={update("weight")}
@@ -184,7 +187,7 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
                 const checked = form.healthConditions.includes(option);
                 return (
                   <label
-                    key={index}
+                    key={option}
                     className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-white transition-colors"
                   >
                     <button

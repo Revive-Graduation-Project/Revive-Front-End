@@ -132,7 +132,7 @@ const Rewards = () => {
 };
 
 /* SVG confetti background — purely decorative */
-const ConfettiBg = () => (
+const ConfettiBg = React.memo(() => (
   <svg
     width="100%"
     height="100%"
@@ -468,6 +468,6 @@ const ConfettiBg = () => (
       strokeLinecap="round"
     />
   </svg>
-);
+));
 
 export default Rewards;

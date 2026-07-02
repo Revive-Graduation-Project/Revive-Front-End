@@ -4,22 +4,35 @@ import OrderTracking from "./components/OrderTracking";
 import { useOrderStore } from "../../store";
 import {toast} from "sonner";
 import { LoadingSpinner } from "../../components";
+import { useShallow } from "zustand/shallow";
 
 
 export default function Orders() {
   const [activeTab, setActiveTab] = useState("history");
 
   const {
-    myOrders,
-    lastOrder,
-    myOrdersLoading,
-    myOrdersError,
-    fetchMyOrders,
-    cancelMyOrder,
-    getMergedOrders,
-    getGroupedOrders,
-    getTrackingOrder,
-  } = useOrderStore((state) => state);
+  myOrders,
+  lastOrder,
+  myOrdersLoading,
+  myOrdersError,
+  fetchMyOrders,
+  cancelMyOrder,
+  getMergedOrders,
+  getGroupedOrders,
+  getTrackingOrder,
+} = useOrderStore(
+  useShallow((state) => ({
+    myOrders: state.myOrders,
+    lastOrder: state.lastOrder,
+    myOrdersLoading: state.myOrdersLoading,
+    myOrdersError: state.myOrdersError,
+    fetchMyOrders: state.fetchMyOrders,
+    cancelMyOrder: state.cancelMyOrder,
+    getMergedOrders: state.getMergedOrders,
+    getGroupedOrders: state.getGroupedOrders,
+    getTrackingOrder: state.getTrackingOrder,
+  }))
+);
 
   useEffect(() => {
     fetchMyOrders();

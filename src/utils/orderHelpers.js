@@ -49,3 +49,14 @@ export const isOrderCancellable = (order) => {
   if (!order) return false;
   return !NON_CANCELLABLE_ORDER_STATUSES.includes(normalizeStatus(order.status));
 };
+
+export const formatOrderTime = (timestamp, fallback = "-") => {
+  if (!timestamp) return fallback;
+  try {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+  } catch (e) {
+    console.error("Error formatting time:", e);
+    return fallback;
+  }
+};

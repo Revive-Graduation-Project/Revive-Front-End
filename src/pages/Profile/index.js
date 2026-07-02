@@ -3,7 +3,7 @@
 
 export { default as Profile } from './Profile';
 export { default as ProfileLayout } from './ProfileLayout';
-export { default as Orders } from './Orders';
+export { default as ProfileOrders } from './ProfileOrders';
 export { default as Rewards } from './Rewards';
 export { default as OrderCard } from './components/OrderCard';
 export { default as OrderTracking } from './components/OrderTracking';

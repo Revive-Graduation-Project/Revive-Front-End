@@ -88,7 +88,7 @@ export default function InfoGrid({ user = {}, profile = {} }) {
           <div className="flex flex-wrap gap-2">
             {conditions.map((condition, index) => (
               <span
-                key={index}
+                key={condition}
                 className="px-3 py-1.5 rounded-full text-sm bg-white border border-orange-200 text-orange-700 shadow-sm"
               >
                 {condition}

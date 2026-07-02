@@ -1,6 +1,7 @@
 import React from "react";
 import { FaUtensils } from "react-icons/fa6";
 import { FiCheckCircle, FiXCircle, FiClock, FiHash } from "react-icons/fi";
+import { formatOrderTime } from "../../../utils/orderHelpers";
 
 
 const OrderCard = ({ order }) => {
@@ -42,20 +43,7 @@ const OrderCard = ({ order }) => {
     }
   };
 
-const date = new Date(order.createdAt);
-
-  const getFriendlyTime = () => {
-    if (order?.time) return order.time;
-    if (order?.createdAt) {
-      try {
-        const d = new Date(order.createdAt);
-        return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-      } catch (e) {
-        return "";
-      }
-    }
-    return "";
-  };
+  const friendlyTime = order?.time || formatOrderTime(order?.createdAt);
 
   return (
     <div
@@ -82,7 +70,7 @@ const date = new Date(order.createdAt);
 
         {/* Bottom row: Time + Quantity + Status */}
         <div className="flex items-center gap-4 text-gray-500">
-          <span className="text-sm">{getFriendlyTime()}</span>
+          <span className="text-sm">{friendlyTime}</span>
 
           {order.quantity && (
             <>
