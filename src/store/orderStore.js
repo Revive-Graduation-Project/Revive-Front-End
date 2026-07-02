@@ -9,6 +9,8 @@ import {
   pickTrackingOrder,
 } from "../utils/orderHelpers";
 import { MAX_QUANTITY, DELIVERY_FEE, SUBMIT_DELAY } from "../constants";
+import { placeOrder } from "../services/order.service";
+import queryClient from "../lib/queryClient";
 
 /**
  * ============================================================================
@@ -122,6 +124,7 @@ const useOrderStore = create(
         set({ error: null }); // Clear error on action start
         
         if (!isValidItem(item)) {
+          console.error("OrderStore: Invalid item data", item);
           set({ error: "Invalid item data" });
           return;
         }
@@ -422,7 +425,6 @@ const useOrderStore = create(
           }
 
           // Validation: Duplicate Order Prevention
-          // Generate a simple hash (stringified ID-Qty pairs)
           const currentHash = JSON.stringify(state.items.map(i => `${i.id}-${i.quantity}`));
           const lastHash = state.lastOrder ? JSON.stringify(state.lastOrder.items.map(i => `${i.id}-${i.quantity}`)) : null;
           
@@ -430,27 +432,33 @@ const useOrderStore = create(
             throw new Error("Wait! You just placed this exact order.");
           }
 
-          // Artificial delay to simulate network request
-          await new Promise((resolve) => setTimeout(resolve, SUBMIT_DELAY));
-
-          // Generate simulated Order ID (5 alphanumeric digits)
-          const orderId = Math.floor(10000 + Math.random() * 90000).toString();
-          
-          const newOrder = {
-             id: orderId,
-             date: new Date().toISOString(),
+          // Make real API request to place the order
+          const response = await placeOrder({
              items: [...state.items],
              totalAmount: state.totalAmount,
              deliveryFee: state.getDeliveryFee(),
              finalTotal: totalWithDelivery,
              customerDetails: state.customerDetails,
              paymentMethod: state.paymentMethod,
-             cardDetails: state.savedCard
+             note: state.note
+          });
+
+          const newOrder = {
+             id: response.data.id || Math.floor(10000 + Math.random() * 90000).toString(),
+             date: response.data.createdAt || new Date().toISOString(),
+             items: [...state.items],
+             totalAmount: state.totalAmount,
+             deliveryFee: state.getDeliveryFee(),
+             finalTotal: totalWithDelivery,
+             customerDetails: state.customerDetails,
+             paymentMethod: state.paymentMethod,
+             cardDetails: state.savedCard,
+             note: state.note
           };
 
           // Log to Payment Store for transaction history (PRD requirement)
           usePaymentStore.getState().addTransaction({
-             id: orderId,
+             id: newOrder.id,
              amount: totalWithDelivery,
              status: 'success'
           });
@@ -464,9 +472,13 @@ const useOrderStore = create(
           // Cleanup cart on success
           get().clearCart();
 
+          // Invalidate dashboard caches so the new order appears immediately
+          queryClient.invalidateQueries({ queryKey: ["kitchen"] });
+          queryClient.invalidateQueries({ queryKey: ["orders"] });
+
           return true;
         } catch (err) {
-          console.error("Order submission failed:", err);
+          console.error("[ORDER] submission failed:", err);
           set({ 
             loading: false, 
             error: err.message || "Failed to place order. Please try again." 

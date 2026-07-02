@@ -1,5 +1,6 @@
 import { Route, Routes, Navigate } from "react-router";
-import { AppLayout, AuthLayout } from "./Layout";
+import { AppLayout, AuthLayout, DashboardLayout } from "./Layout";
+import StaffRoute from "./components/StaffRoute";
 
 import {
   Home,
@@ -12,6 +13,13 @@ import {
   Favorites,
   StoreDebug,
   Profile,
+  Dashboard,
+  Orders,
+  RecipeBuilder,
+  ChefMenu,
+  LiveKitchen,
+  MenuManagement,
+  Ingredients,
 } from "./pages";
 import { ProfileLayout, Orders, Rewards } from "./pages/Profile";
 import { useAuthInit } from "./hooks/useAuthInit";
@@ -74,8 +82,27 @@ export default function App() {
 
         {/* Catch-all: redirect unknown URLs to Home */}
         <Route path="*" element={<Navigate to="/" replace />} />
+
+        {/* ── Dashboard Routes ──
+            Separate full-screen layout (no Navbar/Footer).
+            Protected: requires authentication (chef/admin).       */}
+        <Route
+          path="/dashboard"
+          element={
+            <StaffRoute>
+              <DashboardLayout />
+            </StaffRoute>
+          }
+        >
+          <Route index element={<Dashboard />} />
+          <Route path="orders" element={<Orders />} />
+          <Route path="recipe-builder" element={<RecipeBuilder />} />
+          <Route path="chef-menu" element={<ChefMenu />} />
+          <Route path="live-kitchen" element={<LiveKitchen />} />
+          <Route path="menu-management" element={<MenuManagement />} />
+          <Route path="ingredients" element={<Ingredients />} />
+        </Route>
       </Routes>
     </>
   );
 }
-
