@@ -1,8 +1,8 @@
-import { Link, NavLink } from "react-router";
+import { Link, NavLink, useLocation } from "react-router";
 import Cart from "../UI/Cart";
 import SearchBar from "./SearchBar";
 import { FaUserCircle } from "react-icons/fa";
-import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+import { MdOutlineKeyboardArrowDown, MdDashboard } from "react-icons/md";
 import { useState } from "react";
 import { useAuthStore } from "../../store";
 
@@ -19,7 +19,16 @@ const ALL_NAV_LINKS = [
   { to: "/favorites", label: "Favorites" },
 ];
 
-
+/* ─────────────────────────────────────────────
+   More dropdown links
+   Links that live permanently inside the "More"
+   dropdown because the main nav is already full.
+   The button label updates to reflect the active
+   link inside (e.g. "More" → "Profile").
+───────────────────────────────────────────── */
+const MORE_LINKS = [
+  { to: "/profile", label: "Profile", icon: FaUserCircle },
+];
 
 /**
  * Shared className resolver for NavLink — keeps active styling DRY.
@@ -38,11 +47,35 @@ function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
-  // Read authentication state — used only for Login vs Profile button
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  // Read authentication state & user
+  const { isAuthenticated, user } = useAuthStore();
+  const userRole = user?.role?.toLowerCase();
+  const isChief = userRole === "chief" || userRole === "chef";
+  const isStaff = user && ["admin", "manager", "chief", "chef"].includes(userRole);
+
+  // Dynamically include Dashboard (or Live Kitchen for Chief) if user has staff role
+  const dynamicMoreLinks = [
+    ...MORE_LINKS,
+    ...(isStaff
+      ? [
+          {
+            to: isChief ? "/dashboard/live-kitchen" : "/dashboard",
+            label: isChief ? "Live Kitchen" : "Dashboard",
+            icon: MdDashboard,
+          },
+        ]
+      : []),
+  ];
+
+  // Detect if the current route matches any link inside the More dropdown
+  // so the button label can reflect the active page (e.g. "More" → "Profile")
+  const location = useLocation();
+  const activeMoreLink = dynamicMoreLinks.find((l) =>
+    location.pathname.startsWith(l.to)
+  );
 
   return (
-    <nav className="bg-gray-50 fixed inset-x-0 z-10 flex flex-wrap p-3 gap-y-3">
+    <nav className="bg-gray-50 fixed inset-x-0 z-30 flex flex-wrap p-3 gap-y-3">
 
       {/* ── Top bar: Logo · Search · Actions ── */}
       <div className="w-full flex flex-wrap p-3 gap-y-2 justify-around items-center">
@@ -50,10 +83,10 @@ function Navbar() {
         {/* Branding */}
         <h1 className="grow text-center">
           <Link to="/">
-            <span className="branding-title text-3xl md:text-4xl text-(--color-orange)">
+            <span className="branding-title text-3xl md:text-4xl text-orange">
               Re
             </span>
-            <span className="branding-title text-3xl md:text-4xl text-(--color-green)">
+            <span className="branding-title text-3xl md:text-4xl text-green">
               vive
             </span>
           </Link>
@@ -69,7 +102,7 @@ function Navbar() {
             /* ── Authenticated: Profile icon ── */
             <Link
               to="/profile"
-              className="text-(--color-green) flex items-center gap-x-2 group transition-colors"
+              className="text-green flex items-center gap-x-2 group transition-colors"
               title="View your profile"
             >
               <FaUserCircle className="text-3xl transform group-hover:rotate-360 duration-500" />
@@ -79,7 +112,7 @@ function Navbar() {
             /* ── Guest: Login link ── */
             <Link
               to="/auth/login"
-              className="text-(--color-green) flex items-center gap-x-2 group transition-colors"
+              className="text-green flex items-center gap-x-2 group transition-colors"
             >
               <FaUserCircle className="text-3xl transform group-hover:rotate-360 duration-500" />
               <span className="text-xl tracking-tight font-medium">Login</span>
@@ -111,12 +144,13 @@ function Navbar() {
             <button
               onClick={() => setIsMoreOpen((prev) => !prev)}
               className={`${
-                isMoreOpen ? "active-navlink" : ""
+                activeMoreLink || isMoreOpen ? "active-navlink" : ""
               } hover:text-green p-2 flex items-center gap-1 cursor-pointer`}
               aria-haspopup="true"
               aria-expanded={isMoreOpen}
             >
-              More
+              {/* Show active link name when inside a More route, otherwise "More" */}
+              {activeMoreLink ? activeMoreLink.label : "More"}
               <MdOutlineKeyboardArrowDown
                 className={`text-xl text-green transition-transform duration-300 ${
                   isMoreOpen ? "rotate-180" : ""
@@ -130,12 +164,24 @@ function Navbar() {
                 isMoreOpen ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
               } overflow-hidden transition-all duration-300 ease-in-out
                 md:absolute md:left-0 md:top-full md:mt-1
-                md:bg-white md:rounded-xl md:shadow-lg md:border md:border-gray-100 md:min-w-[200px]`}
+                md:bg-white md:rounded-xl md:shadow-lg md:border md:border-gray-100 md:min-w-50`}
             >
-              {/* change it later */}
-              <span className="block px-4 py-3 text-gray-400 italic text-base">
-                this contains secondary sections
-              </span>
+              {/* Map over dynamicMoreLinks */}
+              {dynamicMoreLinks.map(({ to, label, icon: Icon }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) =>
+                    `flex items-center gap-2 px-4 py-3 text-base hover:bg-gray-50 transition-colors ${
+                      isActive ? "text-green font-semibold" : "text-gray-700"
+                    }`
+                  }
+                  onClick={() => setIsMoreOpen(false)}
+                >
+                  {Icon ? <Icon className="text-lg text-green" /> : <FaUserCircle className="text-lg text-green" />}
+                  {label}
+                </NavLink>
+              ))}
             </div>
           </div>
 

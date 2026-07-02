@@ -15,17 +15,6 @@ function ProtectedRoute({ children }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      // Brief delay so the user can read the message before being redirected
-      const timer = setTimeout(() => {
-        navigate("/auth/login", { replace: true });
-      }, 2000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [isAuthenticated, navigate]);
-
   // Show friendly message while counting down to redirect
   if (!isAuthenticated) {
     return (
@@ -34,9 +23,10 @@ function ProtectedRoute({ children }) {
         <h2 className="text-2xl font-semibold text-gray-800">
           Please log in to continue
         </h2>
-        <p className="text-gray-500 text-sm">
-          Redirecting you to the login page…
-        </p>
+        <div className="flex gap-4">
+          <button className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 cursor-pointer" onClick={() => navigate("/auth/login")}>Login</button>
+          <button className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 cursor-pointer" onClick={() => navigate("/")}>Back to Home</button>
+        </div>
       </div>
     );
   }
@@ -45,3 +35,4 @@ function ProtectedRoute({ children }) {
 }
 
 export default ProtectedRoute;
+

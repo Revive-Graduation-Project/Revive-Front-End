@@ -1,6 +1,12 @@
 @import "tailwindcss";
 
-:root {
+
+@layer base {
+  button {
+    cursor: pointer;
+  }
+}
+@theme {
   --color-green: #2e7d32;
   --color-orange: #ff9800;
 }
@@ -9,9 +15,9 @@ html {
   font-family: "open-sans", sans-serif;
   line-height: 2;
 }
+  
 .branding-title {
   font-weight: 700;
-  font-style: bold;
   font-variation-settings: "wdth" 100;
   letter-spacing: -2px;
 }
@@ -64,6 +70,23 @@ html {
   }
 }
 
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 .animate-float-slow {
   animation: float-slow 12s infinite ease-in-out;
 }
@@ -74,4 +97,34 @@ html {
 
 .animate-float-fast {
   animation: float-fast 8s infinite ease-in-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out forwards;
 }
