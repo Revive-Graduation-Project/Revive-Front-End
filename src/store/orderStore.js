@@ -1,6 +1,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import usePaymentStore from "./paymentStore";
+import { cancelOrder, getMyOrders } from "../services/order.service";
+import {
+  groupOrdersByDate,
+  isOrderCancellable,
+  mergeOrdersWithLastOrder,
+  pickTrackingOrder,
+} from "../utils/orderHelpers";
 import { MAX_QUANTITY, DELIVERY_FEE, SUBMIT_DELAY } from "../constants";
 import { placeOrder } from "../services/order.service";
 import queryClient from "../lib/queryClient";
@@ -90,6 +97,14 @@ const useOrderStore = create(
       
       /** @type {Object | null} Mirror of the most recently successful order */
       lastOrder: null,
+
+      /** @type {Array} Orders fetched for profile/history views */
+      myOrders: [],
+      /** @type {boolean} Loading state for profile order history */
+      myOrdersLoading: false,
+      /** @type {string | null} Error for profile order history */
+      myOrdersError: null,
+
       /** @type {boolean} Global loading state for async operations */
       loading: false,
       /** @type {string | null} Global error message for validation or API failures */
@@ -307,6 +322,86 @@ const useOrderStore = create(
 
       /** Manually clear the global error state */
       clearError: () => set({ error: null }),
+
+      clearMyOrdersError: () => set({ myOrdersError: null }),
+
+      getMergedOrders: () => {
+        const { myOrders, lastOrder } = get();
+        return mergeOrdersWithLastOrder(myOrders, lastOrder);
+      },
+
+      getGroupedOrders: () => groupOrdersByDate(get().getMergedOrders()),
+
+      getTrackingOrder: () => {
+        const { lastOrder } = get();
+        return pickTrackingOrder(get().getMergedOrders(), lastOrder);
+      },
+
+      fetchMyOrders: async () => {
+        set({ myOrdersLoading: true, myOrdersError: null });
+
+        try {
+          const res = await getMyOrders();
+          set({
+            myOrders: res?.data || [],
+            myOrdersLoading: false,
+            myOrdersError: null,
+          });
+          return res?.data || [];
+        } catch (error) {
+          console.error("Failed to fetch user orders:", error);
+          set({
+            myOrdersLoading: false,
+            myOrdersError: "Could not load your recent orders.",
+          });
+          return null;
+        }
+      },
+
+      cancelMyOrder: async (orderId) => {
+        const orderToCancel = get()
+          .getMergedOrders()
+          .find((order) => String(order.id) === String(orderId));
+
+        if (!orderToCancel) {
+          return {
+            ok: false,
+            message: "Order not found.",
+          };
+        }
+
+        if (!isOrderCancellable(orderToCancel)) {
+          return {
+            ok: false,
+            message:
+              "This order can no longer be cancelled because preparation has already started.",
+          };
+        }
+
+        set({ myOrdersLoading: true, myOrdersError: null });
+
+        try {
+          await cancelOrder(orderId);
+          const orders = await get().fetchMyOrders();
+          return {
+            ok: true,
+            message: `Order #${orderId} has been successfully cancelled.`,
+            orders,
+          };
+        } catch (error) {
+          console.error("Failed to cancel order:", error);
+          set({
+            myOrdersLoading: false,
+            myOrdersError:
+              "An error occurred while cancelling your order. Please try again.",
+          });
+          return {
+            ok: false,
+            message:
+              "An error occurred while cancelling your order. Please try again.",
+          };
+        }
+      },
 
       /**
        * Submits the final order.

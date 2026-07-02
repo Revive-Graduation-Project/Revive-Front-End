@@ -147,12 +147,14 @@ const useAuthStore = create(
               token: data.token,
               isAuthenticated: true,
               expiresAt: data.expiresAt,
+              loading: false,
             });
             return data.token;
           } catch (error) {
             // Refresh failed (cookie expired, invalid, etc.)
             set({ error });
-            logout(); // Clear everything
+            await logout(); // Clear everything and ensure loading is reset
+            return null;
           }
         }
         set({ loading: false });
