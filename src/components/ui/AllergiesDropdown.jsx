@@ -1,5 +1,5 @@
 import { HEALTH_CONDITIONS } from "../../constants";
-function AllergiesDropdown() {
+function AllergiesDropdown({ selected = [], onChange }) {
 
   const handleToggle = (option) => {
     if (option === "None") {

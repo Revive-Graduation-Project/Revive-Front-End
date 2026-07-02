@@ -2,7 +2,7 @@ import { Link, NavLink, useLocation } from "react-router";
 import Cart from "../UI/Cart";
 import SearchBar from "./SearchBar";
 import { FaUserCircle } from "react-icons/fa";
-import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+import { MdOutlineKeyboardArrowDown, MdDashboard } from "react-icons/md";
 import { useState } from "react";
 import { useAuthStore } from "../../store";
 
@@ -27,7 +27,7 @@ const ALL_NAV_LINKS = [
    link inside (e.g. "More" → "Profile").
 ───────────────────────────────────────────── */
 const MORE_LINKS = [
-  { to: "/profile", label: "Profile" },
+  { to: "/profile", label: "Profile", icon: FaUserCircle },
 ];
 
 /**
@@ -47,13 +47,30 @@ function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
-  // Read authentication state — used only for Login vs Profile button
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  // Read authentication state & user
+  const { isAuthenticated, user } = useAuthStore();
+  const userRole = user?.role?.toLowerCase();
+  const isChief = userRole === "chief" || userRole === "chef";
+  const isStaff = user && ["admin", "manager", "chief", "chef"].includes(userRole);
+
+  // Dynamically include Dashboard (or Live Kitchen for Chief) if user has staff role
+  const dynamicMoreLinks = [
+    ...MORE_LINKS,
+    ...(isStaff
+      ? [
+          {
+            to: isChief ? "/dashboard/live-kitchen" : "/dashboard",
+            label: isChief ? "Live Kitchen" : "Dashboard",
+            icon: MdDashboard,
+          },
+        ]
+      : []),
+  ];
 
   // Detect if the current route matches any link inside the More dropdown
   // so the button label can reflect the active page (e.g. "More" → "Profile")
   const location = useLocation();
-  const activeMoreLink = MORE_LINKS.find((l) =>
+  const activeMoreLink = dynamicMoreLinks.find((l) =>
     location.pathname.startsWith(l.to)
   );
 
@@ -149,8 +166,8 @@ function Navbar() {
                 md:absolute md:left-0 md:top-full md:mt-1
                 md:bg-white md:rounded-xl md:shadow-lg md:border md:border-gray-100 md:min-w-50`}
             >
-              {/* Map over MORE_LINKS — add future links to the array above */}
-              {MORE_LINKS.map(({ to, label }) => (
+              {/* Map over dynamicMoreLinks */}
+              {dynamicMoreLinks.map(({ to, label, icon: Icon }) => (
                 <NavLink
                   key={to}
                   to={to}
@@ -161,7 +178,7 @@ function Navbar() {
                   }
                   onClick={() => setIsMoreOpen(false)}
                 >
-                  <FaUserCircle className="text-lg text-green" />
+                  {Icon ? <Icon className="text-lg text-green" /> : <FaUserCircle className="text-lg text-green" />}
                   {label}
                 </NavLink>
               ))}
