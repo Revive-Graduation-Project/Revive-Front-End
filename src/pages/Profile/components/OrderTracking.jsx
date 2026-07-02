@@ -86,16 +86,16 @@ const OrderTracking = ({ order, onCancelOrder }) => {
 
   const friendlyTime = useMemo(() => {
     if (order?.time) return order.time;
-    return formatOrderTime(order?.createdAt, "11:45");
+    return order?.createdAt ? formatOrderTime(order.createdAt) : "--:--";
   }, [order?.time, order?.createdAt]);
 
   const estimatedDeliveryTime = useMemo(() => {
     if (order?.time) {
       const [hours, minutes] = order.time.split(":").map(Number);
       const newHours = (hours + 1) % 24;
-      return `${newHours}:${minutes.toString().padStart(2, "0")}`;
+      return `${newHours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
     }
-    if (!order?.createdAt) return "12:45";
+    if (!order?.createdAt) return "--:--";
     try {
       const date = new Date(order.createdAt);
       date.setHours(date.getHours() + 1);
@@ -105,7 +105,7 @@ const OrderTracking = ({ order, onCancelOrder }) => {
         hour12: true,
       });
     } catch {
-      return "12:45";
+      return "--:--";
     }
   }, [order?.time, order?.createdAt]);
 
@@ -132,7 +132,7 @@ const OrderTracking = ({ order, onCancelOrder }) => {
               Last Order
             </h3>
             <p className="text-sm text-gray-500 mt-0.5">
-              Order #{order?.id || "1054"} . placed at {friendlyTime} .
+              Order #{order?.id || "N/A"} . placed at {friendlyTime} .
             </p>
           </div>
           <div
