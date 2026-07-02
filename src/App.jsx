@@ -1,5 +1,6 @@
 import { Route, Routes, Navigate } from "react-router";
 import { AppLayout, AuthLayout, DashboardLayout } from "./Layout";
+import Customization from "./pages/customization/Customization";
 import StaffRoute from "./components/StaffRoute";
 
 import {
@@ -51,10 +52,10 @@ export default function App() {
             Home and Menu are PUBLIC — no auth required.
             All other routes are PROTECTED via ProtectedRoute. */}
         <Route path="/" element={<AppLayout />}>
-
           {/* Public routes */}
           <Route index element={<Home />} />
           <Route path="menu" element={<Menu />} />
+          <Route path="customize" element={<Customization />} />
 
           {/* Protected routes — ProtectedRoute shows a message + redirects to login if not authenticated */}
           <Route path="favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
@@ -68,12 +69,11 @@ export default function App() {
             <Route path="orders" element={<ProfileOrders />} />
             <Route path="rewards" element={<Rewards />} />
           </Route>
-
         </Route>
 
         {/* Auth Routes — always accessible */}
         <Route path="/auth" element={<AuthLayout />}>
-          <Route path="login"  element={<Login />} />
+          <Route path="login" element={<Login />} />
           <Route path="signup" element={<Signup />} />
         </Route>
 
