@@ -27,7 +27,7 @@ function DashboardSidebar() {
   const isChief = userRole === "chief" || userRole === "chef";
 
   const visibleNavItems = isChief
-    ? navItems.filter((item) => item.to === "/dashboard/live-kitchen")
+    ? navItems.filter((item) => item.to === "/dashboard/live-kitchen" || item.to === "/dashboard/orders")
     : navItems;
 
   const handleLogout = () => {

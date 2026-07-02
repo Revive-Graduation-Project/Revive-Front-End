@@ -19,8 +19,9 @@ function DashboardLayout() {
   const userRole = user?.role?.toLowerCase();
   const isChief = userRole === "chief" || userRole === "chef";
 
-  // Restrict Chief to Live Kitchen only
-  if (isChief && !location.pathname.includes("/live-kitchen")) {
+  // Restrict Chief to Live Kitchen and Orders only
+  const isAllowedForChief = location.pathname.includes("/live-kitchen") || location.pathname.includes("/orders");
+  if (isChief && !isAllowedForChief) {
     return <Navigate to="/dashboard/live-kitchen" replace />;
   }
 
