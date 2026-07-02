@@ -164,7 +164,7 @@ const useAuthStore = create(
               token: data.token,
               user: rawUser.id != null && rawUser.email ? rawUser : get().user,
               isAuthenticated: true,
-              expiresAt: Date.now() + TOKEN_LIFETIME,
+              expiresAt: data.expiresAt,
               loading: false,
             });
 

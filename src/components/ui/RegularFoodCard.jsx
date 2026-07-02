@@ -131,7 +131,7 @@ const RegularFoodCard = ({ meal }) => {
               addItem({
                 id: meal.id,
                 name,
-                price: displayPrice,
+                price: parseFloat(displayPrice),
                 imageUrl,
               })
             }

@@ -27,7 +27,8 @@ export const ActivityLevel = {
 
 export const OrderStatus = {
   PENDING: "PENDING",
+  CONFIRMED: "CONFIRMED",
+  PREPARING: "PREPARING",
   READY: "READY",
-  DELIVERED: "DELIVERED",
   CANCELED: "CANCELED",
 };

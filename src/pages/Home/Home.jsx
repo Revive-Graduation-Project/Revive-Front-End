@@ -3,7 +3,6 @@ import AboutUs from "./Sections/AboutUs";
 import FAQSection from "./Sections/FAQSection";
 import Hero from "./Sections/Hero";
 import PopularMenus from "./Sections/PopularMenus";
-
 import SpecialOffer from "./Sections/SpecialOffer";
 import SuggestedMeals from "./Sections/SuggestedMeals";
 import Testimonials from "./Sections/Testimonials";
@@ -29,8 +28,6 @@ export default function Home() {
 
         {/* Popular Meals — always visible */}
         <PopularMenus />
-
-
         <SpecialOffer />
         <AboutUs />
         <FAQSection />

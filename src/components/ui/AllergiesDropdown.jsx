@@ -1,13 +1,5 @@
-function AllergiesDropdown({ selected = [], onChange }) {
-  const options = [
-    "None",
-    "Diabetes",
-    "High blood pressure",
-    "High cholesterol",
-    "Kidney or liver condition",
-    "Gluten intolerance / Celiac",
-    "Lactose intolerance",
-  ];
+import { HEALTH_CONDITIONS } from "../../constants";
+function AllergiesDropdown() {
 
   const handleToggle = (option) => {
     if (option === "None") {
@@ -32,7 +24,7 @@ function AllergiesDropdown({ selected = [], onChange }) {
 
       <div className="border border-orange rounded-2xl p-4">
         <div className="grid grid-cols-1 gap-2 text-sm">
-          {options.map((option, index) => (
+          {HEALTH_CONDITIONS.map((option, index) => (
             <label
               key={index}
               className="flex items-center gap-2 cursor-pointer"
