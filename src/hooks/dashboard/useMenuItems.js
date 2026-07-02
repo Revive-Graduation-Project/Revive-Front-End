@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getMenuCategories, getMenuItems, deleteMenuItem, updateMenuItem, createMenuItem, saveRecipe, getRecipeIngredients } from "../../services/dashboardService";
+import { getMenuCategories, getMenuItems, deleteMenuItem, updateMenuItem, createMenuItem, saveRecipe, getRecipeIngredients, uploadMealImage } from "../../services/dashboardService";
 
 export const menuKeys = {
   all:         ["menu"],
@@ -48,7 +48,34 @@ export function useDeleteMenuItem() {
 export function useUpdateMenuItem() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }) => updateMenuItem(id, data),
+    mutationFn: async ({ id, data }) => {
+      const payload = {
+        name: data.name,
+        description: data.description || "",
+        price: parseFloat(data.price),
+        category: data.category,
+        ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],
+        time: data.time || "",
+        fat: data.fat || "",
+        calories: data.calories || "",
+        protein: data.protein || "",
+        sugar: data.sugar || "",
+      };
+
+      const res = await updateMenuItem(id, payload);
+
+      // Image upload is a partial-success step: a failed upload should not
+      // roll back the already-committed meal update.
+      if (data.imageFile) {
+        try {
+          await uploadMealImage(id, data.imageFile);
+        } catch (imgErr) {
+          console.warn("[useUpdateMenuItem] Image upload failed (meal saved):", imgErr);
+        }
+      }
+
+      return res;
+    },
     onSettled:  () => qc.invalidateQueries({ queryKey: menuKeys.all }),
   });
 }
@@ -57,8 +84,35 @@ export function useUpdateMenuItem() {
 export function useCreateMenuItem() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: createMenuItem,
-    onSettled:  () => qc.invalidateQueries({ queryKey: menuKeys.all }),
+    mutationFn: async (data) => {
+      const payload = {
+        name: data.name,
+        description: data.description || "",
+        price: parseFloat(data.price),
+        category: data.category,
+        ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],
+        time: data.time || "",
+        fat: data.fat || "",
+        calories: data.calories || "",
+        protein: data.protein || "",
+        sugar: data.sugar || "",
+      };
+
+      const meal = await createMenuItem(payload);
+
+      // Image upload is a partial-success step: a failed upload should not
+      // roll back the already-committed meal create.
+      if (data.imageFile && meal && (meal.id || meal._id)) {
+        try {
+          await uploadMealImage(meal.id || meal._id, data.imageFile);
+        } catch (imgErr) {
+          console.warn("[useCreateMenuItem] Image upload failed (meal saved):", imgErr);
+        }
+      }
+
+      return meal;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: menuKeys.all }),
   });
 }
 

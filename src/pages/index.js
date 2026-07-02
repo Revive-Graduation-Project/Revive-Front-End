@@ -7,6 +7,7 @@ export { default as Payment } from "./OrderFlow/Payment";
 export { default as Thanks } from "./OrderFlow/Thanks";
 export { default as StoreDebug } from "./StoreDebug";
 export { default as Favorites } from "./Favorites/Favorites";
+export { Profile } from "./Profile";
 
 // Dashboard pages
 export { default as Dashboard } from "./Dashboard/Dashboard";

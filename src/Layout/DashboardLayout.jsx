@@ -1,7 +1,8 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation, Navigate } from "react-router-dom";
 import DashboardSidebar from "../components/Dashboard/DashboardSidebar";
 import { useDashboardRealtime } from "../hooks/dashboard/useDashboardRealtime";
 import { ToastContainer } from "../components/Dashboard/shared/useToast";
+import useAuthStore from "../store/authStore";
 
 /**
  * DashboardLayout
@@ -12,6 +13,16 @@ import { ToastContainer } from "../components/Dashboard/shared/useToast";
 function DashboardLayout() {
   // Initialize real-time WebSocket connection for all dashboard views
   useDashboardRealtime();
+  const user = useAuthStore((s) => s.user);
+  const location = useLocation();
+
+  const userRole = user?.role?.toLowerCase();
+  const isChief = userRole === "chief" || userRole === "chef";
+
+  // Restrict Chief to Live Kitchen only
+  if (isChief && !location.pathname.includes("/live-kitchen")) {
+    return <Navigate to="/dashboard/live-kitchen" replace />;
+  }
 
   return (
     <div className="flex min-h-screen bg-[#f5ecdc]" style={{ fontFamily: "'DM Sans', sans-serif" }}>

@@ -60,18 +60,13 @@ export const MOCK_HANDLERS = [
   },
   {
     method: "post",
-    match: (url) => url.endsWith("/auth/register"),
-    handler: (config) => {
-      const body = JSON.parse(config.data || "{}");
-      return {
-        status: 201,
-        data: {
-          token: MOCK_TOKEN,
-          expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
-          user: { id: 99, ...body, role: "CLIENT" },
-        },
-      };
-    },
+    match: (url) => url.endsWith("/auth/signup"),
+    handler: () => ({
+      status: 200,
+      data: {
+        message: "User registered successfully. Profile creation is pending.",
+      },
+    }),
   },
   {
     method: "post",
@@ -147,6 +142,13 @@ export const MOCK_HANDLERS = [
     },
   },
   {
+    method: "post",
+    match: (url) => url.match(/\/menu\/\d+\/image/),
+    handler: () => {
+      return { status: 200, data: { success: true } };
+    },
+  },
+  {
     method: "delete",
     match: (url) => url.match(/\/menu\/\d+/),
     handler: () => ({ status: 200, data: { message: "Meal deleted" } }),
@@ -202,6 +204,7 @@ export const MOCK_HANDLERS = [
       };
       dash.mockKitchenOrders.queue.push(kitchenEntry);
       dash.saveMock("kitchenOrders", dash.mockKitchenOrders);
+      
       console.log('[MOCK] POST /orders — pushed to kitchen queue:', kitchenEntry);
       console.log('[MOCK] kitchen queue is now:', dash.mockKitchenOrders.queue.length, 'items');
 
@@ -424,6 +427,96 @@ export const MOCK_HANDLERS = [
     
     return { status: 200, data: { success: true } };
   } },
+
+  // ──────────────────────────────────────────────
+  // KITCHEN SERVICE (Tickets + Chefs)
+  // ──────────────────────────────────────────────
+  { method: "get",   match: (url) => url.endsWith("/api/kitchen/tickets/active"), handler: () => {
+    const saved = localStorage.getItem("mock_kitchenOrders");
+    const kitchenOrders = saved ? JSON.parse(saved) : dash.mockKitchenOrders;
+    
+    // Dynamically generate tickets from the Live Kitchen Board source of truth
+    const tickets = [];
+    const mapCol = (colName, statusName) => {
+      if (!kitchenOrders[colName]) return;
+      kitchenOrders[colName].forEach((o, i) => {
+        tickets.push({
+          id: o.id.replace('#', ''),          // numeric ticket id
+          orderId: o.id.replace('#', ''),     // rendered as #{ticket.orderId} — no double prefix
+          status: statusName,
+          chefDisplayName: o.assignedChef || (o.startedAt ? "Chef John" : null),
+          assignedChefId: o.assignedChefId || (o.startedAt ? 1 : null),
+          createdAt: o.createdAt || new Date(Date.now() - (i*5 + 2) * 60000).toISOString()
+        });
+      });
+    };
+    
+    mapCol("queue", "Queue");
+    mapCol("preparing", "Preparing");
+    mapCol("ready", "Ready");
+    mapCol("done", "Done");
+    
+    return { status: 200, data: tickets };
+  }},
+  { method: "patch", match: (url) => url.match(/\/api\/kitchen\/tickets\/[\w-]+\/status/), handler: (config) => {
+    const id = config.url.split("/")[4];
+    const { status } = JSON.parse(config.data || "{}"); // e.g. "Preparing"
+    
+    const targetStatus = status.toLowerCase(); // "preparing"
+    
+    // Find the Kanban board patch handler and invoke it directly to ensure perfect sync
+    const handler = MOCK_HANDLERS.find(h => h.method === "patch" && h.match("/kitchen/orders/123/status"));
+    if (handler) {
+      handler.handler({
+        ...config,
+        url: `/kitchen/orders/${id}/status`,
+        data: JSON.stringify({ status: targetStatus })
+      });
+    }
+    
+    return { status: 200, data: { success: true } };
+  }},
+  { method: "get",   match: (url) => url.endsWith("/api/kitchen/chefs"), handler: () => {
+    const saved = localStorage.getItem("mock_kitchenChefs");
+    const chefs = saved ? JSON.parse(saved) : dash.mockChefs;
+    return { status: 200, data: chefs };
+  }},
+  { method: "patch", match: (url) => url.match(/\/api\/kitchen\/chefs\/\d+\/status/), handler: (config) => {
+    const id = parseInt(config.url.split("/")[4], 10);
+    const { status } = JSON.parse(config.data || "{}");
+    const saved = localStorage.getItem("mock_kitchenChefs");
+    const chefs = saved ? JSON.parse(saved) : dash.mockChefs;
+    const chef = chefs.find(c => c.id === id);
+    if (chef) {
+      chef.status = status;
+      dash.saveMock("kitchenChefs", chefs);
+    }
+    return { status: 200, data: { success: true } };
+  }},
+  { method: "patch", match: (url) => url.match(/\/api\/kitchen\/chefs\/\d+\/station/), handler: (config) => {
+    const id = parseInt(config.url.split("/")[4], 10);
+    const { station } = JSON.parse(config.data || "{}");
+    const saved = localStorage.getItem("mock_kitchenChefs");
+    const chefs = saved ? JSON.parse(saved) : dash.mockChefs;
+    const chef = chefs.find(c => c.id === id);
+    if (chef) {
+      chef.station = station;
+      dash.saveMock("kitchenChefs", chefs);
+    }
+    return { status: 200, data: { success: true } };
+  }},
+  { method: "patch", match: (url) => url.match(/\/api\/kitchen\/chefs\/\d+\/display-name/), handler: (config) => {
+    const id = parseInt(config.url.split("/")[4], 10);
+    const { displayName } = JSON.parse(config.data || "{}");
+    const saved = localStorage.getItem("mock_kitchenChefs");
+    const chefs = saved ? JSON.parse(saved) : dash.mockChefs;
+    const chef = chefs.find(c => c.id === id);
+    if (chef) {
+      chef.displayName = displayName;
+      dash.saveMock("kitchenChefs", chefs);
+    }
+    return { status: 200, data: { success: true } };
+  }},
 
   // ──────────────────────────────────────────────
   // MENU MANAGEMENT (uploads)

@@ -12,6 +12,7 @@ import {
   Thanks,
   Favorites,
   StoreDebug,
+  Profile,
   Dashboard,
   Orders,
   RecipeBuilder,
@@ -20,6 +21,7 @@ import {
   MenuManagement,
   Ingredients,
 } from "./pages";
+import { ProfileLayout, ProfileOrders, Rewards } from "./pages/Profile";
 import { useAuthInit } from "./hooks/useAuthInit";
 import Menu from "./pages/Menu/Menu";
 import { useRestaurantInit } from "./hooks/useRestaurantInit";
@@ -47,7 +49,7 @@ export default function App() {
         {/* ── App Routes ──
             AppLayout (Navbar + Footer) wraps ALL app pages.
             Home and Menu are PUBLIC — no auth required.
-            All other routes are PROTECTED via ProtectedRoute.        */}
+            All other routes are PROTECTED via ProtectedRoute. */}
         <Route path="/" element={<AppLayout />}>
 
           {/* Public routes */}
@@ -60,8 +62,12 @@ export default function App() {
           <Route path="checkout"  element={<Checkout />} />
           <Route path="payment"   element={<Payment />} />
           <Route path="thanks"    element={<Thanks />} />
-          {/* remove the text when the profile is ready */}
-          <Route path="profile"   element={<ProtectedRoute><div className="min-h-screen flex items-center justify-center text-xl text-gray-500">Profile page coming soon</div></ProtectedRoute>} />
+          
+          <Route path="profile" element={<ProtectedRoute><ProfileLayout /></ProtectedRoute>}>
+            <Route index element={<Profile />} />
+            <Route path="orders" element={<ProfileOrders />} />
+            <Route path="rewards" element={<Rewards />} />
+          </Route>
 
         </Route>
 

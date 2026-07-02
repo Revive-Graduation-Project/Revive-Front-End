@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
+
 @layer base {
   button {
     cursor: pointer;
   }
 }
-
-:root {
+@theme {
   --color-green: #2e7d32;
   --color-orange: #ff9800;
 }
@@ -15,9 +15,9 @@ html {
   font-family: "open-sans", sans-serif;
   line-height: 2;
 }
+  
 .branding-title {
   font-weight: 700;
-  font-style: bold;
   font-variation-settings: "wdth" 100;
   letter-spacing: -2px;
 }
@@ -97,6 +97,28 @@ html {
 
 .animate-float-fast {
   animation: float-fast 8s infinite ease-in-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
 }
 
 .animate-shimmer {

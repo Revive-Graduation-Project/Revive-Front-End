@@ -2,34 +2,31 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useAuthStore } from "../store";
 
+/** Roles allowed to access the dashboard */
+const STAFF_ROLES = ["admin", "manager", "chief", "chef"];
+
 /**
  * StaffRoute
  *
- * Wraps routes that require staff privileges (e.g., chefs, admins).
- * API-Ready: Uncomment the role check once the backend sends real user.role fields.
+ * Wraps routes that require staff privileges (admin, manager, chief).
+ * Redirects unauthenticated users to login.
+ * Redirects authenticated non-staff users (role = "user") back to home.
  */
 function StaffRoute({ children }) {
   const { isAuthenticated, user } = useAuthStore();
   const navigate = useNavigate();
 
+  const isStaff = user && STAFF_ROLES.includes(user.role?.toLowerCase());
+
   useEffect(() => {
-    // 1. Core Authentication Check
-    // (Manual navigation is now used via buttons below)
-
-    // 2. Role-Based Authorization Check
-    // --- API READY LOGIC ---
-    // TODO: Uncomment the block below once your backend connects and sends `user.role`.
-    
-    /*
-    if (user && user.role !== "chef" && user.role !== "admin") {
-      console.warn("Access Denied: User does not have staff privileges.");
-      navigate("/", { replace: true }); 
+    // If logged in but not staff, redirect to home
+    if (isAuthenticated && user && !isStaff) {
+      console.warn("Access Denied: User does not have staff privileges.", user.role);
+      navigate("/", { replace: true });
     }
-    */
-    
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated, user, isStaff, navigate]);
 
-  // Show friendly message while counting down to redirect for unauthenticated users
+  // Not logged in at all
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 text-center px-4">
@@ -45,13 +42,10 @@ function StaffRoute({ children }) {
     );
   }
 
-  // --- API READY LOGIC ---
-  // TODO: Once backend is connected, you can uncomment this hard render block to strictly prevent UI rendering for non-staff
-  /*
-  if (user && user.role !== "chef" && user.role !== "admin") {
-    return null; 
+  // Logged in but wrong role — block rendering while useEffect redirects
+  if (!isStaff) {
+    return null;
   }
-  */
 
   return children;
 }

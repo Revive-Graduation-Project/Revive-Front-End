@@ -187,6 +187,19 @@ export const mockKitchenIngredients = [
   { id: 5, name: "Caesar Dressing",  checked: false },
 ];
 
+export const mockKitchenTickets = [
+  { id: 1, orderId: "#58B1D", status: "Preparing", assignedChef: "Chef John",   createdAt: new Date(Date.now() - 15 * 60000).toISOString() },
+  { id: 2, orderId: "#58B2A", status: "Queue",     assignedChef: "Unassigned",  createdAt: new Date(Date.now() - 5 * 60000).toISOString() },
+  { id: 3, orderId: "#58B2B", status: "Queue",     assignedChef: "Unassigned",  createdAt: new Date(Date.now() - 2 * 60000).toISOString() },
+  { id: 4, orderId: "#58B1C", status: "Ready",     assignedChef: "Chef Sarah",  createdAt: new Date(Date.now() - 25 * 60000).toISOString() },
+];
+
+export const mockChefs = loadMock("kitchenChefs", [
+  { id: 1, displayName: "Chef John",  status: "ACTIVE",   station: "Grill",    avatar: "CJ" },
+  { id: 2, displayName: "Chef Sarah", status: "ACTIVE",   station: "Prep",     avatar: "CS" },
+  { id: 3, displayName: "Chef Mike",  status: "INACTIVE", station: "Assembly", avatar: "CM" },
+]);
+
 // ── Menu Management ───────────────────────────────────────────────
 
 export const mockMenuUploads = [

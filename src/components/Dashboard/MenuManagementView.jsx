@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import DashboardHeader from "./DashboardHeader";
 import { useMenuUploads, useUploadMenu } from "../../hooks/dashboard/useMenuUploads";
 import { useToast } from "../../store/toastStore";
-import { FiUploadCloud, FiFileText, FiCheckCircle, FiXCircle } from "react-icons/fi";
+import { FiUploadCloud, FiFileText } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 import EmptyState from "./shared/EmptyState";
@@ -13,24 +13,26 @@ function MenuManagementView() {
 
   const { addToast } = useToast();
 
-  // Dynamic calendar
-  const today = new Date();
-  const todayDate = today.getDate();
-  const monthName = today.toLocaleString("en", { month: "long" });
-  const dayDisplay = String(todayDate).padStart(2, "0");
-
-  const calendarDays = useMemo(() => {
-    const year = today.getFullYear();
-    const month = today.getMonth();
-    const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+  // Dynamic calendar — `new Date()` is inside the memo so the snapshot
+  // is taken once on mount and is never stale with respect to the closure.
+  const { todayDate, monthName, dayDisplay, calendarDays } = useMemo(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const cells = [];
-    for (let i = 0; i < firstDay; i++) cells.push(null); // empty leading cells
+    for (let i = 0; i < firstDay; i++) cells.push(null);
     for (let d = 1; d <= daysInMonth; d++) cells.push(d);
-    return cells;
+    return {
+      todayDate: now.getDate(),
+      monthName: now.toLocaleString("en", { month: "long" }),
+      dayDisplay: String(now.getDate()).padStart(2, "0"),
+      calendarDays: cells,
+    };
   }, []);
 
-  const { data: uploads, isLoading, error } = useMenuUploads();
+  const { data: uploads, isLoading, error, refetch } = useMenuUploads();
   const { mutate: uploadFile, isPending: isUploading } = useUploadMenu();
 
   const handleDrag = (e) => {
@@ -101,7 +103,8 @@ function MenuManagementView() {
     return (
       <div>
         <DashboardHeader title="Menu Management" />
-        <ErrorState message="Failed to load upload history." onRetry={() => window.location.reload()} />
+        {/* Use refetch so the page state (dragActive, selectedFile) is preserved */}
+        <ErrorState message="Failed to load upload history." onRetry={refetch} />
       </div>
     );
   }
@@ -112,7 +115,7 @@ function MenuManagementView() {
 
       {/* ── Single centered column layout matching the design ── */}
       <div className="px-4 sm:px-8 lg:px-12 py-8 max-w-[1200px] mx-auto flex flex-col gap-10">
-        
+
         {/* Top Header Texts */}
         <div className="text-center flex flex-col items-center">
           <h2 className="text-[24px] font-bold text-[#1a1a1a] mb-2">Upload Menu File</h2>
@@ -130,11 +133,10 @@ function MenuManagementView() {
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
               onDrop={handleDrop}
-              className={`flex flex-col items-center justify-center gap-4 h-[220px] rounded-4xl cursor-pointer transition-all duration-200 border-[3px] border-dashed ${
-                dragActive
+              className={`flex flex-col items-center justify-center gap-4 h-[220px] rounded-4xl cursor-pointer transition-all duration-200 border-[3px] border-dashed ${dragActive
                   ? "border-[#22C55E] bg-green-50 scale-[1.02]"
                   : "border-[#22C55E] hover:bg-green-50/30 bg-white"
-              }`}
+                }`}
             >
               {selectedFile ? (
                 <div className="flex flex-col items-center gap-2">
@@ -172,9 +174,9 @@ function MenuManagementView() {
         {/* Recent Uploads Section */}
         <div className="mt-4">
           <h3 className="text-[18px] font-medium text-[#1a1a1a] mb-4">Recent Uploads</h3>
-          
+
           <div className="border border-[#A8B89E] rounded-4xl p-6 sm:p-10 flex flex-col lg:flex-row gap-10 lg:gap-16 items-center lg:items-start" style={{ backgroundColor: 'transparent' }}>
-            
+
             {/* Table Area */}
             <div className="flex-1 w-full">
               <div className="grid grid-cols-[2fr_1fr_1fr] border-b border-[#D5D5D5] pb-3 mb-4">
@@ -182,7 +184,7 @@ function MenuManagementView() {
                 <span className="text-[15px] font-medium text-gray-500 text-center">Date</span>
                 <span className="text-[15px] font-medium text-gray-500 text-center">Time</span>
               </div>
-              
+
               <div className="flex flex-col gap-4">
                 {!uploads || uploads.length === 0 ? (
                   <p className="text-[13px] text-gray-400 text-center py-6">No uploads yet — drop a file above!</p>
@@ -205,7 +207,7 @@ function MenuManagementView() {
                 <span className="text-[16px] font-bold text-[#1a1a1a]">{dayDisplay}</span>
               </div>
               <div className="grid grid-cols-7 gap-y-1.5 gap-x-0.5 text-[8px] font-medium text-center">
-                {["SU","MO","TU","WE","TH","FR","SA"].map(d => (
+                {["SU", "MO", "TU", "WE", "TH", "FR", "SA"].map(d => (
                   <span key={d} className="text-gray-400">{d}</span>
                 ))}
                 {calendarDays.map((day, i) => (
@@ -223,7 +225,7 @@ function MenuManagementView() {
                 ))}
               </div>
             </div>
-            
+
           </div>
         </div>
 

@@ -21,8 +21,14 @@ const navItems = [
 ];
 
 function DashboardSidebar() {
-  const logout = useAuthStore((s) => s.logout);
+  const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const userRole = user?.role?.toLowerCase();
+  const isChief = userRole === "chief" || userRole === "chef";
+
+  const visibleNavItems = isChief
+    ? navItems.filter((item) => item.to === "/dashboard/live-kitchen")
+    : navItems;
 
   const handleLogout = () => {
     logout();
@@ -34,7 +40,7 @@ function DashboardSidebar() {
 
       {/* Logo */}
       <div className="px-6 pt-7 pb-5 text-center">
-        <NavLink to="/dashboard" className="no-underline inline-block">
+        <NavLink to={isChief ? "/dashboard/live-kitchen" : "/dashboard"} className="no-underline inline-block">
           <span className="text-3xl font-bold text-orange-500">Re</span>
           <span className="text-3xl font-bold text-green-600">vive</span>
         </NavLink>
@@ -43,7 +49,7 @@ function DashboardSidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-3 py-2 flex flex-col gap-1">
         <ul className="list-none m-0 p-0 flex flex-col gap-1">
-          {navItems.map(({ to, label, icon: Icon, end }) => (
+          {visibleNavItems.map(({ to, label, icon: Icon, end }) => (
             <li key={to}>
               <NavLink
                 to={to}
