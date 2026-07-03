@@ -4,7 +4,7 @@ import CustomizeHero from "./Sections/CustomizeHero";
 import BaseSelector from "./Sections/BaseSelector";
 import IngredientsSection from "./Sections/IngredientsSection";
 import CommentBox from "./Sections/CommentBox";
-import { customizeData } from "../../mocks/meals";
+const customizeData = [];
 import SummaryBox from "./Sections/SummaryBox";
 
 const Customize = () => {

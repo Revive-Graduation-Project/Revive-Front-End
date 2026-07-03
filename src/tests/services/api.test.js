@@ -121,4 +121,27 @@ test('Calls refresh endpoint when getting 401', async () => {
     
     console.log('✅ Normal error test passed!');
   });
+
+  // TEST 6: Does it decode JWT to set expiresAt?
+  test('Decodes JWT to set expiresAt correctly', async () => {
+    setAccessToken('old-token');
+
+    // Create a mock JWT with a specific expiration time (e.g., 1 hour from now)
+    const futureExp = Math.floor(Date.now() / 1000) + 3600; // 1 hour in seconds
+    const mockPayload = btoa(JSON.stringify({ exp: futureExp }));
+    const mockJwt = `header.${mockPayload}.signature`;
+
+    mock.onGet('/user/profile').replyOnce(401).onGet('/user/profile').reply(200, { name: 'John' });
+    mock.onPost('/auth/refresh').reply(200, { token: mockJwt });
+
+    await api.get('/user/profile');
+
+    // get expiresAt from store
+    const { expiresAt } = useAuthStore.getState();
+    
+    // It should be exactly futureExp * 1000
+    expect(expiresAt).toBe(futureExp * 1000);
+
+    console.log('✅ JWT decoding test passed!');
+  });
 });
