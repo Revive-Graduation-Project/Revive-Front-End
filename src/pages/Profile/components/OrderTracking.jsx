@@ -69,7 +69,7 @@ const OrderTracking = ({ order, onCancelOrder }) => {
   {
     name: "Ready",
     statusTitle: "Your Order is ready!",
-    description: "Your order is ready for pickup/delivery",
+    description: "Your order is ready for pickup",
     subtitle: "Your order is packed and ready — it's waiting for pickup!",
     icon: <FaBoxOpen className="text-xs text-white" />,
     status:
@@ -89,7 +89,7 @@ const OrderTracking = ({ order, onCancelOrder }) => {
     return order?.createdAt ? formatOrderTime(order.createdAt) : "--:--";
   }, [order?.time, order?.createdAt]);
 
-  const estimatedDeliveryTime = useMemo(() => {
+  const estimatedPickupTime = useMemo(() => {
     if (order?.time) {
       const [hours, minutes] = order.time.split(":").map(Number);
       const newHours = (hours + 1) % 24;
@@ -140,10 +140,10 @@ const OrderTracking = ({ order, onCancelOrder }) => {
             style={{ backgroundColor: "#2e7d32" }}
           >
             <p className="text-[10px] font-semibold uppercase tracking-wider leading-tight">
-              Estimated Delivery
+              Estimated Pickup
             </p>
             <p className="text-lg font-bold leading-tight">
-              {estimatedDeliveryTime}
+              {estimatedPickupTime}
             </p>
           </div>
         </div>
@@ -372,7 +372,7 @@ const OrderTracking = ({ order, onCancelOrder }) => {
                 </p>
                 <p className="text-amber-700 mt-1 leading-relaxed">
                   We regret to inform you that the Order has already moved to
-                  immediate preparation stage to ensure speedy delivery, we
+                  immediate preparation stage to ensure speedy service, we
                   promise you a unique dining experience!
                 </p>
               </div>

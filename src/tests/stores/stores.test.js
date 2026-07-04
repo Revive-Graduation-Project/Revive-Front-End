@@ -60,7 +60,7 @@ describe('🛒 OrderStore', () => {
             lastOrder: null, isCartDrawerOpen: false,
             myOrders: [], myOrdersLoading: false, myOrdersError: null,
             customerDetails: { email: '', firstName: '', lastName: '', phone: '', region: '', city: '', address: '', zipCode: '' },
-            paymentMethod: 'cash', savedCard: null,
+            paymentMethod: 'cash',
         });
 
         const { api } = await import('../../services/api');

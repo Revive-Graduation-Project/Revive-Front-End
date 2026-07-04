@@ -3,11 +3,14 @@ import { FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store";
+import { validateEmail } from "../../utils/authValidation"; 
 
 function Login() {
   const { login, loading, error } = useAuthStore();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  // 2. Add local state for frontend validation errors
+  const [validationErrors, setValidationErrors] = useState({});
 
   const [formData, setFormData] = useState({
     email: "",
@@ -17,10 +20,32 @@ function Login() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear the specific error when the user starts typing again
+    if (validationErrors[name]) {
+      setValidationErrors(prev => ({ ...prev, [name]: null }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // 3. Validate before submitting to the backend
+    const errors = {};
+    if (!formData.email) {
+      errors.email = "Email is required";
+    } else if (!validateEmail(formData.email)) {
+      errors.email = "Invalid email address";
+    }
+    
+    if (!formData.password) {
+      errors.password = "Password is required";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return; // Stop submission if there are errors
+    }
+
     await login(formData);
     const { isAuthenticated } = useAuthStore.getState();
     if (isAuthenticated) navigate("/");
@@ -59,9 +84,15 @@ function Login() {
                     placeholder="Enter your email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full border border-orange rounded-full pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-400"
+                    className={`w-full border rounded-full pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-1 ${
+                      validationErrors.email ? "border-red-500 focus:ring-red-500" : "border-orange focus:ring-orange-400"
+                    }`}
                   />
                 </div>
+                {/* 4. Display Email Error */}
+                {validationErrors.email && (
+                  <p className="text-red-500 text-xs ml-4">{validationErrors.email}</p>
+                )}
               </div>
 
               <div className="flex flex-col space-y-1">
@@ -78,7 +109,9 @@ function Login() {
                     placeholder="Enter your password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="w-full border border-orange rounded-full pl-10 pr-10 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange"
+                    className={`w-full border rounded-full pl-10 pr-10 py-2 text-sm focus:outline-none focus:ring-1 ${
+                      validationErrors.password ? "border-red-500 focus:ring-red-500" : "border-orange focus:ring-orange"
+                    }`}
                   />
                   <button
                     type="button"
@@ -88,6 +121,11 @@ function Login() {
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </button>
                 </div>
+                {/* 5. Display Password Error */}
+                {validationErrors.password && (
+                  <p className="text-red-500 text-xs ml-4">{validationErrors.password}</p>
+                )}
+                
                 <Link
                   to="/auth/forgot-password"
                   className="self-end text-[11px] text-gray-500 hover:text-orange mt-1"
@@ -96,8 +134,9 @@ function Login() {
                 </Link>
               </div>
 
+              {/* Backend Error from Zustand Store */}
               {error && (
-                <p className="text-red-500 text-xs text-center">
+                <p className="text-red-500 text-xs text-center mt-2">
                   {typeof error === "string"
                     ? error
                     : "Login failed, please try again"}
@@ -107,7 +146,7 @@ function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-(--color-orange) hover:bg-orange-500 text-white py-2 rounded-full text-sm font-semibold mt-2 transition cursor-pointer disabled:opacity-60"
+                className="w-full bg-orange hover:bg-orange-500 text-white py-2 rounded-full text-sm font-semibold mt-2 transition cursor-pointer disabled:opacity-60"
               >
                 {loading ? "Logging in..." : "Log in"}
               </button>

@@ -1,21 +1,37 @@
 import { api } from './api';
 
-// Get current user profile
-export const getProfile = () => {
-  return api.get('/users/me');
+const BASE_URL = '/api/clients/profile';
+
+// Get all profiles (ADMIN only — requires X-User-Role header set to ADMIN)
+export const getAllProfiles = () => {
+  return api.get(BASE_URL);
 };
 
-// Update profile
-export const updateProfile = (data) => {
-  return api.put('/users/me', data);
+// Get a specific user's profile
+export const getProfile = (userId) => {
+  return api.get(`${BASE_URL}/${userId}`);
 };
 
-// Update health profile
-export const updateHealthProfile = (data) => {
-  return api.put('/users/me/health', data);
+// Update a specific user's profile
+export const updateProfile = (userId, data) => {
+  return api.put(`${BASE_URL}/${userId}`, data);
 };
 
-// Get order history
-export const getOrderHistory = () => {
-  return api.get('/users/me/orders');
+// Delete a specific user's profile
+export const deleteProfile = (userId) => {
+  return api.delete(`${BASE_URL}/${userId}`);
+};
+
+// Upload/update profile picture (multipart/form-data)
+export const uploadProfilePicture = (userId, file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return api.patch(`${BASE_URL}/${userId}/picture`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
+
+// Delete profile picture
+export const deleteProfilePicture = (userId) => {
+  return api.delete(`${BASE_URL}/${userId}/picture`);
 };

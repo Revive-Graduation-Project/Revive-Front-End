@@ -1,4 +1,4 @@
-const PaymentMethodSelector = ({ paymentMethod, setPaymentMethod, savedCard, onAddCard, onEditCard }) => {
+const PaymentMethodSelector = ({ paymentMethod, setPaymentMethod, onAddCard }) => {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-8">
       
@@ -26,7 +26,7 @@ const PaymentMethodSelector = ({ paymentMethod, setPaymentMethod, savedCard, onA
       <div 
         onClick={() => {
             setPaymentMethod("credit_card");
-            if (!savedCard) onAddCard();
+            onAddCard();
         }}
         className={`flex items-center gap-4 p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
           paymentMethod === "credit_card" ? "bg-orange-50/50" : ""
@@ -40,23 +40,7 @@ const PaymentMethodSelector = ({ paymentMethod, setPaymentMethod, savedCard, onA
          
          <div className="flex-1">
             <span className="font-medium text-gray-800 block">Credit card</span>
-            {savedCard && (
-                <div className="flex items-center gap-3">
-                    <span className="text-xs text-gray-500 font-mono">
-                         {savedCard.cardNumber}
-                    </span>
-                    <button
-                        type="button"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onEditCard();
-                        }}
-                        className="cursor-pointer text-xs text-orange-500 hover:text-orange-600 hover:bg-orange-50 font-medium  hover:underline"
-                    >
-                        Change
-                    </button>
-                </div>
-            )}
+            <span className="text-xs text-gray-500">Enter card details at checkout</span>
          </div>
 
          {paymentMethod === "credit_card" && (

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Outlet } from "react-router";
 import Sidebar from "./components/Sidebar";
-import { useProfileStore } from "../../store";
+import { useAuthStore, useProfileStore } from "../../store";
 import { LoadingSpinner } from "../../components";
 import {
   LuClipboard,
@@ -13,7 +13,7 @@ import {
 import { useShallow } from "zustand/shallow";
 
 export default function ProfileLayout() {
-
+  const authUser = useAuthStore((state) => state.user);
   const { user, loading, error, fetchProfile } = useProfileStore(
     useShallow((state) => ({
       user: state.user,
@@ -25,8 +25,9 @@ export default function ProfileLayout() {
 
   useEffect(() => {
     let mounted = true;
+    if (!authUser?.id) return;
     if (!user && !loading && !error) {
-      fetchProfile();
+      fetchProfile(authUser?.id);
     }
     return () => {
       mounted = false;
@@ -57,7 +58,14 @@ export default function ProfileLayout() {
     );
   }
 
-  const displayName = user?.name || user?.fullName || "Your Name";
+  const displayName =
+    authUser?.name ||
+    authUser?.fullName ||
+    (authUser?.firstName && authUser?.lastName
+      ? `${authUser.firstName} ${authUser.lastName}`
+      : null) ||
+    "Your Name";
+
   const avatar =
     user?.avatar || user?.photo || "/images/avatar-placeholder.jpeg";
 

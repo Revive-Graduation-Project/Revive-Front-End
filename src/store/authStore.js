@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import {
   loginService,
   logoutService,
+  registerService,
   restoreSessionService,
 } from "../services/auth.service";
 
@@ -41,6 +42,31 @@ const useAuthStore = create(
       /* =====================
          ACTIONS
       ====================== */
+
+      /**
+       * Register User
+       */
+      register: async (credentials) => {
+        if (get().loading) return null;
+
+        set({ loading: true, error: null });
+
+        try {
+          const response = await registerService(credentials);
+          return response.data;
+        } catch (error) {
+          set({
+            error:
+              error.response?.data?.message ??
+              error.message ??
+              "Registration failed",
+          });
+
+          return null;
+        } finally {
+          set({ loading: false });
+        }
+      },
 
       /**
        * Login User
@@ -164,7 +190,7 @@ const useAuthStore = create(
               token: data.token,
               user: rawUser.id != null && rawUser.email ? rawUser : get().user,
               isAuthenticated: true,
-              expiresAt: data.expiresAt,
+              expiresAt: data.expiresAt ?? Date.now() + TOKEN_LIFETIME,
               loading: false,
             });
 

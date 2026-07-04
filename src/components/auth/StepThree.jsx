@@ -35,7 +35,7 @@ function StepThree({
           type="button"
           onClick={onSubmit}
           disabled={loading}
-          className="w-full bg-(--color-orange) hover:bg-orange-500 text-white py-2 rounded-full text-sm font-semibold mt-2 transition cursor-pointer disabled:opacity-60"
+          className="w-full bg-orange hover:bg-orange-500 text-white py-2 rounded-full text-sm font-semibold mt-2 transition cursor-pointer disabled:opacity-60"
         >
           {loading ? "Creating Account..." : "Create Account"}
         </button>

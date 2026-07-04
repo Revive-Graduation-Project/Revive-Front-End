@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useOrderStore } from "../../store";
-import Modal from "../ui/Modal";
-import AddCardForm from "./AddCardForm";
+import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
+import Modal from "../UI/Modal";
+import StripeCardElement from "./Payment/StripeCardElement";
 import PaymentMethodSelector from "./Payment/PaymentMethodSelector";
 
 /**
@@ -13,57 +14,74 @@ import PaymentMethodSelector from "./Payment/PaymentMethodSelector";
  * 
  * Logic & Orchestration:
  * - Method Switching: Supports 'cash' and 'credit_card'.
- * - Modal Orchestration: Automatically triggers the `AddCardForm` modal if 
- *   'credit_card' is selected without a saved card.
- * - Conditional Submission: Validates that a payment method is fully configured 
- *   before allowing the global `submitOrder` action to proceed.
+ * - Stripe Integration: Uses Stripe Elements for secure card input.
+ * - Payment Flow:
+ *   1. For cash: submitOrder directly, polls for status
+ *   2. For credit card: submitOrder returns clientSecret, then confirm with Stripe
  * - Navigation: Redirects to the "/thanks" success page upon transaction completion.
  */
 export default function PaymentForm() {
   const navigate = useNavigate();
+  const stripe = useStripe();
+  const elements = useElements();
   
   // Store actions and state
   const submitOrder = useOrderStore((state) => state.submitOrder);
+  const confirmStripePayment = useOrderStore((state) => state.confirmStripePayment);
   const loading = useOrderStore((state) => state.loading);
   const error = useOrderStore((state) => state.error);
   const paymentMethod = useOrderStore((state) => state.paymentMethod);
   const setPaymentMethod = useOrderStore((state) => state.setPaymentMethod);
-  const saveCard = useOrderStore((state) => state.saveCard);
-  const savedCard = useOrderStore((state) => state.savedCard);
 
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
+  const [stripeError, setStripeError] = useState(null);
 
   const handleMethodSelect = (method) => {
     setPaymentMethod(method);
-    if (method === "credit_card" && !savedCard) {
+    if (method === "credit_card") {
       setIsAddCardOpen(true);
     }
   };
 
-  const handleAddCard = (details) => {
-    // In a real app, validation and tokenization happen here
-    // Save masked details to store
-    const maskedDetails = {
-        ...details,
-        cardNumber: `**** **** **** ${details.cardNumber.slice(-4)}`
-    };
-    saveCard(maskedDetails);
-    
+  const handleCardComplete = () => {
     setIsAddCardOpen(false);
-    setPaymentMethod("credit_card"); // Ensure it's selected
+    setPaymentMethod("credit_card");
+    setStripeError(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Check if card is required but not added
-    if (paymentMethod === "credit_card" && !savedCard) {
-        setIsAddCardOpen(true);
-        return;
+    setStripeError(null);
+
+    // For cash orders, submit directly
+    if (paymentMethod === "cash") {
+      const success = await submitOrder();
+      if (success) navigate("/thanks");
+      return;
     }
 
-    const success = await submitOrder();
-    if (success) navigate("/thanks");
+    // For credit card, need card element
+    if (paymentMethod === "credit_card") {
+      if (!stripe || !elements) {
+        setStripeError("Stripe not loaded. Please refresh the page.");
+        return;
+      }
+
+      const cardElement = elements.getElement(CardElement);
+      if (!cardElement) {
+        setIsAddCardOpen(true);
+        return;
+      }
+
+      // Step 1: Submit order to get clientSecret
+      const orderResult = await submitOrder();
+      
+      if (orderResult?.requiresPayment) {
+        // Step 2: Confirm payment with Stripe
+        const success = await confirmStripePayment(stripe, cardElement);
+        if (success) navigate("/thanks");
+      }
+    }
   };
 
   return (
@@ -74,18 +92,13 @@ export default function PaymentForm() {
         <PaymentMethodSelector 
             paymentMethod={paymentMethod}
             setPaymentMethod={setPaymentMethod}
-            savedCard={savedCard}
             onAddCard={() => setIsAddCardOpen(true)}
-            onEditCard={() => {
-                setPaymentMethod("credit_card");
-                setIsAddCardOpen(true);
-            }}
         />
 
         {/* Error Message */}
-        {error && (
+        {(error || stripeError) && (
             <div className="mb-6 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-                {error}
+                {stripeError || error}
             </div>
         )}
 
@@ -93,7 +106,7 @@ export default function PaymentForm() {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg py-4 rounded-full transition-colors shadow-lg shadow-orange-500/20 transform active:scale-[0.99] transition-transform ${
+          className={`w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg py-4 rounded-full transition-colors shadow-lg shadow-orange-500/20 transform active:scale-[0.99] ${
             loading ? "opacity-70 cursor-not-allowed" : "cursor-pointer"
           }`}
         >
@@ -102,16 +115,16 @@ export default function PaymentForm() {
 
       </form>
       
-      {/* Add Card Modal */}
+      {/* Add Card Modal with Stripe Elements */}
       <Modal 
         isOpen={isAddCardOpen} 
         onClose={() => setIsAddCardOpen(false)}
         title="Add card"
       >
-         <AddCardForm 
-           onCancel={() => setIsAddCardOpen(false)}
-           onSubmit={handleAddCard}
-           loading={false}
+         <StripeCardElement 
+           onCardComplete={handleCardComplete}
+           onError={setStripeError}
+           loading={loading}
          />
       </Modal>
     </div>

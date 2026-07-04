@@ -1,9 +1,9 @@
 import React from "react";
 import { FaCheckCircle } from "react-icons/fa";
-import { useLoyaltyStore } from "../../store";
+import {useProfileStore } from "../../store";
 
 const Rewards = () => {
-  const points = useLoyaltyStore((s) => s.points);
+  const points = useProfileStore((s) => s.user?.loyaltyPoints || 0);
   return (
     <div className="space-y-6">
       {/* Header */}

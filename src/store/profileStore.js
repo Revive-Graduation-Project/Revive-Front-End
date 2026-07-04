@@ -1,11 +1,17 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { getProfile, updateProfile, updateHealthProfile } from "../services/user.service";
+import {
+  getProfile,
+  updateProfile,
+  deleteProfile,
+  uploadProfilePicture,
+  deleteProfilePicture,
+} from "../services/user.service";
 
 /**
  * Profile Store
- * - Holds user profile/meta and health sub-object
- * - Contains actions that call services so components stay dumb
+ * - Holds user profile data
+ * - Actions now require a `userId` to match the backend endpoints
  */
 const useProfileStore = create(
   persist(
@@ -14,11 +20,14 @@ const useProfileStore = create(
       loading: false,
       error: null,
 
-      fetchProfile: async () => {
+      // Fetch profile data
+      fetchProfile: async (userId) => {
+        if (!userId) return null;
         set({ loading: true, error: null });
         try {
-          const res = await getProfile();
+          const res = await getProfile(userId);
           const user = res?.data || null;
+          console.log("Fetched profile data:", user);
           if (!user) {
             set({ error: "Profile not found", loading: false });
             return null;
@@ -26,84 +35,72 @@ const useProfileStore = create(
           set({ user, loading: false, error: null });
           return user;
         } catch (error) {
-          set({ error: error.message, loading: false });
+          set({ error: error?.response?.data?.message || error.message, loading: false });
           return null;
         }
       },
 
-      updateUser: async (data) => {
+      // Update Profile (Handles the full payload directly from the form)
+      updateUserProfile: async (userId, data) => {
+        if (!userId) return null;
         set({ loading: true, error: null });
         try {
-          const res = await updateProfile(data);
+          const res = await updateProfile(userId, data);
           const user = res?.data || null;
-          if (user) set({ user, loading: false, error: null });
-          else set({ loading: false });
+          if (user) {
+            set({ user, loading: false, error: null });
+          } else {
+            set({ loading: false });
+          }
           return user;
         } catch (error) {
-          set({ error: error.message, loading: false });
+          set({ error: error?.response?.data?.message || error.message, loading: false });
           return null;
         }
       },
 
-      updateHealth: async (data) => {
+      // Upload Profile Picture
+      uploadPicture: async (userId, file) => {
+        if (!userId || !file) return null;
         set({ loading: true, error: null });
         try {
-          const res = await updateHealthProfile(data);
-          const user = res?.data || null;
-          if (user) set({ user, loading: false, error: null });
+          const res = await uploadProfilePicture(userId, file);
+          const user = res?.data || get().user; 
+          set({ user, loading: false, error: null });
           return user;
         } catch (error) {
-          set({ error: error.message, loading: false });
+          set({ error: error?.response?.data?.message || error.message, loading: false });
           return null;
-        } finally {
-          set({ loading: false });
         }
       },
 
-      addAllergy: (allergy) => {
-        if (!allergy || typeof allergy !== "string") {
-          set({ error: "Allergy cannot be empty" });
-          return;
+      // Delete Profile Picture
+      deletePicture: async (userId) => {
+        if (!userId) return null;
+        set({ loading: true, error: null });
+        try {
+          const res = await deleteProfilePicture(userId);
+          const user = res?.data || get().user; 
+          set({ user, loading: false, error: null });
+          return true;
+        } catch (error) {
+          set({ error: error?.response?.data?.message || error.message, loading: false });
+          return false;
         }
-
-        const normalized = allergy.trim().toLowerCase();
-        const user = get().user;
-        const current = user?.profile?.allergies || [];
-        if (current.includes(normalized)) {
-          set({ error: "Allergy already added" });
-          return;
-        }
-
-        const updatedUser = {
-          ...user,
-          profile: {
-            ...user?.profile,
-            allergies: [...current, normalized],
-          },
-        };
-
-        set({ user: updatedUser, error: null });
       },
 
-      removeAllergy: (allergy) => {
-        if (!allergy) return;
-        const normalized = allergy.trim().toLowerCase();
-        const user = get().user;
-        const current = user?.profile?.allergies || [];
-        if (!current.includes(normalized)) {
-          set({ error: "Allergy not found" });
-          return;
+      // Delete Entire Profile
+      deleteUserProfile: async (userId) => {
+        if (!userId) return false;
+        set({ loading: true, error: null });
+        try {
+          await deleteProfile(userId);
+          set({ user: null, loading: false, error: null }); 
+          return true;
+        } catch (error) {
+          set({ error: error?.response?.data?.message || error.message, loading: false });
+          return false;
         }
-
-        const updatedUser = {
-          ...user,
-          profile: {
-            ...user?.profile,
-            allergies: current.filter((a) => a !== normalized),
-          },
-        };
-
-        set({ user: updatedUser, error: null });
       },
 
       clearError: () => set({ error: null }),

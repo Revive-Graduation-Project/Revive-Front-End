@@ -2,7 +2,7 @@ import { useNavigate } from "react-router";
 import { useOrderStore } from "../../store";
 import { useEffect } from "react";
 import OrderConfirmationDetails from "../../components/OrderFlow/OrderConfirmationDetails";
-import CustomerInfoSummary from "../../components/OrderFlow/CustomerInfoSummary";
+// import CustomerInfoSummary from "../../components/OrderFlow/CustomerInfoSummary";
 
 export default function Thanks() {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ export default function Thanks() {
 
   if (!lastOrder) return null; // Or a loading spinner
 
-  const { items, customerDetails, finalTotal, totalAmount, deliveryFee, id } = lastOrder;
+  const { items, customerDetails, totalPrice, id } = lastOrder;
 
   const handleContinue = () => {
     navigate("/");
@@ -38,17 +38,14 @@ export default function Thanks() {
         {/* Order Details Card */}
         <OrderConfirmationDetails 
           items={items}
-          totalAmount={totalAmount}
-          deliveryFee={deliveryFee}
-          finalTotal={finalTotal}
+          totalAmount={totalPrice}
         />
 
         {/* Customer Info Card */}
-        <CustomerInfoSummary 
+        {/* <CustomerInfoSummary 
           customerDetails={customerDetails}
           paymentMethod={lastOrder.paymentMethod}
-          cardDetails={lastOrder.cardDetails}
-        />
+        /> */}
 
         {/* Continue Browsing */}
         <div className="mt-12">

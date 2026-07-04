@@ -20,7 +20,7 @@ export default function OrderConfirmationDetails({ items, totalAmount, deliveryF
             {/* Image */}
             <div className="w-16 h-16 rounded-full overflow-hidden bg-orange-100 shrink-0">
               <img 
-                src={item.imageUrl || item.image} 
+                src={item.imageUrl || item.image || "/images/bowl.png"} 
                 alt={item.name} 
                 className="w-full h-full object-cover"
               />
@@ -45,20 +45,11 @@ export default function OrderConfirmationDetails({ items, totalAmount, deliveryF
 
       {/* Totals */}
       <div className="space-y-3 md:w-1/2 md:ml-auto">
-        <div className="flex justify-between text-gray-600">
-           <span>Subtotal</span>
-           <span className="font-medium text-gray-900">{formatCurrency(totalAmount)}</span>
-        </div>
-        <div className="flex justify-between text-gray-600">
-           <span>Delivery</span>
-           <span className="font-medium text-gray-900">{formatCurrency(deliveryFee)}</span>
-        </div>
-        
         <div className="border-t border-gray-100 my-3"></div>
         
         <div className="flex justify-between items-center text-xl">
            <span className="font-bold text-gray-900">Total</span>
-           <span className="font-bold text-gray-900">{formatCurrency(finalTotal)}</span>
+           <span className="font-bold text-gray-900">{formatCurrency(totalAmount)}</span>
         </div>
       </div>
     </div>

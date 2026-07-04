@@ -5,7 +5,7 @@
 
 // --- Pricing & Limits ---
 /** @type {number} Standard delivery fee applied to all orders with items */
-export const DELIVERY_FEE = 5.00;
+export const DELIVERY_FEE = 0.00; //there is no delivery fee for now
 
 /** @type {number} Simulated network delay for order submission (ms) */
 export const SUBMIT_DELAY = 2000;
@@ -40,21 +40,31 @@ export const CURRENCY_FORMAT = "POST";
 
 // Allergy and health condition options for user profiles
 export const HEALTH_CONDITIONS = [
-    "Diabetes",
-    "High blood pressure",
-    "High cholesterol",
-    "Kidney or liver condition",
-    "Gluten intolerance / Celiac",
-    "Lactose intolerance",
-  ];
+  { value: "DIABETES", label: "Diabetes" },
+  { value: "HIGH_BLOOD_PRESSURE", label: "High Blood Pressure" },
+  { value: "HIGH_CHOLESTEROL", label: "High Cholesterol" },
+  { value: "GLUTEN_INTOLERANCE", label: "Gluten Intolerance" },
+  { value: "LACTOSE_INTOLERANCE", label: "Lactose Intolerance" },
+  { value: "THYROID_DISORDER", label: "Thyroid Disorder" },
+  { value: "KIDNEY_OR_LIVER_CONDITION", label: "Kidney or Liver Condition" },
+];
 
-// --- Health Profile Options ---
-export const GENDER_OPTIONS = ["MALE", "FEMALE", "OTHER"];
-export const GOAL_OPTIONS = ["LOSE_WEIGHT", "MAINTAIN", "GAIN_MUSCLE"];
+export const GENDER_OPTIONS = [
+  { value: "MALE", label: "Male" },
+  { value: "FEMALE", label: "Female" },
+  { value: "OTHER", label: "Other" },
+];
+
+export const GOAL_OPTIONS = [
+  { value: "LOSE_WEIGHT", label: "Lose Weight" },
+  { value: "GAIN_WEIGHT", label: "Gain Weight" },
+  { value: "MAINTAIN_SHAPE", label: "Maintain Shape" },
+  { value: "BUILD_MUSCLE", label: "Build Muscle" },
+];
 export const HEIGHT_UNITS = ["m", "ft", "cm", "in"];
 export const WEIGHT_UNITS = ["kg", "lb"];
 
-// --- Order history (profile) ---
+
 export const NON_CANCELLABLE_ORDER_STATUSES = [
   "PREPARING",
   "READY",

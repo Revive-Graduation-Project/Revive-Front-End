@@ -1,5 +1,6 @@
 import FormInput from "../../ui/FormInput";
 
+// DEPRECATD
 const CardInputs = ({ register, errors, setValue, onFormatCardNumber, onFormatExpiry }) => {
   return (
     <div className="space-y-4">

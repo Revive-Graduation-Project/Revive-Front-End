@@ -102,15 +102,13 @@ export default function Orders() {
         </div>
       )}
 
-      {myOrdersError && activeTab === "history" && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-          {myOrdersError}
-        </div>
-      )}
-
       {!myOrdersLoading && (
         activeTab === "history" ? (
-          mergedOrdersList.length === 0 ? (
+          myOrdersError ? (
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+              {myOrdersError}
+            </div>
+          ) : mergedOrdersList.length === 0 ? (
             <div className="py-8 text-center text-gray-500">No orders found.</div>
           ) : (
             <div className="space-y-6">

@@ -16,7 +16,6 @@ import { formatCurrency } from "../../utils/formatters";
 export default function OrderSummary({ 
   items, 
   subtotal, 
-  delivery, 
   total, 
   buttonText = "Checkout",
   buttonLink = "/checkout",
@@ -64,7 +63,7 @@ export default function OrderSummary({
                 <div key={item.id} className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full overflow-hidden bg-orange-500 shrink-0">
                     <img 
-                      src={item.imageUrl || item.image} 
+                      src={item.imageUrl || item.image || "/images/bowl.png"} 
                       alt={item.name}
                       className="w-full h-full object-cover"
                     />
@@ -85,14 +84,6 @@ export default function OrderSummary({
 
       {/* Price Breakdown */}
       <div className="space-y-3 mb-6">
-        <div className="flex justify-between text-gray-700">
-          <span>Subtotal</span>
-          <span className="font-medium">{formatCurrency(subtotal)}</span>
-        </div>
-        <div className="flex justify-between text-gray-700">
-          <span>Delivery</span>
-          <span className="font-medium">{formatCurrency(delivery)}</span>
-        </div>
         <div className="border-t border-gray-200 pt-3 flex justify-between text-lg font-bold">
           <span className="text-green-600">Total</span>
           <span className="text-orange-500">{formatCurrency(total)}</span>

@@ -1,39 +1,53 @@
 import React from "react";
+import {
+  GENDER_OPTIONS,
+  GOAL_OPTIONS,
+  HEALTH_CONDITIONS,
+} from "../../../constants";
 
-const pretty = {
-  LOSE_WEIGHT: "Lose Weight",
-  MAINTAIN: "Maintain",
-  GAIN_MUSCLE: "Gain Muscle",
-  MALE: "Male",
-  FEMALE: "Female",
-  OTHER: "Other",
-};
+export default function InfoGrid({ user = {} }) {
+  // Now reading directly from the flat user object
+  const age = user.age ?? "-";
 
-export default function InfoGrid({ user = {}, profile = {} }) {
-  const age = profile.age ?? "-";
-  const gender = profile.gender
-    ? pretty[profile.gender] || profile.gender
+  const gender = user.gender
+    ? (GENDER_OPTIONS.find((g) => g.value === user.gender)?.label ??
+      user.gender)
     : "-";
-  const exercises = profile.exercisesRegularly ? "Yes" : "No";
-  const height = profile.height
-    ? `${profile.height} ${profile.heightUnit || "cm"}`
+
+  const exercises =
+    user.exercisesRegularly == null
+      ? "-"
+      : user.exercisesRegularly
+        ? "Yes"
+        : "No";
+
+  const height = user.height
+    ? `${user.height} ${user.heightUnit || "cm"}`
     : "-";
-  const weight = profile.weight
-    ? `${profile.weight} ${profile.weightUnit || "kg"}`
+
+  const weight = user.weight
+    ? `${user.weight} ${user.weightUnit || "kg"}`
     : "-";
-  const goal = profile.goal ? pretty[profile.goal] || profile.goal : "-";
+
+  const goal = user.goal
+    ? (GOAL_OPTIONS.find((g) => g.value === user.goal)?.label ??
+      user.goal)
+    : "-";
+
   const conditions =
-    Array.isArray(profile.healthConditions) &&
-    profile.healthConditions.length > 0
-      ? profile.healthConditions
+    Array.isArray(user.healthConditions) &&
+    user.healthConditions.length > 0
+      ? user.healthConditions
       : [];
-  const phone = profile.phoneNumber || "-";
+
+  const phone = user.phoneNumber || "-";
 
   return (
     <div>
       <h4 className="text-lg font-bold text-gray-800 tracking-tight relative inline-block after:absolute after:left-0 after:-bottom-1 after:h-1 after:w-12 after:rounded-full after:bg-orange">
         Your Information
       </h4>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 text-gray-700">
         <div className="flex justify-between">
           <span className="text-sm text-gray-500">Age</span>
@@ -78,22 +92,30 @@ export default function InfoGrid({ user = {}, profile = {} }) {
           <span className="text-lg mb-2 font-bold text-gray-800 tracking-tight relative inline-block after:absolute after:left-0 after:-bottom-1 after:h-1 after:w-12 after:rounded-full after:bg-orange">
             Health conditions
           </span>
+
           <span className="text-md text-gray-400">
             {conditions.length > 0
               ? `${conditions.length} conditions`
               : "No health conditions"}
           </span>
         </div>
+
         <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 min-h-20">
           <div className="flex flex-wrap gap-2">
-            {conditions.map((condition, index) => (
-              <span
-                key={condition}
-                className="px-3 py-1.5 rounded-full text-sm bg-white border border-orange-200 text-orange-700 shadow-sm"
-              >
-                {condition}
-              </span>
-            ))}
+            {conditions.map((condition) => {
+              const label =
+                HEALTH_CONDITIONS.find((c) => c.value === condition)?.label ??
+                condition;
+
+              return (
+                <span
+                  key={condition}
+                  className="px-3 py-1.5 rounded-full text-sm bg-white border border-orange-200 text-orange-700 shadow-sm"
+                >
+                  {label}
+                </span>
+              );
+            })}
           </div>
         </div>
       </div>

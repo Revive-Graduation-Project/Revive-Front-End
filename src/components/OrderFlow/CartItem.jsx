@@ -42,7 +42,7 @@ export default function CartItem({
           className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-orange-100 shrink-0 cursor-pointer hover:scale-105 transition-transform shadow-sm"
         >
           <img 
-            src={item.imageUrl || item.image} 
+            src={item.imageUrl || item.image || "/images/bowl.png"} 
             alt={item.name}
             className="w-full h-full object-cover"
           />

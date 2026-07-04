@@ -2,17 +2,11 @@ import { HEALTH_CONDITIONS } from "../../constants";
 function AllergiesDropdown({ selected = [], onChange }) {
 
   const handleToggle = (option) => {
-    if (option === "None") {
-      onChange(["None"]);
-      return;
-    }
-
-    const withoutNone = selected.filter((s) => s !== "None");
-
-    if (withoutNone.includes(option)) {
-      onChange(withoutNone.filter((s) => s !== option));
+    
+    if (selected.includes(option)) {
+      onChange(selected.filter((s) => s !== option));
     } else {
-      onChange([...withoutNone, option]);
+      onChange([...selected, option]);
     }
   };
 
@@ -24,18 +18,18 @@ function AllergiesDropdown({ selected = [], onChange }) {
 
       <div className="border border-orange rounded-2xl p-4">
         <div className="grid grid-cols-1 gap-2 text-sm">
-          {HEALTH_CONDITIONS.map((option, index) => (
+          {HEALTH_CONDITIONS.map(({label , value}, index) => (
             <label
-              key={index}
+              key={value}
               className="flex items-center gap-2 cursor-pointer"
             >
               <input
                 type="checkbox"
                 className="accent-orange w-4 h-4"
-                checked={selected.includes(option)}
-                onChange={() => handleToggle(option)}
+                checked={selected.includes(value)}
+                onChange={() => handleToggle(value)}
               />
-              {option}
+              {label}
             </label>
           ))}
         </div>

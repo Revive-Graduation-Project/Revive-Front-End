@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import { FiFileText } from "react-icons/fi";
 import { useShallow } from "zustand/react/shallow";
 import { useOrderStore, useFavoritesStore } from "../../store";
-import { DELIVERY_FEE } from "../../constants";
 import CartSection from "../../components/OrderFlow/CartSection";
 
 import OrderSummary from "../../components/OrderFlow/OrderSummary";
@@ -18,9 +17,6 @@ export default function Cart() {
 
   const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
 
-  const deliveryFee = useMemo(() => (items.length > 0 ? DELIVERY_FEE : 0), [items.length]);
-  const totalWithDelivery = useMemo(() => totalAmount + deliveryFee, [totalAmount, deliveryFee]);
-
   return (
     <div className="cart-page bg-gray-50 min-h-screen pt-24 md:pt-32">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -35,10 +31,9 @@ export default function Cart() {
             <OrderSummary
               items={items}
               subtotal={totalAmount}
-              delivery={deliveryFee}
-              total={totalWithDelivery}
+              total={totalAmount}
               buttonText="Checkout"
-              buttonLink="/checkout"
+              buttonLink="/payment"
               showItems={false}
             />
           </div>

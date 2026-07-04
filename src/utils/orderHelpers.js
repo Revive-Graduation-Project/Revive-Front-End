@@ -8,17 +8,42 @@ const normalizeStatus = (status) => status?.toUpperCase?.() || "";
 export const normalizeOrderForList = (order) => {
   if (!order) return null;
 
+  const orderDate = order.createdAt ? new Date(order.createdAt) : new Date();
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  let formattedDate;
+
+  // Check if it's today
+  if (orderDate.toDateString() === today.toDateString()) {
+    formattedDate = "Today";
+  }
+  // Check if it's yesterday
+  else if (orderDate.toDateString() === yesterday.toDateString()) {
+    formattedDate = "Yesterday";
+  }
+  // Otherwise format as full date
+  else {
+    const isDifferentYear = orderDate.getFullYear() !== today.getFullYear();
+    formattedDate = orderDate.toLocaleDateString("en-US", {
+      year: isDifferentYear ? "numeric" : undefined,
+      month: "long",
+      day: "numeric",
+    });
+  }
+
   return {
     ...order,
-    date: order.date || "Today",
+    date: order.date || formattedDate,
     status: order.status || "PENDING",
     totalPrice: order.totalPrice ?? order.totalAmount,
   };
 };
 
 export const mergeOrdersWithLastOrder = (apiOrders = [], lastOrder) => {
-  const mergedList = [...apiOrders];
-  
+  const mergedList = apiOrders.map(normalizeOrderForList);
+
   if (
     lastOrder &&
     !mergedList.some((order) => String(order.id) === String(lastOrder.id))
@@ -26,12 +51,25 @@ export const mergeOrdersWithLastOrder = (apiOrders = [], lastOrder) => {
     mergedList.unshift(normalizeOrderForList(lastOrder));
   }
 
-  return mergedList;
+  // Sort newest-first by actual timestamp, regardless of API/mock order
+  return mergedList.sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+  );
 };
-
 export const groupOrdersByDate = (orders = []) =>
   orders.reduce((acc, order) => {
-    const dateLabel = order.date || "Past Orders";
+    // Prefer the already-computed date label (e.g. "Today" / "Yesterday"
+    // from normalizeOrderForList). Only fall back to reformatting
+    // createdAt if no date label exists at all.
+    const dateLabel = order.date
+      ? order.date
+      : order.createdAt
+        ? new Date(order.createdAt).toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+          })
+        : "Past Orders";
+
     acc[dateLabel] = acc[dateLabel] || [];
     acc[dateLabel].push(order);
     return acc;

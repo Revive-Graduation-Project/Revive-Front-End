@@ -4,8 +4,7 @@ import { parseNutrients } from "../../utils/nutrients";
 import DishDetailsModal from "../Dashboard/shared/DishDetailsModal";
 
 // Max 2 decimal places, strips trailing zeros: 140.9888 → 140.99 | 140.00 → 140
-const formatPrice = (val) => {
-  const num = parseFloat(val);
+const formatPrice = (val) => {const num = parseFloat(val);
   if (isNaN(num)) return val;
   return parseFloat(num.toFixed(2)).toString();
 };
@@ -145,7 +144,7 @@ const RegularFoodCard = ({ meal }) => {
             <div className="flex flex-col xs:flex-row items-start xs:items-baseline gap-0.5 xs:gap-1.5 shrink-0">
               {hasDiscount && (
                 <span className="text-[10px] sm:text-xs text-gray-400 line-through">
-                  {formatPrice(price)} EGP
+                  {formatPrice(price)}$
                 </span>
               )}
               <span
@@ -153,7 +152,7 @@ const RegularFoodCard = ({ meal }) => {
                   hasDiscount ? "text-orange" : "text-gray-900"
                 }`}
               >
-                {formatPrice(displayPrice)} EGP
+                {formatPrice(displayPrice)}$
               </span>
             </div>
 

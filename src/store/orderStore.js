@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import usePaymentStore from "./paymentStore";
-import { cancelOrder, getMyOrders } from "../services/order.service";
+import { cancelOrder, getMyOrders, pollOrderStatus } from "../services/order.service";
 import {
   groupOrdersByDate,
   isOrderCancellable,
@@ -92,9 +92,16 @@ const useOrderStore = create(
       },
 
       /** @type {'cash' | 'credit_card'} Currently selected payment method */
-      paymentMethod: "cash", 
-      /** @type {Object | null} Masked card data (Never contains full credentials) */
-      savedCard: null,       
+      paymentMethod: "cash",     
+      
+      /** @type {string | null} Stripe client secret for payment confirmation */
+      stripeClientSecret: null,
+      
+      /** @type {string | null} Stripe payment intent ID */
+      stripePaymentIntentId: null,
+      
+      /** @type {string | null} Pending order ID awaiting payment confirmation */
+      pendingOrderId: null,
       
       /** @type {Object | null} Mirror of the most recently successful order */
       lastOrder: null,
@@ -343,6 +350,7 @@ const useOrderStore = create(
 
         try {
           const res = await getMyOrders();
+  
           set({
             myOrders: res?.data || [],
             myOrdersLoading: false,
@@ -405,18 +413,20 @@ const useOrderStore = create(
       },
 
       /**
-       * Submits the final order.
-       * Includes logic for:
-       * 1. Empty cart validation
-       * 2. Max order total cap ($10,000)
-       * 3. Duplicate order prevention (shash comparison of items/qty)
-       * 4. API Simulation delay
-       * 5. Transaction logging
+       * Submits the final order with Stripe payment flow.
+       * Flow:
+       * 1. Validate cart and prevent duplicates
+       * 2. POST /orders to create order (status: AWAITING_PAYMENT)
+       * 3. Get clientSecret from response
+       * 4. If credit card: confirm payment with Stripe using clientSecret
+       * 5. Poll order status until no longer AWAITING_PAYMENT
+       * 6. Update store with final order status
        * 
        * @async
+       * @param {Object} stripePaymentMethod - Stripe payment method ID (for credit card)
        * @returns {Promise<boolean>} Success status
        */
-      submitOrder: async () => {
+      submitOrder: async (stripePaymentMethod = null) => {
         set({ loading: true, error: null });
 
         try {
@@ -440,45 +450,79 @@ const useOrderStore = create(
             throw new Error("Wait! You just placed this exact order.");
           }
 
-          // Make real API request to place the order
+          // Step 1: Create order via API
           const response = await placeOrder({
-             items: [...state.items],
-             totalAmount: state.totalAmount,
-             deliveryFee: state.getDeliveryFee(),
-             finalTotal: totalWithDelivery,
+             items: state.items.map(item => ({ mealId: item.id, quantity: item.quantity, snapshotName: item.name, snapshotPrice: item.price, imageUrl: item.image })),
+             totalPrice: totalWithDelivery,
+             discount: state.discount || 0,
              customerDetails: state.customerDetails,
              paymentMethod: state.paymentMethod,
-             note: state.note
+             note: state.note,
           });
 
+          const orderId = response.data.id;
+          const clientSecret = response.data.stripeClientSecret;
+
+          // Step 2: If credit card, confirm payment with Stripe
+          if (state.paymentMethod === "credit_card" && clientSecret && stripePaymentMethod) {
+            // This will be handled by the PaymentForm component
+            // which has access to the Stripe instance
+            set({ 
+              stripeClientSecret: clientSecret,
+              stripePaymentIntentId: response.data.stripePaymentIntentId,
+              pendingOrderId: orderId,
+            });
+            
+            // Return early - payment confirmation will be done by PaymentForm
+            set({ loading: false });
+            return { requiresPayment: true, clientSecret, orderId };
+          }
+
+          // Step 3: For cash orders or if no payment method needed, poll for status
+          const finalOrder = await pollOrderStatus(orderId);
+
           const newOrder = {
-             id: response.data.id || Math.floor(10000 + Math.random() * 90000).toString(),
-             date: response.data.createdAt || new Date().toISOString(),
-             items: [...state.items],
-             totalAmount: state.totalAmount,
-             deliveryFee: state.getDeliveryFee(),
-             finalTotal: totalWithDelivery,
+             id: finalOrder.id,
+             clientId: finalOrder.clientId,
+             createdAt: finalOrder.createdAt || new Date().toISOString(),
+             status: finalOrder.status,
+             totalPrice: finalOrder.totalPrice || totalWithDelivery,
+             discount: finalOrder.discount || 0,
+             items: finalOrder.items || state.items.map(item => ({ 
+               id: item.id, 
+               mealId: item.id, 
+               quantity: item.quantity, 
+               snapshotName: item.name, 
+               snapshotPrice: item.price, 
+               imageUrl: item.image 
+             })),
              customerDetails: state.customerDetails,
              paymentMethod: state.paymentMethod,
-             cardDetails: state.savedCard,
-             note: state.note
+             note: state.note,
+             stripeClientSecret: finalOrder.stripeClientSecret || "",
+             stripePaymentIntentId: finalOrder.stripePaymentIntentId || "",
           };
 
           // Log to Payment Store for transaction history (PRD requirement)
           usePaymentStore.getState().addTransaction({
              id: newOrder.id,
              amount: totalWithDelivery,
-             status: 'success'
+             status: finalOrder.status === 'CONFIRMED' ? 'success' : 'failed'
           });
 
           // Transition to success state
           set({ 
              lastOrder: newOrder,
-             loading: false 
+             loading: false,
+             stripeClientSecret: null,
+             stripePaymentIntentId: null,
+             pendingOrderId: null,
           });
           
           // Cleanup cart on success
-          get().clearCart();
+          if (finalOrder.status === 'CONFIRMED') {
+            get().clearCart();
+          }
 
           // Invalidate dashboard caches so the new order appears immediately
           queryClient.invalidateQueries({ queryKey: ["kitchen"] });
@@ -493,12 +537,123 @@ const useOrderStore = create(
             category: "Orders",
           });
 
-          return true;
+          return finalOrder.status === 'CONFIRMED';
         } catch (err) {
           console.error("[ORDER] submission failed:", err);
           set({ 
             loading: false, 
             error: err.message || "Failed to place order. Please try again." 
+          });
+          return false;
+        }
+      },
+
+      /**
+       * Confirms Stripe payment and polls for final order status
+       * Called after PaymentForm completes Stripe confirmation
+       * 
+       * Success statuses: PAID, CONFIRMED, PREPARING, READY
+       * Error statuses: CANCELED, CANCELLATION_PENDING
+       * 
+       * @async
+       * @param {Object} stripe - Stripe instance
+       * @param {Object} cardElement - Stripe card element
+       * @returns {Promise<boolean>} Success status
+       */
+      confirmStripePayment: async (stripe, cardElement) => {
+        const state = get();
+        const { stripeClientSecret, pendingOrderId } = state;
+
+        if (!stripeClientSecret || !pendingOrderId) {
+          throw new Error("No pending payment to confirm");
+        }
+
+        set({ loading: true, error: null });
+
+        try {
+          // Confirm payment with Stripe
+          const { error, paymentIntent } = await stripe.confirmCardPayment(
+            stripeClientSecret,
+            {
+              payment_method: {
+                card: cardElement,
+              }
+            }
+          );
+
+          if (error) {
+            throw new Error(error.message);
+          }
+
+          // Poll for order status update
+          const finalOrder = await pollOrderStatus(pendingOrderId);
+
+          const totalWithDelivery = state.getTotalWithDelivery();
+
+          // Define success statuses
+          const successStatuses = ['PAID', 'CONFIRMED', 'PREPARING', 'READY'];
+          const errorStatuses = ['CANCELED', 'CANCELLATION_PENDING'];
+          const isSuccess = successStatuses.includes(finalOrder.status);
+          const isError = errorStatuses.includes(finalOrder.status);
+
+          // Handle error statuses
+          if (isError) {
+            throw new Error(`Order ${finalOrder.status.toLowerCase()}. Please contact support.`);
+          }
+
+          const newOrder = {
+             id: finalOrder.id,
+             clientId: finalOrder.clientId,
+             createdAt: finalOrder.createdAt || new Date().toISOString(),
+             status: finalOrder.status,
+             totalPrice: finalOrder.totalPrice || totalWithDelivery,
+             discount: finalOrder.discount || 0,
+             items: finalOrder.items || state.items.map(item => ({ 
+               id: item.id, 
+               mealId: item.id, 
+               quantity: item.quantity, 
+               snapshotName: item.name, 
+               snapshotPrice: item.price, 
+               imageUrl: item.image 
+             })),
+             customerDetails: state.customerDetails,
+             paymentMethod: state.paymentMethod,
+             note: state.note,
+             stripeClientSecret: finalOrder.stripeClientSecret || "",
+             stripePaymentIntentId: finalOrder.stripePaymentIntentId || "",
+          };
+
+          // Log to Payment Store
+          usePaymentStore.getState().addTransaction({
+             id: newOrder.id,
+             amount: totalWithDelivery,
+             status: isSuccess ? 'success' : 'failed'
+          });
+
+          // Update store
+          set({ 
+             lastOrder: newOrder,
+             loading: false,
+             stripeClientSecret: null,
+             stripePaymentIntentId: null,
+             pendingOrderId: null,
+          });
+          
+          // Cleanup cart on success
+          if (isSuccess) {
+            get().clearCart();
+          }
+
+          // Invalidate caches
+          queryClient.invalidateQueries({ queryKey: ["kitchen"] });
+          queryClient.invalidateQueries({ queryKey: ["orders"] });
+
+          return isSuccess;
+        } catch (err) {
+          console.error("[ORDER] Stripe payment confirmation failed:", err);
+          set({ 
+            loading: false, 
+            error: err.message || "Payment failed. Please try again." 
           });
           return false;
         }
@@ -512,7 +667,6 @@ const useOrderStore = create(
         note: state.note,
         customerDetails: state.customerDetails,
         paymentMethod: state.paymentMethod,
-        savedCard: state.savedCard,
         lastOrder: state.lastOrder,
       }),
       /** Custom merge logic to ensure totals are recalculated from persisted items */
