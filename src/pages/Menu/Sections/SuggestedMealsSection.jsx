@@ -5,10 +5,7 @@ const SuggestedMealsSection = ({ items = [] }) => {
   const [showAll, setShowAll] = useState(false);
 
   const normalMeals = useMemo(
-    () =>
-      items.filter(
-        (meal) => !meal.discountPercent || meal.discountPercent === 0,
-      ),
+    () => items.filter((meal) => !meal.hasDiscount),
     [items],
   );
 
