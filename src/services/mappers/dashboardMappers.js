@@ -225,31 +225,18 @@ export const mapMenuItems = (data) => {
 
 // ── Ingredients Mappers ───────────────────────────────────────────
 
-export const mapIngredientsMetrics = (data) => ({
-  total: data.total || 0,
-  totalChange: data.totalChange ?? 0,
-  lowStock: data.lowStock || 0,
-  lowStockChange: data.lowStockChange ?? 0,
-  outOfStock: data.outOfStock || 0,
-  outOfStockChange: data.outOfStockChange ?? 0,
-});
-
+/**
+ * Maps real IngredientDTO from GET /api/ingredients.
+ * Only maps fields that actually exist in the backend response.
+ */
 export const mapIngredients = (data) => {
   if (!Array.isArray(data)) return [];
   return data.map((item) => ({
-    id: item.id || item._id,
-    name: item.name || "",
-    emoji: item.emoji || "🥦",
-    image: item.image || "",
-    category: item.category || "",
-    fat: item.fat || "",
-    calories: item.calories || "",
-    protein: item.protein || "",
-    sugar: item.sugar || "",
-    stock: item.stock || 0,
-    unit: item.unit || "unit",
-    costPerUnit: item.costPerUnit || "$0.00",
-    status: item.stock > 0 ? "In Stock" : "Out of Stock",
+    id:          item.id,
+    name:        item.name        || "",
+    description: item.description || "",
+    nutrients:   Array.isArray(item.nutrients) ? item.nutrients : [],
+    stock:       item.stock       ?? 0,
   }));
 };
 

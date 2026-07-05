@@ -127,15 +127,12 @@ export const uploadMenuFile = async (file) => {
   return result;
 };
 
-// ── Ingredients ───────────────────────────────────────────────────
-export const getIngredientsMetrics = () => api.get("/ingredients/metrics").then(r => Mappers.mapIngredientsMetrics(r.data));
-export const getIngredients        = (params = {}) => api.get("/api/ingredients", { params }).then(r => Mappers.mapIngredients(r.data));
-export const createIngredient      = (data) => api.post("/api/ingredients", data).then(r => r.data);
-export const updateIngredient      = (id, data) => api.patch(`/api/ingredients/${id}/stock`, data).then(r => r.data);
-export const deleteIngredient      = (id) => api.delete(`/api/ingredients/${id}`).then(r => r.data);
-export const bulkUpdateIngredientsStock = (data) => api.patch("/api/ingredients/bulk/stock", data).then(r => r.data);
-export const reserveIngredientsStock    = (data) => api.post("/api/ingredients/reserve", data).then(r => r.data);
-export const revertIngredientsStock     = (data) => api.post("/api/ingredients/revert", data).then(r => r.data);
+// ── Ingredients ───────────────────────────────────────────────────────────────────
+export const getIngredients             = (params = {}) => api.get("/api/ingredients", { params }).then(r => Mappers.mapIngredients(r.data));
+export const updateIngredientStock      = (id, data)    => api.patch(`/api/ingredients/${id}/stock`, data).then(r => r.data);
+export const bulkUpdateIngredientsStock = (data)        => api.patch("/api/ingredients/bulk/stock", data).then(r => r.data);
+export const reserveIngredientsStock    = (data)        => api.post("/api/ingredients/reserve", data).then(r => r.data);
+export const revertIngredientsStock     = (data)        => api.post("/api/ingredients/revert", data).then(r => r.data);
 
 
 export const uploadIngredientsFile = (file) => {
