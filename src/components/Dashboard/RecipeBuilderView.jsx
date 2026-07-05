@@ -5,7 +5,7 @@ import { useCreateMenuItem, useUpdateMenuItem } from "../../hooks/dashboard/useM
 import { useToast } from "../../store/toastStore";
 import { 
   FiPlus, FiTrash2, FiCamera, FiBookOpen, FiDollarSign, 
-  FiClock, FiAlignLeft, FiChevronUp, FiChevronDown, FiShare2, FiTarget, FiUser, FiEye, FiGrid, FiUploadCloud
+  FiClock, FiAlignLeft, FiChevronDown, FiGrid, FiUploadCloud
 } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
@@ -14,9 +14,9 @@ export default function RecipeBuilderView() {
   const { state } = useLocation();
   const editMeal = state?.editMeal ?? null;
 
-  const [form, setForm] = useState({ name: "", category: "", price: "", time: "", description: "", fat: "", calories: "", protein: "", sugar: "" });
+  const [form, setForm] = useState({ name: "", category: "", price: "", time: "", description: "" });
   const [localIngredients, setLocalIngredients] = useState([]);
-  const [newIngredient, setNewIngredient] = useState({ name: "", amount: "", imagePreview: null });
+  const [newIngredient, setNewIngredient] = useState({ name: "", amount: "" });
   const [mealImagePreview, setMealImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
@@ -35,10 +35,6 @@ export default function RecipeBuilderView() {
         price:       editMeal.price !== undefined ? String(editMeal.price) : "",
         time:        editMeal.time         ?? "",
         description: editMeal.description  ?? "",
-        fat:         editMeal.fat          ?? "",
-        calories:    editMeal.calories     ?? "",
-        protein:     editMeal.protein      ?? "",
-        sugar:       editMeal.sugar        ?? "",
       });
       if (editMeal.image) setMealImagePreview(editMeal.image);
       if (editMeal.ingredients?.length) setLocalIngredients(editMeal.ingredients);
@@ -48,11 +44,6 @@ export default function RecipeBuilderView() {
   // Initial ingredients was removed because it hit a mock endpoint
 
   const handleChange = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
-
-  const handleNutrientInput = (field) => (e) => {
-    let val = e.target.value.replace(/[^\d]/g, "");
-    setForm((f) => ({ ...f, [field]: val ? val + "g" : "" }));
-  };
 
   /** Price: digits and single decimal point only → positive number */
   const handlePriceInput = (e) => {
@@ -66,19 +57,10 @@ export default function RecipeBuilderView() {
     setForm(f => ({ ...f, time: val }));
   };
 
-  const adjustNutrient = (field, delta) => {
-    setForm((f) => {
-      let current = parseInt((f[field] || "").replace(/[^\d]/g, ""), 10);
-      if (isNaN(current)) current = 0;
-      let next = Math.max(0, current + delta);
-      return { ...f, [field]: next + "g" };
-    });
-  };
-
   const addIngredient = () => {
     if (!newIngredient.name.trim()) return;
     setLocalIngredients((prev) => [...prev, { id: Date.now(), ...newIngredient }]);
-    setNewIngredient({ name: "", amount: "", imagePreview: null });
+    setNewIngredient({ name: "", amount: "" });
   };
 
   const handleIngredientAmountInput = (e) => {
@@ -101,15 +83,6 @@ export default function RecipeBuilderView() {
     }
   };
 
-  const handleIngredientImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => setNewIngredient(p => ({ ...p, imagePreview: ev.target.result }));
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleSave = () => {
     if (!form.name.trim()) return;
     
@@ -119,7 +92,7 @@ export default function RecipeBuilderView() {
         addToast(editMeal ? "Recipe updated successfully!" : "Recipe saved successfully!", "success");
         setTimeout(() => {
           if (!editMeal) {
-            setForm({ name: "", category: "", price: "", time: "", description: "", fat: "", calories: "", protein: "", sugar: "" });
+            setForm({ name: "", category: "", price: "", time: "", description: "" });
             setMealImagePreview(null);
             setImageFile(null);
             setLocalIngredients([]);
@@ -146,17 +119,13 @@ export default function RecipeBuilderView() {
     form.price !== "" && 
     form.time !== "" && 
     form.description.trim() !== "" &&
-    form.fat !== "" &&
-    form.calories !== "" &&
-    form.protein !== "" &&
-    form.sugar !== "" &&
     localIngredients.length > 0 &&
     mealImagePreview !== null;
 
   const pageTitle = editMeal ? `Editing: ${editMeal.name}` : "Recipe Builder";
   const pageSubtitle = editMeal
-    ? "Update the meal details, ingredients, and nutritional values below."
-    : "Craft balanced, nutritionally optimized meals. Every ingredient added dynamically updates the macro profile to ensure culinary excellence meets dietary precision.";
+    ? "Update the meal details and ingredients below."
+    : "Craft exceptional culinary creations. Add ingredients and meal details to build your custom recipe for the menu.";
 
   return (
     <div className="pb-12">
@@ -258,8 +227,7 @@ export default function RecipeBuilderView() {
             <h3 className="text-[18px] font-bold text-[#1a1a1a] mb-5">Ingredient</h3>
             <div className="bg-white rounded-4xl p-6 shadow-sm border border-gray-50/50">
               {/* Header */}
-              <div className="grid grid-cols-[1fr_2fr_1fr] border-b border-gray-200 pb-3 mb-5 px-4">
-                <p className="text-[14px] font-medium text-[#1a1a1a] text-center">Photo</p>
+              <div className="grid grid-cols-[2fr_1fr] border-b border-gray-200 pb-3 mb-5 px-4">
                 <p className="text-[14px] font-medium text-[#1a1a1a] text-center">Name</p>
                 <p className="text-[14px] font-medium text-[#1a1a1a] text-center">Amount</p>
               </div>
@@ -267,14 +235,7 @@ export default function RecipeBuilderView() {
               {/* List */}
               <div className="flex flex-col gap-4 mb-4">
                 {localIngredients.map((ing) => (
-                  <div key={ing.id} className="grid grid-cols-[1fr_2fr_1fr] items-center gap-4 group relative px-4">
-                    <div className="flex justify-center">
-                      {ing.imagePreview || ing.emoji ? (
-                         ing.imagePreview ? <img src={ing.imagePreview} alt={ing.name} className="h-8 w-8 object-cover rounded-md" /> : <span className="text-2xl">{ing.emoji}</span>
-                      ) : (
-                         <div className="h-8 w-8 bg-gray-100 rounded-md"></div>
-                      )}
-                    </div>
+                  <div key={ing.id} className="grid grid-cols-[2fr_1fr] items-center gap-4 group relative px-4">
                     <div className="bg-[#F5F6F8] rounded-full py-1.5 px-4 text-center">
                       <span className="text-[12px] font-medium text-gray-600">{ing.name}</span>
                     </div>
@@ -293,11 +254,7 @@ export default function RecipeBuilderView() {
               </div>
 
               {/* Add New Row */}
-              <div className="grid grid-cols-[1fr_2fr_1fr] items-center gap-4 mt-8 px-4">
-                <label className="bg-[#B3B3B3] h-9 rounded-2xl flex items-center justify-center text-white cursor-pointer hover:bg-gray-500 transition-colors mx-auto w-14 shadow-sm">
-                   <FiCamera size={16}/>
-                   <input type="file" accept="image/*" className="hidden" onChange={handleIngredientImageUpload} />
-                </label>
+              <div className="grid grid-cols-[2fr_1fr] items-center gap-4 mt-8 px-4">
                 <div className="bg-[#F5F6F8] rounded-full py-1.5 px-4 text-center flex items-center justify-center">
                   <input 
                     className="bg-transparent text-[12px] font-medium text-gray-600 border-none outline-none w-full text-center" 
@@ -330,7 +287,7 @@ export default function RecipeBuilderView() {
           
         {/* ── Top Section: Image Upload ── */}
         <div className="col-span-1 lg:col-span-2 relative mt-4">
-          <div className="w-full h-[220px] bg-white rounded-4xl flex flex-col items-center justify-center relative overflow-hidden shadow-sm group">
+          <div className="w-full h-[280px] bg-white rounded-4xl flex flex-col items-center justify-center relative overflow-hidden shadow-sm group">
             {mealImagePreview ? (
               <>
                 <img src={mealImagePreview} alt="Meal Preview" className="w-full h-full object-cover" />
@@ -351,36 +308,6 @@ export default function RecipeBuilderView() {
             )}
           </div>
         </div>
-
-          {/* Nutritional Value */}
-          <div>
-            <h3 className="text-[18px] font-bold text-[#1a1a1a] mb-5">Nutritional Value</h3>
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { key: 'fat', label: 'Fat', color: 'text-blue-500', Icon: FiShare2 },
-                { key: 'calories', label: 'Calories', color: 'text-green-500', Icon: FiTarget },
-                { key: 'protein', label: 'Protein', color: 'text-blue-400', Icon: FiUser },
-                { key: 'sugar', label: 'Sugar', color: 'text-orange-400', Icon: FiEye }
-              ].map(nut => (
-                <div key={nut.key} className="bg-white rounded-3xl pt-5 pb-6 px-4 flex flex-col items-center justify-center relative shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-gray-50/50">
-                  <p className="text-[14px] font-medium text-[#1a1a1a] mb-3">{nut.label}</p>
-                  <div className="bg-[#F5F6F8] rounded-xl px-4 py-2 flex items-center gap-3">
-                    <input 
-                       className="bg-transparent text-[13px] font-medium text-gray-600 border-none outline-none text-center w-10" 
-                       value={form[nut.key]} 
-                       onChange={handleNutrientInput(nut.key)}
-                       placeholder="0g"
-                    />
-                    <div className="flex flex-col items-center justify-center text-gray-500">
-                      <FiChevronUp size={10} className="cursor-pointer hover:text-gray-800" onClick={() => adjustNutrient(nut.key, 1)} />
-                      <FiChevronDown size={10} className="cursor-pointer hover:text-gray-800" onClick={() => adjustNutrient(nut.key, -1)} />
-                    </div>
-                  </div>
-                  <nut.Icon className={`absolute bottom-3 right-3 ${nut.color} opacity-80`} size={16} />
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* ── Bottom Section ── */}
@@ -393,7 +320,7 @@ export default function RecipeBuilderView() {
                <div className="flex flex-col sm:flex-row items-center gap-6 w-full justify-center">
                   <button 
                      onClick={() => {
-                        setForm({ name: "", category: "", price: "", time: "", description: "", fat: "", calories: "", protein: "", sugar: "" });
+                        setForm({ name: "", category: "", price: "", time: "", description: "" });
                         setMealImagePreview(null);
                         setLocalIngredients([]);
                      }}
