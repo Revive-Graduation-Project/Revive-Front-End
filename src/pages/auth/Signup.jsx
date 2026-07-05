@@ -132,7 +132,7 @@ function Signup() {
     setSubmitError(null);
 
     try {
-      await register({
+      const result = await register({
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
@@ -149,7 +149,11 @@ function Signup() {
         healthConditions: formData.healthConditions.length ? formData.healthConditions : ["NONE"],
       });
 
-      navigate("/auth/login");
+      if (result) {
+        navigate("/auth/login");
+      } else {
+        setSubmitError("Signup failed, please try again");
+      }
     } catch (err) {
       setSubmitError(
         err.response?.data?.message ?? "Signup failed, please try again",

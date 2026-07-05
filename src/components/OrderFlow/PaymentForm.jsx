@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useOrderStore } from "../../store";
-import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
+import { useStripe } from "@stripe/react-stripe-js";
 import Modal from "../UI/Modal";
 import StripeCardElement from "./Payment/StripeCardElement";
 import PaymentMethodSelector from "./Payment/PaymentMethodSelector";
@@ -23,7 +23,6 @@ import PaymentMethodSelector from "./Payment/PaymentMethodSelector";
 export default function PaymentForm() {
   const navigate = useNavigate();
   const stripe = useStripe();
-  const elements = useElements();
   
   // Store actions and state
   const submitOrder = useOrderStore((state) => state.submitOrder);
@@ -35,18 +34,15 @@ export default function PaymentForm() {
 
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
   const [stripeError, setStripeError] = useState(null);
-
-  const handleMethodSelect = (method) => {
-    setPaymentMethod(method);
-    if (method === "credit_card") {
-      setIsAddCardOpen(true);
-    }
-  };
+  const [cardElement, setCardElement] = useState(null);
 
   const handleCardComplete = () => {
-    setIsAddCardOpen(false);
     setPaymentMethod("credit_card");
     setStripeError(null);
+  };
+
+  const handleElementReady = (element) => {
+    setCardElement(element);
   };
 
   const handleSubmit = async (e) => {
@@ -62,12 +58,11 @@ export default function PaymentForm() {
 
     // For credit card, need card element
     if (paymentMethod === "credit_card") {
-      if (!stripe || !elements) {
+      if (!stripe) {
         setStripeError("Stripe not loaded. Please refresh the page.");
         return;
       }
 
-      const cardElement = elements.getElement(CardElement);
       if (!cardElement) {
         setIsAddCardOpen(true);
         return;
@@ -79,7 +74,10 @@ export default function PaymentForm() {
       if (orderResult?.requiresPayment) {
         // Step 2: Confirm payment with Stripe
         const success = await confirmStripePayment(stripe, cardElement);
-        if (success) navigate("/thanks");
+        if (success) {
+          setIsAddCardOpen(false);
+          navigate("/thanks");
+        }
       }
     }
   };
@@ -125,6 +123,7 @@ export default function PaymentForm() {
            onCardComplete={handleCardComplete}
            onError={setStripeError}
            loading={loading}
+           onElementReady={handleElementReady}
          />
       </Modal>
     </div>

@@ -45,8 +45,6 @@ export default function OrderConfirmationDetails({ items, totalAmount, deliveryF
 
       {/* Totals */}
       <div className="space-y-3 md:w-1/2 md:ml-auto">
-        <div className="border-t border-gray-100 my-3"></div>
-        
         <div className="flex justify-between items-center text-xl">
            <span className="font-bold text-gray-900">Total</span>
            <span className="font-bold text-gray-900">{formatCurrency(totalAmount)}</span>

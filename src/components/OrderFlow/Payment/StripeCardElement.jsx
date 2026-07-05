@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   CardNumberElement,
   CardExpiryElement,
@@ -14,7 +14,8 @@ import CardPreview from "../AddCard/CardPreview";
  * (CardNumberElement / CardExpiryElement / CardCvcElement), paired with
  * a live CardPreview above the form.
  *
- * Reports completeness/errors upward via props. Does NOT confirm payment
+ * Reports completeness/errors upward via props. Exposes the CardNumberElement
+ * ref via onElementReady for parent payment confirmation. Does NOT confirm payment
  * itself — the parent checkout flow owns that using the Stripe instance
  * and clientSecret from order creation.
  */
@@ -35,8 +36,9 @@ const ELEMENT_STYLE = {
 
 const CARD_FIELD_KEYS = ["cardNumber", "cardExpiry", "cardCvc"];
 
-export default function StripeCardElement({ onCardComplete, onError, loading }) {
+export default function StripeCardElement({ onCardComplete, onError, loading, onElementReady }) {
   const stripe = useStripe();
+  const cardNumberRef = useRef(null);
 
   const [complete, setComplete] = useState({
     cardNumber: false,
@@ -60,10 +62,14 @@ export default function StripeCardElement({ onCardComplete, onError, loading }) 
     setFieldErrors(nextErrors);
     if (key === "cardNumber" && event.brand) setBrand(event.brand);
 
-    const allComplete = CARD_FIELD_KEYS.every((k) => nextComplete[k]);
     const firstError = CARD_FIELD_KEYS.map((k) => nextErrors[k]).find(Boolean) || null;
     
     onError(firstError);
+
+    // Notify parent when card number element is ready
+    if (key === "cardNumber" && cardNumberRef.current && onElementReady) {
+      onElementReady(cardNumberRef.current);
+    }
   };
 
   const handleConfirmCard = () => {
@@ -108,11 +114,17 @@ export default function StripeCardElement({ onCardComplete, onError, loading }) 
           </label>
           <div id="cardNumber" className={fieldWrapperClass("cardNumber")}>
             <CardNumberElement
+              ref={cardNumberRef}
               options={{ style: ELEMENT_STYLE, placeholder: "0000 0000 0000 0000" }}
               onChange={handleChange("cardNumber")}
               onFocus={() => setFocused("cardNumber")}
               onBlur={() => setFocused(null)}
               disabled={loading}
+              onReady={() => {
+                if (onElementReady && cardNumberRef.current) {
+                  onElementReady(cardNumberRef.current);
+                }
+              }}
             />
           </div>
           {fieldErrors.cardNumber && (

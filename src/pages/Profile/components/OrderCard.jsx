@@ -16,6 +16,13 @@ const OrderCard = ({ order }) => {
             <span className="text-sm font-medium">Preparing</span>
           </span>
         );
+      case "PAID":
+        return (
+          <span className="flex items-center gap-1.5 text-blue-600">
+            <FiCheckCircle className="w-4 h-4 shrink-0" />
+            <span className="text-sm font-medium">Paid</span>
+          </span>
+        );
       case "CONFIRMED":
         return (
           <span className="flex items-center gap-1.5 text-green-600">
@@ -28,6 +35,13 @@ const OrderCard = ({ order }) => {
           <span className="flex items-center gap-1.5 text-green-700">
              <FaBell className="w-4 h-4" />
             <span className="text-sm font-medium">Ready</span>
+          </span>
+        );
+      case "CANCELLATION_PENDING":
+        return (
+          <span className="flex items-center gap-1.5 text-orange-500">
+            <FiClock className="w-4 h-4 shrink-0" />
+            <span className="text-sm font-medium">Canceling</span>
           </span>
         );
       case "CANCELED":

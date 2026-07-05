@@ -40,7 +40,7 @@ export default function Profile() {
               // Using user.id directly from the profile store
               const updated = await updateUserProfile(user.id, form);
               
-              if (!updated) throw new Error(error || "Failed to update profile. Please try again.");
+              if (!updated) throw new Error("Failed to update profile. Please try again.");
               
               toast.success("Profile updated successfully.");
               setEditing(false);

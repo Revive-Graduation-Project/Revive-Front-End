@@ -27,7 +27,7 @@ export const mockOrders = [
   },
   {
     id: 900719954740981,
-    clientId: 9007199254740999,
+    clientId: 9007199254740992,
     status: "READY",
     totalPrice: 19.99,
     discount: 0,
@@ -88,7 +88,7 @@ export const mockOrders = [
 
   {
     id: 90079254740992,
-    clientId: 9007199254740992,
+    clientId: 9007199254740993,
     status: "READY",
     totalPrice: 79.96,
     discount: 0,
@@ -108,7 +108,7 @@ export const mockOrders = [
   },
   {
     id: 9009254740993,
-    clientId: 9007199254740993,
+    clientId: 9007199254740994,
     status: "PREPARING",
     totalPrice: 49.99,
     discount: 5,
@@ -136,7 +136,7 @@ export const mockOrders = [
   },
   {
     id: 9007254740994,
-    clientId: 9007199254740994,
+    clientId: 9007199254740995,
     status: "PENDING",
     totalPrice: 45.98,
     discount: 0,

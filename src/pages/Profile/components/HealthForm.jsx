@@ -36,9 +36,7 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
 
   const submit = () => {
     if (form.phoneNumber && !validatePhoneNumber(form.phoneNumber.trim())) {
-      setPhoneError(
-        "Please enter a valid Egyptian phone number (e.g. 01012345678)",
-      );
+      setPhoneError("Please enter a valid phone number");
       return;
     }
 

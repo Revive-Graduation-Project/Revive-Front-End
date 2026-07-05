@@ -27,7 +27,6 @@ const useProfileStore = create(
         try {
           const res = await getProfile(userId);
           const user = res?.data || null;
-          console.log("Fetched profile data:", user);
           if (!user) {
             set({ error: "Profile not found", loading: false });
             return null;
@@ -79,9 +78,11 @@ const useProfileStore = create(
         if (!userId) return null;
         set({ loading: true, error: null });
         try {
-          const res = await deleteProfilePicture(userId);
-          const user = res?.data || get().user; 
-          set({ user, loading: false, error: null });
+          await deleteProfilePicture(userId);
+          // Clear profile image fields on success
+          const currentUser = get().user;
+          const updatedUser = currentUser ? { ...currentUser, profilePicture: null, avatar: null } : null;
+          set({ user: updatedUser, loading: false, error: null });
           return true;
         } catch (error) {
           set({ error: error?.response?.data?.message || error.message, loading: false });

@@ -464,7 +464,7 @@ const useOrderStore = create(
           const clientSecret = response.data.stripeClientSecret;
 
           // Step 2: If credit card, confirm payment with Stripe
-          if (state.paymentMethod === "credit_card" && clientSecret && stripePaymentMethod) {
+          if (state.paymentMethod === "credit_card" && clientSecret) {
             // This will be handled by the PaymentForm component
             // which has access to the Stripe instance
             set({ 
@@ -503,11 +503,22 @@ const useOrderStore = create(
              stripePaymentIntentId: finalOrder.stripePaymentIntentId || "",
           };
 
+          // Define success statuses
+          const successStatuses = ['PAID', 'CONFIRMED', 'PREPARING', 'READY'];
+          const errorStatuses = ['CANCELED', 'CANCELLATION_PENDING'];
+          const isSuccess = successStatuses.includes(finalOrder.status);
+          const isError = errorStatuses.includes(finalOrder.status);
+
+          // Handle error statuses
+          if (isError) {
+            throw new Error(`Order ${finalOrder.status.toLowerCase()}. Please contact support.`);
+          }
+
           // Log to Payment Store for transaction history (PRD requirement)
           usePaymentStore.getState().addTransaction({
              id: newOrder.id,
              amount: totalWithDelivery,
-             status: finalOrder.status === 'CONFIRMED' ? 'success' : 'failed'
+             status: isSuccess ? 'success' : 'failed'
           });
 
           // Transition to success state
@@ -520,7 +531,7 @@ const useOrderStore = create(
           });
           
           // Cleanup cart on success
-          if (finalOrder.status === 'CONFIRMED') {
+          if (isSuccess) {
             get().clearCart();
           }
 
@@ -537,7 +548,7 @@ const useOrderStore = create(
             category: "Orders",
           });
 
-          return finalOrder.status === 'CONFIRMED';
+          return isSuccess;
         } catch (err) {
           console.error("[ORDER] submission failed:", err);
           set({ 
@@ -572,7 +583,7 @@ const useOrderStore = create(
 
         try {
           // Confirm payment with Stripe
-          const { error, paymentIntent } = await stripe.confirmCardPayment(
+          const { error } = await stripe.confirmCardPayment(
             stripeClientSecret,
             {
               payment_method: {

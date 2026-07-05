@@ -2,11 +2,20 @@ import { HEALTH_CONDITIONS } from "../../constants";
 function AllergiesDropdown({ selected = [], onChange }) {
 
   const handleToggle = (option) => {
-    
     if (selected.includes(option)) {
-      onChange(selected.filter((s) => s !== option));
+      // Removing a condition
+      const next = selected.filter((s) => s !== option);
+      // If array is empty after removing, default back to "NONE"
+      onChange(next.length === 0 ? ["NONE"] : next);
     } else {
-      onChange([...selected, option]);
+      // Adding a condition
+      if (option === "NONE") {
+        // If they select "NONE", clear everything else
+        onChange(["NONE"]);
+      } else {
+        // If they select a real condition, remove "NONE" from the array
+        onChange([...selected.filter((s) => s !== "NONE"), option]);
+      }
     }
   };
 
@@ -18,7 +27,7 @@ function AllergiesDropdown({ selected = [], onChange }) {
 
       <div className="border border-orange rounded-2xl p-4">
         <div className="grid grid-cols-1 gap-2 text-sm">
-          {HEALTH_CONDITIONS.map(({label , value}, index) => (
+          {HEALTH_CONDITIONS.map(({label , value}) => (
             <label
               key={value}
               className="flex items-center gap-2 cursor-pointer"

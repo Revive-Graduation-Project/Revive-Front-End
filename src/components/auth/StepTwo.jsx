@@ -1,6 +1,6 @@
 import { GOAL_OPTIONS } from "../../constants";
 
-function StepTwo({ formData, onChange, onNext, onBack, error }) {
+function StepTwo({ formData, onChange, onNext, onBack, errors }) {
   return (
     <>
       <h2 className="text-center text-2xl font-semibold mb-6 text-gray-800">
@@ -15,8 +15,11 @@ function StepTwo({ formData, onChange, onNext, onBack, error }) {
             placeholder="Enter your weight"
             value={formData.weight}
             onChange={onChange}
-            className="w-full border border-orange rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-400"
+            className={`w-full border rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 ${
+              errors?.weight ? 'border-red-500 focus:ring-red-400' : 'border-orange focus:ring-orange-400'
+            }`}
           />
+          {errors?.weight && <p className="text-red-500 text-xs">{errors.weight}</p>}
         </div>
 
         <div className="flex flex-col space-y-1">
@@ -27,8 +30,11 @@ function StepTwo({ formData, onChange, onNext, onBack, error }) {
             placeholder="Enter your height"
             value={formData.height}
             onChange={onChange}
-            className="w-full border border-orange rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-400"
+            className={`w-full border rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 ${
+              errors?.height ? 'border-red-500 focus:ring-red-400' : 'border-orange focus:ring-orange-400'
+            }`}
           />
+          {errors?.height && <p className="text-red-500 text-xs">{errors.height}</p>}
         </div>
 
         <div className="flex flex-col space-y-1">
@@ -39,8 +45,11 @@ function StepTwo({ formData, onChange, onNext, onBack, error }) {
             placeholder="Enter your age"
             value={formData.age}
             onChange={onChange}
-            className="w-full border border-orange rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-400"
+            className={`w-full border rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 ${
+              errors?.age ? 'border-red-500 focus:ring-red-400' : 'border-orange focus:ring-orange-400'
+            }`}
           />
+          {errors?.age && <p className="text-red-500 text-xs">{errors.age}</p>}
         </div>
 
         <div>
@@ -126,7 +135,6 @@ function StepTwo({ formData, onChange, onNext, onBack, error }) {
             ))}
           </div>
         </div>
-        {error && <p className="text-red-500 text-xs text-center">{error}</p>}
         <div className="flex justify-between">
           <button
             type="button"
