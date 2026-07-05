@@ -13,7 +13,7 @@ const PopularMenuCard = ({ name, imageUrl, price }) => {
               Starting
             </span>
             <span className="text-lg sm:text-xl font-bold text-(--color-orange)">
-              {price.toFixed(2)}$
+              {Number(price || 0).toFixed(2)}$
             </span>
           </div>
         </div>

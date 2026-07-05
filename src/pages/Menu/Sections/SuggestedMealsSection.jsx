@@ -9,6 +9,8 @@ const SuggestedMealsSection = ({ items = [] }) => {
     [items],
   );
 
+  if (normalMeals.length === 0) return null;
+
   const visibleMeals = showAll ? normalMeals : normalMeals.slice(0, 8);
 
   return (
