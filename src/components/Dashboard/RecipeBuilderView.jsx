@@ -2,26 +2,30 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router";
 import DashboardHeader from "./DashboardHeader";
 import { useCreateMenuItem, useUpdateMenuItem } from "../../hooks/dashboard/useMenuItems";
+import { useIngredients } from "../../hooks/dashboard/useIngredients";
 import { useToast } from "../../store/toastStore";
 import { 
   FiPlus, FiTrash2, FiCamera, FiBookOpen, FiDollarSign, 
-  FiClock, FiAlignLeft, FiChevronDown, FiGrid, FiUploadCloud
+  FiAlignLeft, FiChevronDown, FiGrid, FiUploadCloud, FiSearch, FiX
 } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
+import IngredientSelector from "./shared/IngredientSelector";
 
 export default function RecipeBuilderView() {
   const { state } = useLocation();
   const editMeal = state?.editMeal ?? null;
 
-  const [form, setForm] = useState({ name: "", category: "", price: "", time: "", description: "" });
+  const [form, setForm] = useState({ name: "", category: "", price: "", description: "" });
   const [localIngredients, setLocalIngredients] = useState([]);
   const [newIngredient, setNewIngredient] = useState({ name: "", amount: "" });
+  const [isCustomName, setIsCustomName] = useState(false);
   const [mealImagePreview, setMealImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
 
   const { addToast } = useToast();
+  const { data: availableIngredients = [] } = useIngredients();
   const { mutate: createMeal, isSuccess: created, reset: resetCreate } = useCreateMenuItem();
   const { mutate: updateMeal, isSuccess: updated, reset: resetUpdate } = useUpdateMenuItem();
   const saved = created || updated;
@@ -33,11 +37,30 @@ export default function RecipeBuilderView() {
         name:        editMeal.name        ?? "",
         category:    editMeal.category    ?? "",
         price:       editMeal.price !== undefined ? String(editMeal.price) : "",
-        time:        editMeal.time         ?? "",
         description: editMeal.description  ?? "",
       });
       if (editMeal.image) setMealImagePreview(editMeal.image);
-      if (editMeal.ingredients?.length) setLocalIngredients(editMeal.ingredients);
+      if (editMeal.ingredients?.length) {
+        const normIngs = editMeal.ingredients.map((ing, idx) => {
+          const name = typeof ing === "object" && ing !== null
+            ? (ing.name || ing.ingredient?.name || ing.ingredientName || ing.snapshotName || "Ingredient")
+            : String(ing);
+          const rawAmt = typeof ing === "object" && ing !== null
+            ? (ing.amount !== undefined ? ing.amount : (ing.quantityGrams !== undefined ? ing.quantityGrams : (ing.quantity !== undefined ? ing.quantity : "0")))
+            : "0";
+          const unit = typeof ing === "object" && ing !== null ? (ing.unit || "g") : "g";
+          const amount = typeof rawAmt === "string" && rawAmt.endsWith(unit) ? rawAmt : `${rawAmt}${unit}`;
+          return {
+            ...(typeof ing === "object" && ing !== null ? ing : {}),
+            id: typeof ing === "object" && ing !== null ? (ing.id || ing.ingredientId || Date.now() + idx) : Date.now() + idx,
+            ingredientId: typeof ing === "object" && ing !== null ? (ing.ingredientId || ing.ingredient?.id || ing.id) : undefined,
+            name: String(name).trim(),
+            amount,
+            unit,
+          };
+        });
+        setLocalIngredients(normIngs);
+      }
     }
   }, [editMeal]);
 
@@ -51,24 +74,19 @@ export default function RecipeBuilderView() {
     setForm(f => ({ ...f, price: val }));
   };
 
-  /** Time: digits only → positive integer (minutes) */
-  const handleTimeInput = (e) => {
-    const val = e.target.value.replace(/[^\d]/g, "");
-    setForm(f => ({ ...f, time: val }));
-  };
-
   const addIngredient = () => {
-    if (!newIngredient.name.trim()) return;
-    setLocalIngredients((prev) => [...prev, { id: Date.now(), ...newIngredient }]);
-    setNewIngredient({ name: "", amount: "" });
+    if (!newIngredient.name.trim() || newIngredient.name === "__custom__") return;
+    const cleanNum = newIngredient.amount ? String(newIngredient.amount).replace(/[^\d.]/g, "") : "0";
+    const formattedAmount = `${cleanNum || "0"}${newIngredient.unit || "g"}`;
+    setLocalIngredients((prev) => [...prev, { id: Date.now(), ...newIngredient, amount: formattedAmount }]);
+    setNewIngredient({ name: "", amount: "", ingredientId: undefined, unit: "g" });
+    setIsCustomName(false);
   };
 
   const handleIngredientAmountInput = (e) => {
-    let val = e.target.value.toLowerCase();
-    // Strictly allow numbers, optional spaces, and exactly "g", "m", or "ml"
-    if (/^\d*\s*(m|ml|g)?$/.test(val)) {
-      setNewIngredient(p => ({ ...p, amount: val }));
-    }
+    // Like parseStock in Ingredients page: edit numeric digits directly
+    const val = e.target.value.replace(/[^\d.]/g, "").replace(/^(\d*\.?\d*).*/, "$1");
+    setNewIngredient(p => ({ ...p, amount: val }));
   };
 
   const removeIngredient = (id) => setLocalIngredients((prev) => prev.filter((i) => i.id !== id));
@@ -86,13 +104,13 @@ export default function RecipeBuilderView() {
   const handleSave = () => {
     if (!form.name.trim()) return;
     
-    const payload = { ...form, ingredients: localIngredients, imageFile };
+    const payload = { ...(editMeal || {}), ...form, id: editMeal ? (editMeal.id || editMeal._id) : undefined, ingredients: localIngredients, imageFile };
     const options = {
       onSuccess: () => {
         addToast(editMeal ? "Recipe updated successfully!" : "Recipe saved successfully!", "success");
         setTimeout(() => {
           if (!editMeal) {
-            setForm({ name: "", category: "", price: "", time: "", description: "" });
+            setForm({ name: "", category: "", price: "", description: "" });
             setMealImagePreview(null);
             setImageFile(null);
             setLocalIngredients([]);
@@ -117,7 +135,6 @@ export default function RecipeBuilderView() {
     form.name.trim() !== "" && 
     form.category !== "" &&
     form.price !== "" && 
-    form.time !== "" && 
     form.description.trim() !== "" &&
     localIngredients.length > 0 &&
     mealImagePreview !== null;
@@ -195,20 +212,11 @@ export default function RecipeBuilderView() {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-[14px] font-medium text-[#1a1a1a] mb-2">Price</p>
-                  <div className="bg-white rounded-full px-5 py-3.5 flex items-center gap-3 shadow-sm">
-                    <FiDollarSign className="text-gray-400 shrink-0" size={16} />
-                    <input placeholder="Enter meal price..." className="bg-transparent border-none outline-none w-full text-[13px] font-medium text-gray-600" value={form.price} onChange={handlePriceInput} />
-                  </div>
-                </div>
-                <div>
-                  <p className="text-[14px] font-medium text-[#1a1a1a] mb-2">Time</p>
-                  <div className="bg-white rounded-full px-5 py-3.5 flex items-center gap-3 shadow-sm">
-                    <FiClock className="text-gray-400 shrink-0" size={16} />
-                    <input placeholder="Cooking time (min)..." className="bg-transparent border-none outline-none w-full text-[13px] font-medium text-gray-600" value={form.time} onChange={handleTimeInput} />
-                  </div>
+              <div>
+                <p className="text-[14px] font-medium text-[#1a1a1a] mb-2">Price</p>
+                <div className="bg-white rounded-full px-5 py-3.5 flex items-center gap-3 shadow-sm">
+                  <FiDollarSign className="text-gray-400 shrink-0" size={16} />
+                  <input placeholder="Enter meal price..." className="bg-transparent border-none outline-none w-full text-[13px] font-medium text-gray-600" value={form.price} onChange={handlePriceInput} />
                 </div>
               </div>
 
@@ -255,21 +263,21 @@ export default function RecipeBuilderView() {
 
               {/* Add New Row */}
               <div className="grid grid-cols-[2fr_1fr] items-center gap-4 mt-8 px-4">
-                <div className="bg-[#F5F6F8] rounded-full py-1.5 px-4 text-center flex items-center justify-center">
+                <IngredientSelector 
+                  availableIngredients={availableIngredients}
+                  newIngredient={newIngredient}
+                  setNewIngredient={setNewIngredient}
+                  isCustomName={isCustomName}
+                  setIsCustomName={setIsCustomName}
+                />
+                <div className="bg-[#F5F6F8] rounded-full py-1.5 px-4 text-center flex items-center justify-center gap-1">
                   <input 
                     className="bg-transparent text-[12px] font-medium text-gray-600 border-none outline-none w-full text-center" 
-                    placeholder="Name" 
-                    value={newIngredient.name} 
-                    onChange={e => setNewIngredient(p => ({...p, name: e.target.value}))} 
-                  />
-                </div>
-                <div className="bg-[#F5F6F8] rounded-full py-1.5 px-4 text-center flex items-center justify-center">
-                  <input 
-                    className="bg-transparent text-[12px] font-medium text-gray-600 border-none outline-none w-full text-center" 
-                    placeholder="Amount" 
+                    placeholder="0" 
                     value={newIngredient.amount} 
                     onChange={handleIngredientAmountInput} 
                   />
+                  <span className="text-[12px] font-bold text-gray-400 shrink-0">{newIngredient.unit || "g"}</span>
                 </div>
               </div>
 

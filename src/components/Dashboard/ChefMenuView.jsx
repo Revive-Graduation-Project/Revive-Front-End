@@ -236,10 +236,10 @@ function ChefMenuView() {
                         </div>
                       </td>
                       <td className="px-5 py-3.5 text-[13px] text-gray-500">{item.category}</td>
-                      <td className="px-5 py-3.5 text-[12px] text-green-600 font-semibold">{item.fat || "-"}</td>
-                      <td className="px-5 py-3.5 text-[12px] text-green-600 font-semibold">{item.calories || "-"}</td>
-                      <td className="px-5 py-3.5 text-[12px] text-green-600 font-semibold">{item.protein || "-"}</td>
-                      <td className="px-5 py-3.5 text-[12px] text-green-600 font-semibold">{item.sugar || "-"}</td>
+                      <td className="px-5 py-3.5 text-[12px] text-green-600 font-semibold">{item.fat ?? "-"}</td>
+                      <td className="px-5 py-3.5 text-[12px] text-green-600 font-semibold">{item.calories ?? "-"}</td>
+                      <td className="px-5 py-3.5 text-[12px] text-green-600 font-semibold">{item.protein ?? "-"}</td>
+                      <td className="px-5 py-3.5 text-[12px] text-green-600 font-semibold">{item.sugar ?? "-"}</td>
                       <td className="px-5 py-3.5 text-[13px] font-bold text-orange-500">${item.price}</td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2">
