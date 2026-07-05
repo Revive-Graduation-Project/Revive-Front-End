@@ -10,10 +10,12 @@ export const loginService = async (credentials) => {
   return api.post("/auth/login", credentials);
 };
 
-// Logout
-export const logoutService = async () => {
-  return api.post("/auth/logout");
-};
+// Note: This service is DEPRECATED. The backend does not have a logout endpoint.
+// Logout is handled client-side by clearing the auth state and removing the token from storage.
+
+// export const logoutService = async () => {
+//   return api.post("/auth/logout");
+// };
 
 // ============================================================
 // Restore session — DEDUPED

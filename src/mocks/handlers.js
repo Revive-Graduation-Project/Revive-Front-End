@@ -1,6 +1,6 @@
 import { mockMeals } from "./meals";
 import { mockOrders } from "./orders";
-import { mockUsers } from "./users";
+import { mockUsers, toClientProfileDto } from "./users";
 import * as dash from "./dashboardMock";
 
 /**
@@ -31,12 +31,17 @@ export const MOCK_HANDLERS = [
       if (!user || password !== "password123") {
         return { status: 401, data: { message: "Invalid credentials" } };
       }
+      // auth response carries identity only — client-profile fields
+      // belong to a different endpoint/service entirely
+      const { age, gender, exercisesRegularly, height, heightUnit, weight,
+        weightUnit, goal, healthConditions, phoneNumber, profilePictureUrl,
+        loyaltyPoints, ...authUser } = user;
       return {
         status: 200,
         data: {
           token: MOCK_TOKEN,
           expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
-          user,
+          user: authUser,
         },
       };
     },
@@ -142,10 +147,8 @@ export const MOCK_HANDLERS = [
     handler: (config) => {
       const id = extractId(config.url);
       const order = mockOrders.find((o) => o.id === id);
-      
+
       if (order) {
-        // Simulate webhook: if order is AWAITING_PAYMENT, return CONFIRMED
-        // This simulates the payment success webhook updating the order
         if (order.status === "AWAITING_PAYMENT") {
           return {
             status: 200,
@@ -154,7 +157,7 @@ export const MOCK_HANDLERS = [
         }
         return { status: 200, data: order };
       }
-      
+
       return { status: 404, data: { message: `Order ${id} not found` } };
     },
   },
@@ -185,8 +188,7 @@ export const MOCK_HANDLERS = [
     handler: (config) => {
       const body = JSON.parse(config.data || "{}");
       const orderId = Date.now();
-      
-      // For credit card, return AWAITING_PAYMENT with clientSecret
+
       if (body.paymentMethod === "credit_card") {
         return {
           status: 201,
@@ -200,8 +202,7 @@ export const MOCK_HANDLERS = [
           },
         };
       }
-      
-      // For cash, return PENDING (will be confirmed by backend)
+
       return {
         status: 201,
         data: {
@@ -231,7 +232,7 @@ export const MOCK_HANDLERS = [
   },
 
   // ──────────────────────────────────────────────
-  // USERS
+  // USERS / CLIENT PROFILE
   // ──────────────────────────────────────────────
   {
     method: "get",
@@ -239,11 +240,55 @@ export const MOCK_HANDLERS = [
     handler: () => ({ status: 200, data: currentUser }),
   },
   {
-    method: "put",
-    match: (url) => url.match(/\/api\/clients\/profile\/\d+/),
+    // GET /api/clients/profile/{id} — matches ClientProfileController.getProfile(),
+    // which returns ClientProfileDto DIRECTLY (no wrapper, no name fields).
+    // End-anchored ($) so this doesn't also match .../picture requests.
+    method: "get",
+    match: (url) => url.match(/\/api\/clients\/profile\/\d+$/),
     handler: (config) => {
+      const id = extractId(config.url);
+      const user = mockUsers.find((u) => u.id === id);
+      const dto = toClientProfileDto(user);
+      return dto
+        ? { status: 200, data: dto }
+        : { status: 404, data: { message: `Profile ${id} not found` } };
+    },
+  },
+  {
+    // PUT /api/clients/profile/{id} — used by updateUserProfile()
+    method: "put",
+    match: (url) => url.match(/\/api\/clients\/profile\/\d+$/),
+    handler: (config) => {
+      const id = extractId(config.url);
+      const user = mockUsers.find((u) => u.id === id);
       const body = JSON.parse(config.data || "{}");
-      return { status: 200, data: { ...currentUser, ...body } };
+      Object.assign(user, body);
+      return { status: 200, data: toClientProfileDto(user) };
+    },
+  },
+  {
+    // PATCH /api/clients/profile/{id}/picture — matches
+    // uploadProfilePicture(). Returns { profilePictureUrl } only,
+    // exactly like the real controller.
+    method: "patch",
+    match: (url) => url.match(/\/api\/clients\/profile\/\d+\/picture$/),
+    handler: (config) => {
+      const id = extractId(config.url);
+      const user = mockUsers.find((u) => u.id === id);
+      const fakeUrl = `https://i.pravatar.cc/150?u=${id}-${Date.now()}`;
+      if (user) user.profilePictureUrl = fakeUrl;
+      return { status: 200, data: { profilePictureUrl: fakeUrl } };
+    },
+  },
+  {
+    // DELETE /api/clients/profile/{id}/picture
+    method: "delete",
+    match: (url) => url.match(/\/api\/clients\/profile\/\d+\/picture$/),
+    handler: (config) => {
+      const id = extractId(config.url);
+      const user = mockUsers.find((u) => u.id === id);
+      if (user) user.profilePictureUrl = null;
+      return { status: 204, data: null };
     },
   },
   {

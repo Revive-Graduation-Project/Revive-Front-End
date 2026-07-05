@@ -14,5 +14,6 @@ export { default as useLoyaltyStore } from "./loyaltyStore";
 export { default as useRecommendationStore } from "./recommendationStore";
 export { default as useFavoritesStore } from "./favoritesStore";
 export { default as useMenuStore } from "./menuStore";
+
 //NOTE:
 // the import must be like : import {useAuthStore} from "../../store";

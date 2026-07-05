@@ -10,8 +10,9 @@ import {
 
 /**
  * Profile Store
- * - Holds user profile data
- * - Actions now require a `userId` to match the backend endpoints
+ * - Holds ClientProfileDto data exactly as the backend returns it —
+ *   field names here (profilePictureUrl, etc.) match the real API,
+ *   no renaming/remapping, to avoid frontend/backend field drift.
  */
 const useProfileStore = create(
   persist(
@@ -20,7 +21,6 @@ const useProfileStore = create(
       loading: false,
       error: null,
 
-      // Fetch profile data
       fetchProfile: async (userId) => {
         if (!userId) return null;
         set({ loading: true, error: null });
@@ -39,7 +39,6 @@ const useProfileStore = create(
         }
       },
 
-      // Update Profile (Handles the full payload directly from the form)
       updateUserProfile: async (userId, data) => {
         if (!userId) return null;
         set({ loading: true, error: null });
@@ -64,9 +63,16 @@ const useProfileStore = create(
         set({ loading: true, error: null });
         try {
           const res = await uploadProfilePicture(userId, file);
-          const user = res?.data || get().user; 
-          set({ user, loading: false, error: null });
-          return user;
+          // Backend returns only { profilePictureUrl } — merge it into the
+          // existing user, keeping the SAME field name as the real DTO
+          // (no renaming to `profilePicture` — that mismatch was the bug).
+          const profilePictureUrl = res?.data?.profilePictureUrl;
+          const currentUser = get().user;
+          const updatedUser = currentUser
+            ? { ...currentUser, profilePictureUrl }
+            : { profilePictureUrl };
+          set({ user: updatedUser, loading: false, error: null });
+          return updatedUser;
         } catch (error) {
           set({ error: error?.response?.data?.message || error.message, loading: false });
           return null;
@@ -79,9 +85,10 @@ const useProfileStore = create(
         set({ loading: true, error: null });
         try {
           await deleteProfilePicture(userId);
-          // Clear profile image fields on success
           const currentUser = get().user;
-          const updatedUser = currentUser ? { ...currentUser, profilePicture: null, avatar: null } : null;
+          const updatedUser = currentUser
+            ? { ...currentUser, profilePictureUrl: null }
+            : null;
           set({ user: updatedUser, loading: false, error: null });
           return true;
         } catch (error) {
@@ -90,13 +97,12 @@ const useProfileStore = create(
         }
       },
 
-      // Delete Entire Profile
       deleteUserProfile: async (userId) => {
         if (!userId) return false;
         set({ loading: true, error: null });
         try {
           await deleteProfile(userId);
-          set({ user: null, loading: false, error: null }); 
+          set({ user: null, loading: false, error: null });
           return true;
         } catch (error) {
           set({ error: error?.response?.data?.message || error.message, loading: false });
@@ -109,6 +115,18 @@ const useProfileStore = create(
     {
       name: "revive-profile-store",
       partialize: (state) => ({ user: state.user }),
+      // Bump this any time the `user` shape changes, so stale
+      // localStorage from an old shape gets discarded instead of
+      // silently accumulating leftover fields (e.g. old `avatar` /
+      // `profilePicture` keys sitting alongside the current
+      // `profilePictureUrl` field).
+      version: 1,
+      migrate: (persistedState, version) => {
+        if (version < 1) {
+          return { user: null };
+        }
+        return persistedState;
+      },
     }
   )
 );

@@ -5,7 +5,6 @@ import { useAuthStore, useProfileStore } from "../../store";
 import { LoadingSpinner } from "../../components";
 import {
   LuClipboard,
-  LuCreditCard,
   LuLogOut,
   LuTrophy,
   LuUser,
@@ -24,17 +23,20 @@ export default function ProfileLayout() {
   );
 
   useEffect(() => {
-    let mounted = true;
     if (!authUser?.id) return;
     if (!user && !loading && !error) {
-      fetchProfile(authUser?.id);
+      fetchProfile(authUser.id);
     }
-    return () => {
-      mounted = false;
-    };
-  }, [user, loading, error, fetchProfile]);
+  }, [user, loading, error, fetchProfile, authUser?.id]);
 
-  if (loading) {
+  // Only show the full-page spinner while there's no profile data yet
+  // (the initial fetch). Once `user` exists, subsequent actions
+  // (uploadPicture, deletePicture, updateUserProfile) also flip
+  // `loading` true/false — but we don't want those to unmount the
+  // whole layout (and with it, Sidebar's local preview state) every
+  // time. Sidebar/other children handle their own in-flight UI for
+  // those actions instead.
+  if (loading && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center p-8">
         <LoadingSpinner />
@@ -57,17 +59,6 @@ export default function ProfileLayout() {
       </div>
     );
   }
-
-  const displayName =
-    authUser?.name ||
-    authUser?.fullName ||
-    (authUser?.firstName && authUser?.lastName
-      ? `${authUser.firstName} ${authUser.lastName}`
-      : null) ||
-    "Your Name";
-
-  const avatar =
-    user?.avatar || user?.photo || "/images/avatar-placeholder.jpeg";
 
   const sidebarLinks = [
     {
@@ -94,7 +85,7 @@ export default function ProfileLayout() {
   return (
     <div className="max-w-7xl mx-auto p-8 pt-44 pb-8 min-h-screen">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-        <Sidebar avatar={avatar} name={displayName} links={sidebarLinks} />
+        <Sidebar links={sidebarLinks} />
 
         <div className="md:col-span-8">
           <Outlet />

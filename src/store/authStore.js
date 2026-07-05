@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
   loginService,
-  logoutService,
   registerService,
   restoreSessionService,
 } from "../services/auth.service";
@@ -144,17 +143,11 @@ const useAuthStore = create(
       /**
        * Logout User
        */
-      logout: async (manualLogout = false) => {
+      logout: async () => {
         set({ error: null, loading: true });
 
-        if (manualLogout) {
-          try {
-            await logoutService();
-          } catch (error) {
-            set({ error });
-          }
-        }
-
+        // Backend logout endpoint doesn't exist, so we only handle frontend state
+        // Clear all authentication state
         set({
           user: null,
           token: null,
