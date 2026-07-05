@@ -5,7 +5,7 @@ import { useAuthStore, useProfileStore } from "../../../store";
 
 export default function Sidebar({ links = [] }) {
   const fileInputRef = useRef(null);
-  const [localPreview, setLocalPreview] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -19,6 +19,15 @@ export default function Sidebar({ links = [] }) {
       fetchProfile(userId);
     }
   }, [userId, profileUser, fetchProfile]);
+
+  // Clean up preview URL on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   // ClientProfileDto has no name fields at all — identity (name) comes
   // from authUser (auth-service), not profileUser (client-service).
@@ -35,7 +44,7 @@ export default function Sidebar({ links = [] }) {
   const hasRealPicture = Boolean(profileUser?.profilePictureUrl);
 
   const profilePicture =
-    localPreview || profileUser?.profilePictureUrl || "/images/avatar-placeholder.jpeg";
+    previewUrl || profileUser?.profilePictureUrl || "/images/avatar-placeholder.jpeg";
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
@@ -52,15 +61,25 @@ export default function Sidebar({ links = [] }) {
       return;
     }
 
-    setLocalPreview(URL.createObjectURL(file));
+    // Clean up any existing preview URL before creating a new one
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    
+    const newPreviewUrl = URL.createObjectURL(file);
+    setPreviewUrl(newPreviewUrl);
     setIsUploading(true);
     try {
       await uploadPicture(userId, file);
       toast.success("Profile picture uploaded successfully!");
-      setLocalPreview(null);
+      // Clean up the preview URL after successful upload
+      URL.revokeObjectURL(newPreviewUrl);
+      setPreviewUrl(null);
     } catch (err) {
       toast.error(err?.message || "Failed to upload profile picture.");
-      setLocalPreview(null);
+      // Clean up the preview URL on error
+      URL.revokeObjectURL(newPreviewUrl);
+      setPreviewUrl(null);
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -74,7 +93,11 @@ export default function Sidebar({ links = [] }) {
     try {
       await deletePicture(userId);
       toast.success("Profile picture removed successfully!");
-      setLocalPreview(null);
+      // Clean up any preview URL before resetting state
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        setPreviewUrl(null);
+      }
     } catch (err) {
       toast.error(err?.message || "Failed to remove profile picture.");
     } finally {

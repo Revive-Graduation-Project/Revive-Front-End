@@ -68,7 +68,7 @@ export default function App() {
           <Route path="payment"   element={<Payment />} />
           <Route path="thanks"    element={<Thanks />} />
           
-          <Route path="profile" element={<ProfileLayout />}>
+          <Route path="profile" element={<ProtectedRoute><ProfileLayout /></ProtectedRoute>}>
             <Route index element={<Profile />} />
             <Route path="orders" element={<ProfileOrders />} />
             <Route path="rewards" element={<Rewards />} />

@@ -18,6 +18,11 @@ const extractId = (url) => {
   return parseInt(parts[parts.length - 1], 10);
 };
 
+const extractProfileId = (url) => {
+  const parts = url.split("/");
+  return parseInt(parts[parts.length - 2], 10);
+};
+
 export const MOCK_HANDLERS = [
   // ──────────────────────────────────────────────
   // AUTH
@@ -261,6 +266,9 @@ export const MOCK_HANDLERS = [
     handler: (config) => {
       const id = extractId(config.url);
       const user = mockUsers.find((u) => u.id === id);
+      if (!user) {
+        return { status: 404, data: { message: `Profile ${id} not found` } };
+      }
       const body = JSON.parse(config.data || "{}");
       Object.assign(user, body);
       return { status: 200, data: toClientProfileDto(user) };
@@ -273,7 +281,7 @@ export const MOCK_HANDLERS = [
     method: "patch",
     match: (url) => url.match(/\/api\/clients\/profile\/\d+\/picture$/),
     handler: (config) => {
-      const id = extractId(config.url);
+      const id = extractProfileId(config.url);
       const user = mockUsers.find((u) => u.id === id);
       const fakeUrl = `https://i.pravatar.cc/150?u=${id}-${Date.now()}`;
       if (user) user.profilePictureUrl = fakeUrl;
@@ -285,7 +293,7 @@ export const MOCK_HANDLERS = [
     method: "delete",
     match: (url) => url.match(/\/api\/clients\/profile\/\d+\/picture$/),
     handler: (config) => {
-      const id = extractId(config.url);
+      const id = extractProfileId(config.url);
       const user = mockUsers.find((u) => u.id === id);
       if (user) user.profilePictureUrl = null;
       return { status: 204, data: null };

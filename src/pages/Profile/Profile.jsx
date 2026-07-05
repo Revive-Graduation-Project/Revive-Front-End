@@ -8,7 +8,6 @@ import { toast } from "sonner";
 export default function Profile() {
   const user = useProfileStore((s) => s.user);
   const updateUserProfile = useProfileStore((s) => s.updateUserProfile);
-  const error = useProfileStore((s) => s.error);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
 
