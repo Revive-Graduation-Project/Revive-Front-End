@@ -18,6 +18,7 @@ import ErrorState from "./shared/ErrorState";
 import EmptyState from "./shared/EmptyState";
 import SortMenu from "./shared/SortMenu";
 import IngredientModal from "./shared/IngredientModal";
+import IngredientNutrientsModal from "./shared/IngredientNutrientsModal";
 import { sortItems } from "../../utils/sortItems";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -26,46 +27,130 @@ const ING_SORT_COLS = [
   { key: "stock", label: "Stock" },
 ];
 
-const TABLE_HEADERS = ["Name", "Nutrients", "Stock", "Actions"];
+const TABLE_HEADERS = ["Name", "Fat", "Cal", "Pro", "Sug", "Stock", "Actions"];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-/** Format a gram value with appropriate unit and low-stock flag */
-const formatStock = (stock) => {
-  if (stock === 0)      return { text: "0g",                              isOut: true,  isLow: false };
-  if (stock >= 1000)    return { text: `${(stock / 1000).toFixed(1)}kg`, isOut: false, isLow: false };
-  return                       { text: `${stock}g`,                      isOut: false, isLow: stock < 100 };
+/** Format a stock value with appropriate unit and low-stock flag */
+const formatStock = (stock, unit = "g") => {
+  const num = Number(stock) || 0;
+  if (num === 0) return { text: unit ? `0 ${unit}` : "0g", isOut: true, isLow: false };
+  if (!unit || unit === "g" || unit.toLowerCase() === "gram" || unit.toLowerCase() === "grams") {
+    if (num >= 1000) return { text: `${(num / 1000).toFixed(1)}kg`, isOut: false, isLow: false };
+    return { text: `${num}g`, isOut: false, isLow: num < 100 };
+  }
+  return { text: `${num} ${unit}`, isOut: false, isLow: num < 100 };
 };
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
+const getNutrientStyle = (name = "") => {
+  const n = String(name).toLowerCase();
+  if (n.includes("energy") || n.includes("calor") || n.includes("kcal")) {
+    return {
+      dot: "bg-amber-500 shadow-2xs shadow-amber-500/50",
+      badge: "bg-amber-50 text-amber-700 border border-amber-200/60",
+      hover: "hover:border-amber-200 hover:bg-amber-50/30",
+    };
+  }
+  if (n.includes("protein")) {
+    return {
+      dot: "bg-blue-500 shadow-2xs shadow-blue-500/50",
+      badge: "bg-blue-50 text-blue-700 border border-blue-200/60",
+      hover: "hover:border-blue-200 hover:bg-blue-50/30",
+    };
+  }
+  if (n.includes("fat") || n.includes("lipid") || n.includes("cholesterol")) {
+    return {
+      dot: "bg-rose-500 shadow-2xs shadow-rose-500/50",
+      badge: "bg-rose-50 text-rose-700 border border-rose-200/60",
+      hover: "hover:border-rose-200 hover:bg-rose-50/30",
+    };
+  }
+  if (n.includes("sugar") || n.includes("carb") || n.includes("fiber")) {
+    return {
+      dot: "bg-emerald-500 shadow-2xs shadow-emerald-500/50",
+      badge: "bg-emerald-50 text-emerald-700 border border-emerald-200/60",
+      hover: "hover:border-emerald-200 hover:bg-emerald-50/30",
+    };
+  }
+  if (n.includes("sodium") || n.includes("salt") || n.includes("calcium") || n.includes("iron")) {
+    return {
+      dot: "bg-purple-500 shadow-2xs shadow-purple-500/50",
+      badge: "bg-purple-50 text-purple-700 border border-purple-200/60",
+      hover: "hover:border-purple-200 hover:bg-purple-50/30",
+    };
+  }
+  return {
+    dot: "bg-slate-400 shadow-2xs shadow-slate-400/50",
+    badge: "bg-slate-100 text-slate-700 border border-slate-200/60",
+    hover: "hover:border-slate-300 hover:bg-slate-50",
+  };
+};
+
 /**
- * Renders dynamic nutrient key-value pairs as green pills.
- * The backend returns nutrients as Array<Record<string, unknown>>.
+ * Renders dynamic nutrient key-value pairs in a sleek, vertically stacked list
+ * with color-coded indicator dots and structured badge alignment.
  */
 function NutrientPills({ nutrients }) {
-  if (!Array.isArray(nutrients) || nutrients.length === 0)
-    return <span className="text-gray-300 text-[11px]">—</span>;
+  if (!nutrients || (Array.isArray(nutrients) && nutrients.length === 0))
+    return <span className="text-gray-300 text-[12px] font-medium">—</span>;
 
-  const entries = nutrients.flatMap((obj) =>
-    Object.entries(obj).filter(
-      ([, v]) => v !== null && v !== undefined && String(v).trim() !== ""
-    )
-  );
+  const list = Array.isArray(nutrients) ? nutrients : [nutrients];
+  const parsed = [];
 
-  if (entries.length === 0)
-    return <span className="text-gray-300 text-[11px]">—</span>;
+  list.forEach((item) => {
+    if (!item || typeof item !== "object") return;
+    const name = item.nutrientName || item.name || item.label || item.nutrient || "";
+    const val = item.value !== undefined ? item.value : (item.amount !== undefined ? item.amount : (item.val !== undefined ? item.val : ""));
+    const unit = item.unitName || item.unit || item.u || "";
+
+    if (name) {
+      let valStr = val !== "" && val !== null && val !== undefined ? String(val) : "";
+      if (unit && valStr) {
+        valStr += ` ${String(unit).toLowerCase()}`;
+      } else if (unit && !valStr) {
+        valStr = String(unit);
+      }
+      parsed.push({ name: String(name), value: valStr });
+    } else {
+      Object.entries(item).forEach(([k, v]) => {
+        if (v === null || v === undefined || String(v).trim() === "") return;
+        if (["id", "_id", "unitName", "unit", "value", "amount"].includes(k)) return;
+        let valStr = typeof v === "object"
+          ? (v.value !== undefined ? `${v.value}${v.unitName ? ` ${String(v.unitName).toLowerCase()}` : ""}` : (v.amount !== undefined ? `${v.amount}${v.unit ? ` ${String(v.unit).toLowerCase()}` : ""}` : JSON.stringify(v)))
+          : String(v);
+        parsed.push({ name: k, value: valStr });
+      });
+    }
+  });
+
+  if (parsed.length === 0)
+    return <span className="text-gray-300 text-[12px] font-medium">—</span>;
 
   return (
-    <div className="flex flex-wrap gap-1 max-w-[280px]">
-      {entries.map(([key, value]) => (
-        <span
-          key={key}
-          className="inline-flex items-center px-2 py-0.5 bg-green-50 text-green-700 text-[10px] font-bold rounded-full border border-green-100 whitespace-nowrap"
-        >
-          {key}: {typeof value === "object" ? JSON.stringify(value) : value}
-        </span>
-      ))}
+    <div className="flex flex-col gap-1.5 min-w-[220px] max-w-[300px] py-1">
+      {parsed.map((item, idx) => {
+        const { dot, badge, hover } = getNutrientStyle(item.name);
+        return (
+          <div
+            key={`${item.name}-${idx}`}
+            className={`flex items-center justify-between gap-3 px-3 py-1.5 rounded-xl bg-[#F8F9FB] border border-gray-100/80 shadow-2xs transition-all duration-200 ${hover}`}
+          >
+            <div className="flex items-center gap-2 overflow-hidden">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${dot}`} />
+              <span className="text-[12px] font-bold text-[#1a1a1a] truncate capitalize">
+                {item.name}
+              </span>
+            </div>
+            <span
+              className={`text-[11px] font-extrabold px-2 py-0.5 rounded-lg shrink-0 whitespace-nowrap ${badge}`}
+            >
+              {item.value}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -98,6 +183,7 @@ function IngredientsView() {
   const [sortDir, setSortDir]                     = useState("asc");
   const [isModalOpen, setIsModalOpen]             = useState(false);
   const [editingIngredient, setEditingIngredient] = useState(null);
+  const [viewingNutrientsItem, setViewingNutrientsItem] = useState(null);
   const [selectedFile, setSelectedFile]           = useState(null);
 
   const { addToast } = useToast();
@@ -214,13 +300,18 @@ function IngredientsView() {
               />
             </div>
 
-            {/* Sort */}
-            <SortMenu
-              columns={ING_SORT_COLS}
-              sortKey={sortKey}
-              sortDir={sortDir}
-              onChange={(k, d) => { setSortKey(k); setSortDir(d); }}
-            />
+            {/* Sort + Nutrients Scale Notice */}
+            <div className="flex items-center gap-3">
+              <span className="text-[12px] font-bold text-orange-600 bg-orange-50 px-3.5 py-1.5 rounded-xl border border-orange-200/60 shadow-2xs whitespace-nowrap">
+                Nutrients for every 100g :
+              </span>
+              <SortMenu
+                columns={ING_SORT_COLS}
+                sortKey={sortKey}
+                sortDir={sortDir}
+                onChange={(k, d) => { setSortKey(k); setSortDir(d); }}
+              />
+            </div>
           </div>
 
           {/* Table */}
@@ -250,7 +341,7 @@ function IngredientsView() {
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={4}>
+                    <td colSpan={8}>
                       <EmptyState
                         title="No ingredients found"
                         description={
@@ -263,28 +354,49 @@ function IngredientsView() {
                   </tr>
                 ) : (
                   filtered.map((item) => {
-                    const { text: stockText, isOut, isLow } = formatStock(item.stock);
+                    const { text: stockText, isOut, isLow } = formatStock(item.stock, item.unit);
                     return (
                       <tr
                         key={item.id}
-                        className="border-b border-gray-100 hover:bg-orange-50/30 transition-colors"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setViewingNutrientsItem(item)}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setViewingNutrientsItem(item); } }}
+                        className="group border-b border-gray-200/80 hover:bg-orange-50/30 transition-colors cursor-pointer"
                       >
-                        {/* Name + Description */}
-                        <td className="px-6 py-4 w-[220px]">
-                          <p className="text-[13px] font-bold text-[#1a1a1a] leading-tight">
-                            {item.name}
-                          </p>
-                          {item.description && (
-                            <p className="text-[11px] text-gray-400 mt-0.5 leading-snug line-clamp-2">
-                              {item.description}
-                            </p>
-                          )}
+                        {/* Name + Description + Hover Button */}
+                        <td className="px-6 py-4 w-[240px]">
+                          <div className="flex items-center justify-between gap-2">
+                            <div>
+                              <p className="text-[13px] font-bold text-[#1a1a1a] leading-tight">
+                                {item.name}
+                              </p>
+                              {item.description && (
+                                <p className="text-[11px] text-gray-400 mt-0.5 leading-snug line-clamp-2">
+                                  {item.description}
+                                </p>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); setViewingNutrientsItem(item); }}
+                              className="opacity-0 group-hover:opacity-100 transition-all duration-200 inline-flex items-center gap-1.5 px-2.5 py-1 bg-orange-100 hover:bg-orange-500 text-orange-600 hover:text-white rounded-lg text-[11px] font-bold shadow-sm cursor-pointer shrink-0"
+                              title="See full nutritional details"
+                            >
+                              See full details
+                            </button>
+                          </div>
                         </td>
 
-                        {/* Nutrients — dynamic key-value pills */}
-                        <td className="px-4 py-4">
-                          <NutrientPills nutrients={item.nutrients} />
-                        </td>
+                       
+                        {/* Fat */}
+                        <td className="px-4 py-4 text-[12px] text-green-600 font-semibold">{item.fat ?? "-"}</td>
+                        {/* Cal */}
+                        <td className="px-4 py-4 text-[12px] text-green-600 font-semibold">{item.calories ?? "-"}</td>
+                        {/* Pro */}
+                        <td className="px-4 py-4 text-[12px] text-green-600 font-semibold">{item.protein ?? "-"}</td>
+                        {/* Sug */}
+                        <td className="px-4 py-4 text-[12px] text-green-600 font-semibold">{item.sugar ?? "-"}</td>
 
                         {/* Stock */}
                         <td className="px-4 py-4 text-center w-[90px]">
@@ -301,7 +413,7 @@ function IngredientsView() {
                         <td className="px-4 py-4 text-center w-[100px]">
                           <button
                             type="button"
-                            onClick={() => handleEdit(item)}
+                            onClick={(e) => { e.stopPropagation(); handleEdit(item); }}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-orange-50 text-gray-500 hover:text-orange-500 rounded-lg text-[12px] font-bold border border-gray-100 transition-all cursor-pointer shadow-sm"
                           >
                             <FiEdit2 size={13} /> Edit
@@ -357,6 +469,13 @@ function IngredientsView() {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleModalSubmit}
         initialData={editingIngredient}
+      />
+
+      {/* ── Complete nutritional details modal ── */}
+      <IngredientNutrientsModal
+        isOpen={Boolean(viewingNutrientsItem)}
+        onClose={() => setViewingNutrientsItem(null)}
+        ingredient={viewingNutrientsItem}
       />
     </div>
   );
