@@ -15,8 +15,6 @@ export default function Menu() {
   const {
     recommendations,
     fetchRecommendations,
-    isLoading: recLoading,
-    error: recError,
   } = useRecommendationStore();
   const {
     meals,
@@ -29,47 +27,54 @@ export default function Menu() {
   const isGuest = !user;
 
   useEffect(() => {
-    if (isGuest) {
-      if (meals.length === 0) fetchMeals();
-    } else {
-      fetchRecommendations({
-        userHealth: user?.health ?? null,
-        preferences: user?.preferences ?? [],
-      });
+    // Always fetch meals for the regular menu
+    if (meals.length === 0) {
+      fetchMeals();
     }
-  }, [user, isGuest]);
+    // If user is logged in, also fetch personalized recommendations
+    if (!isGuest) {
+      fetchRecommendations(user?.id);
+    }
+  }, [user, isGuest, meals.length, fetchMeals, fetchRecommendations]);
 
-  const sourceItems = isGuest ? meals : recommendations;
-  const isLoading = isGuest ? mealsLoading : recLoading;
-  const error = isGuest ? mealsError : recError;
-
-  const filteredMenu = useMemo(() => {
-    return sourceItems.filter((item) => {
+  const filteredMeals = useMemo(() => {
+    return meals.filter((item) => {
       return selectedCategory === "All" || item.category === selectedCategory;
     });
-  }, [selectedCategory, sourceItems]);
+  }, [selectedCategory, meals]);
+
+  const filteredRecommendations = useMemo(() => {
+    return (recommendations || []).filter((item) => {
+      return selectedCategory === "All" || item.category === selectedCategory;
+    });
+  }, [selectedCategory, recommendations]);
 
   return (
     <div className="bg-white min-h-screen px-4 md:px-10 lg:px-20 overflow-hidden">
       <div className="py-12 md:py-16 lg:py-20 space-y-5 md:space-y-2 lg:space-y-2">
         <MenuFilter />
         <OffersSection />
-        {isLoading ? (
+        
+        {/* Suggested Meals Section (Displayed for logged-in users when recommendations exist) */}
+        {!isGuest && (
+          <SuggestedMealsSection items={filteredRecommendations} />
+        )}
+
+        {/* Regular Food Section (Always displayed for everyone) */}
+        {mealsLoading && meals.length === 0 ? (
           <div className="flex justify-center items-center h-64">
-            <p className="text-lg font-medium">Loading...</p>
+            <p className="text-lg font-medium text-gray-600">Loading menu...</p>
           </div>
-        ) : error ? (
+        ) : mealsError && meals.length === 0 ? (
           <div className="flex justify-center items-center h-64">
-            <p className="text-lg font-medium text-red-500">{error}</p>
+            <p className="text-lg font-medium text-red-500">{mealsError}</p>
           </div>
-        ) : sourceItems.length === 0 ? (
+        ) : filteredMeals.length === 0 ? (
           <div className="flex justify-center items-center h-64">
-            <p className="text-lg font-medium">No meals available</p>
+            <p className="text-lg font-medium text-gray-500">No meals available in this category</p>
           </div>
-        ) : isGuest ? (
-          <RegularFood items={filteredMenu} />
         ) : (
-          <SuggestedMealsSection items={filteredMenu} />
+          <RegularFood items={filteredMeals} />
         )}
       </div>
     </div>

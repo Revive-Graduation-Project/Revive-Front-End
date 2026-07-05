@@ -93,7 +93,7 @@ export const MOCK_HANDLERS = [
     match: (url) => url.match(/\/menu\/recommendations\/\d+/),
     handler: () => ({
       status: 200,
-      data: mockMeals.slice(0, 3), // first 3 meals as recommendations
+      data: mockMeals.filter((m) => !m.hasDiscount).slice(0, 12),
     }),
   },
   {
