@@ -94,15 +94,28 @@ function ChefMenuView() {
   const totalPercentage = categories?.totalPercentage ?? 100;
   const categoryItems = categories?.items || [];
 
-  // Per-category counts — reconcile API count with live item data
-  const categoryCounts = categoryItems.map((cat) => ({
-    ...cat,
-    // Use the live match count directly; 0 is a valid value and must not
-    // fall back to the backend's stale count.
-    count: activeItems.filter(
-      (i) => i.category?.toLowerCase() === cat.name?.toLowerCase()
-    ).length,
-  }));
+  // Get all unique category names from both API categories and live items
+  const allCategoryNames = Array.from(new Set([
+    ...categoryItems.map((c) => c.name).filter(Boolean),
+    ...activeItems.map((i) => i.category).filter(Boolean),
+  ]));
+
+  const categoryCounts = allCategoryNames.map((name, index) => {
+    const existing = categoryItems.find((c) => c.name?.toLowerCase() === name.toLowerCase()) || {};
+    const count = activeItems.filter(
+      (i) => i.category?.toLowerCase() === name.toLowerCase()
+    ).length;
+    const rawPct = totalMeals > 0 ? Math.round((count / totalMeals) * 100) : 0;
+    const percentage = isNaN(rawPct) ? 0 : rawPct;
+    const colors = ["#F97316", "#8B5CF6", "#3B82F6", "#10B981", "#EC4899", "#FB923C", "#C084FC"];
+    return {
+      name,
+      color: existing.color || colors[index % colors.length],
+      change: existing.change ?? 0,
+      count,
+      percentage,
+    };
+  });
 
   // Category tabs built from live item data
   const CATEGORY_TABS = ["All Menu", ...new Set(activeItems.map((i) => i.category).filter(Boolean))];

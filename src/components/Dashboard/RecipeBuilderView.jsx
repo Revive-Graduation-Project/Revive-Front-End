@@ -4,8 +4,8 @@ import DashboardHeader from "./DashboardHeader";
 import { useCreateMenuItem, useUpdateMenuItem } from "../../hooks/dashboard/useMenuItems";
 import { useIngredients } from "../../hooks/dashboard/useIngredients";
 import { useToast } from "../../store/toastStore";
-import { 
-  FiPlus, FiTrash2, FiCamera, FiBookOpen, FiDollarSign, 
+import {
+  FiPlus, FiTrash2, FiCamera, FiBookOpen, FiDollarSign,
   FiAlignLeft, FiChevronDown, FiGrid, FiUploadCloud, FiSearch, FiX
 } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
@@ -34,10 +34,10 @@ export default function RecipeBuilderView() {
   useEffect(() => {
     if (editMeal) {
       setForm({
-        name:        editMeal.name        ?? "",
-        category:    editMeal.category    ?? "",
-        price:       editMeal.price !== undefined ? String(editMeal.price) : "",
-        description: editMeal.description  ?? "",
+        name: editMeal.name ?? "",
+        category: editMeal.category ?? "",
+        price: editMeal.price !== undefined ? String(editMeal.price) : "",
+        description: editMeal.description ?? "",
       });
       if (editMeal.image) setMealImagePreview(editMeal.image);
       if (editMeal.ingredients?.length) {
@@ -103,7 +103,7 @@ export default function RecipeBuilderView() {
 
   const handleSave = () => {
     if (!form.name.trim()) return;
-    
+
     const payload = { ...(editMeal || {}), ...form, id: editMeal ? (editMeal.id || editMeal._id) : undefined, ingredients: localIngredients, imageFile };
     const options = {
       onSuccess: () => {
@@ -131,10 +131,10 @@ export default function RecipeBuilderView() {
     }
   };
 
-  const isFormComplete = 
-    form.name.trim() !== "" && 
+  const isFormComplete =
+    form.name.trim() !== "" &&
     form.category !== "" &&
-    form.price !== "" && 
+    form.price !== "" &&
     form.description.trim() !== "" &&
     localIngredients.length > 0 &&
     mealImagePreview !== null;
@@ -159,7 +159,7 @@ export default function RecipeBuilderView() {
       <div className="px-4 md:px-12 max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-x-12 gap-y-10 items-start">
         {/* ── Left Column ── */}
         <div className="flex flex-col gap-8">
-          
+
           {/* Meal Information */}
           <div>
             <h3 className="text-[18px] font-bold text-[#1a1a1a] mb-5">Meal Information</h3>
@@ -174,7 +174,7 @@ export default function RecipeBuilderView() {
                 </div>
                 <div className="relative">
                   <p className="text-[14px] font-medium text-[#1a1a1a] mb-2">Category</p>
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setIsCategoryOpen(!isCategoryOpen)}
                     aria-haspopup="listbox"
@@ -187,31 +187,30 @@ export default function RecipeBuilderView() {
                     </span>
                     <FiChevronDown className="text-gray-400 shrink-0" size={14} />
                   </button>
-                  
+
                   {isCategoryOpen && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setIsCategoryOpen(false)} aria-hidden="true" tabIndex={-1}></div>
                       <div className="absolute top-[76px] left-0 w-full bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] py-2 z-50 border border-gray-100/50" role="listbox">
                         {["Chicken", "Meat", "Seafood", "Vegetarian", "Desserts", "Mixed"].map(cat => (
-                          <button 
-                            key={cat}
-                            type="button"
-                            role="option"
-                            aria-selected={form.category === cat}
-                            onClick={() => { setForm(f => ({ ...f, category: cat })); setIsCategoryOpen(false); }}
-                            className={`w-full text-left px-5 py-2.5 text-[13px] font-medium cursor-pointer transition-colors flex items-center justify-between focus:outline-none focus:bg-gray-50 ${
-                              form.category === cat ? "bg-orange-50 text-orange-600" : "text-gray-600 hover:bg-gray-50 hover:text-orange-500"
-                            }`}
-                          >
-                            {cat}
-                          </button>
+                            <button
+                              key={cat}
+                              type="button"
+                              role="option"
+                              aria-selected={form.category === cat}
+                              onClick={() => { setForm(f => ({ ...f, category: cat })); setIsCategoryOpen(false); }}
+                              className={`w-full text-left px-5 py-2.5 text-[13px] font-medium cursor-pointer transition-colors flex items-center justify-between focus:outline-none focus:bg-gray-50 ${form.category === cat ? "bg-orange-50 text-orange-600" : "text-gray-600 hover:bg-gray-50 hover:text-orange-500"
+                                }`}
+                            >
+                              {cat}
+                            </button>
                         ))}
                       </div>
                     </>
                   )}
                 </div>
               </div>
-              
+
               <div>
                 <p className="text-[14px] font-medium text-[#1a1a1a] mb-2">Price</p>
                 <div className="bg-white rounded-full px-5 py-3.5 flex items-center gap-3 shadow-sm">
@@ -239,7 +238,7 @@ export default function RecipeBuilderView() {
                 <p className="text-[14px] font-medium text-[#1a1a1a] text-center">Name</p>
                 <p className="text-[14px] font-medium text-[#1a1a1a] text-center">Amount</p>
               </div>
-              
+
               {/* List */}
               <div className="flex flex-col gap-4 mb-4">
                 {localIngredients.map((ing) => (
@@ -251,11 +250,11 @@ export default function RecipeBuilderView() {
                       <span className="text-[12px] font-medium text-gray-600">{ing.amount}</span>
                     </div>
                     {/* Delete button */}
-                    <button 
-                      onClick={() => removeIngredient(ing.id)} 
+                    <button
+                      onClick={() => removeIngredient(ing.id)}
                       className="absolute -left-2 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1"
                     >
-                      <FiTrash2 size={14}/>
+                      <FiTrash2 size={14} />
                     </button>
                   </div>
                 ))}
@@ -263,7 +262,7 @@ export default function RecipeBuilderView() {
 
               {/* Add New Row */}
               <div className="grid grid-cols-[2fr_1fr] items-center gap-4 mt-8 px-4">
-                <IngredientSelector 
+                <IngredientSelector
                   availableIngredients={availableIngredients}
                   newIngredient={newIngredient}
                   setNewIngredient={setNewIngredient}
@@ -271,11 +270,11 @@ export default function RecipeBuilderView() {
                   setIsCustomName={setIsCustomName}
                 />
                 <div className="bg-[#F5F6F8] rounded-full py-1.5 px-4 text-center flex items-center justify-center gap-1">
-                  <input 
-                    className="bg-transparent text-[12px] font-medium text-gray-600 border-none outline-none w-full text-center" 
-                    placeholder="0" 
-                    value={newIngredient.amount} 
-                    onChange={handleIngredientAmountInput} 
+                  <input
+                    className="bg-transparent text-[12px] font-medium text-gray-600 border-none outline-none w-full text-center"
+                    placeholder="0"
+                    value={newIngredient.amount}
+                    onChange={handleIngredientAmountInput}
                   />
                   <span className="text-[12px] font-bold text-gray-400 shrink-0">{newIngredient.unit || "g"}</span>
                 </div>
@@ -292,58 +291,58 @@ export default function RecipeBuilderView() {
 
         {/* ── Right Column ── */}
         <div className="flex flex-col gap-8 pt-10 lg:pt-14">
-          
-        {/* ── Top Section: Image Upload ── */}
-        <div className="col-span-1 lg:col-span-2 relative mt-4">
-          <div className="w-full h-[280px] bg-white rounded-4xl flex flex-col items-center justify-center relative overflow-hidden shadow-sm group">
-            {mealImagePreview ? (
-              <>
-                <img src={mealImagePreview} alt="Meal Preview" className="w-full h-full object-cover" />
-                <label className="absolute bottom-4 right-4 cursor-pointer bg-white w-12 h-12 rounded-full flex items-center justify-center shadow-[0_4px_15px_rgba(0,0,0,0.1)] hover:scale-105 transition-transform z-10">
-                  <FiCamera className="text-orange-500" size={20} />
+
+          {/* ── Top Section: Image Upload ── */}
+          <div className="col-span-1 lg:col-span-2 relative mt-4">
+            <div className="w-full h-[280px] bg-white rounded-4xl flex flex-col items-center justify-center relative overflow-hidden shadow-sm group">
+              {mealImagePreview ? (
+                <>
+                  <img src={mealImagePreview} alt="Meal Preview" className="w-full h-full object-cover" />
+                  <label className="absolute bottom-4 right-4 cursor-pointer bg-white w-12 h-12 rounded-full flex items-center justify-center shadow-[0_4px_15px_rgba(0,0,0,0.1)] hover:scale-105 transition-transform z-10">
+                    <FiCamera className="text-orange-500" size={20} />
+                    <input type="file" className="hidden" accept="image/*" onChange={handleMealImageUpload} />
+                  </label>
+                </>
+              ) : (
+                <label className="w-full h-full flex flex-col items-center justify-center bg-white border-2 border-dashed border-green-200 rounded-4xl hover:bg-green-50/50 transition-colors shadow-[0_4px_25px_rgba(34,197,94,0.08)] cursor-pointer group-hover:border-green-300">
+                  <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center shadow-[0_8px_20px_rgba(34,197,94,0.25)] mb-4 transition-transform group-hover:-translate-y-1">
+                    <FiUploadCloud size={28} className="text-green-700" />
+                  </div>
+                  <span className="text-[16px] font-bold text-green-700 tracking-wide">Upload Meal Image Here</span>
+                  <span className="text-[13px] font-medium text-gray-400 mt-2">Supports JPG, PNG, WEBP</span>
                   <input type="file" className="hidden" accept="image/*" onChange={handleMealImageUpload} />
                 </label>
-              </>
-            ) : (
-              <label className="w-full h-full flex flex-col items-center justify-center bg-white border-2 border-dashed border-green-200 rounded-4xl hover:bg-green-50/50 transition-colors shadow-[0_4px_25px_rgba(34,197,94,0.08)] cursor-pointer group-hover:border-green-300">
-                <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center shadow-[0_8px_20px_rgba(34,197,94,0.25)] mb-4 transition-transform group-hover:-translate-y-1">
-                  <FiUploadCloud size={28} className="text-green-700" />
-                </div>
-                <span className="text-[16px] font-bold text-green-700 tracking-wide">Upload Meal Image Here</span>
-                <span className="text-[13px] font-medium text-gray-400 mt-2">Supports JPG, PNG, WEBP</span>
-                <input type="file" className="hidden" accept="image/*" onChange={handleMealImageUpload} />
-              </label>
-            )}
+              )}
+            </div>
           </div>
-        </div>
         </div>
 
         {/* ── Bottom Section ── */}
         {isFormComplete && (
           <div className="col-span-1 lg:col-span-2 mt-2 mb-12 flex justify-center transition-all duration-300">
-             <div className="bg-white rounded-[2.5rem] p-10 flex flex-col items-center justify-center shadow-sm w-full max-w-2xl">
+            <div className="bg-white rounded-[2.5rem] p-10 flex flex-col items-center justify-center shadow-sm w-full max-w-2xl">
               <h2 className="text-[18px] font-bold text-[#1a1a1a] mb-8">
                 {editMeal ? "Save your changes?" : "Do you want to Add this meal to Menu ?"}
               </h2>
-               <div className="flex flex-col sm:flex-row items-center gap-6 w-full justify-center">
-                  <button 
-                     onClick={() => {
-                        setForm({ name: "", category: "", price: "", time: "", description: "" });
-                        setMealImagePreview(null);
-                        setLocalIngredients([]);
-                     }}
-                     className="cursor-pointer bg-white text-[#1a1a1a] font-bold py-3.5 px-12 rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.06)] border border-gray-100 hover:bg-gray-300 transition-colors w-full sm:w-auto"
-                  >
-                     Discard
-                  </button>
-                  <button 
-                     onClick={handleSave}
-                     className="cursor-pointer bg-orange-400 text-white font-bold py-3.5 px-12 rounded-2xl shadow-[0_4px_15px_rgba(249,115,22,0.3)] hover:bg-orange-600 transition-colors w-full sm:w-auto"
-                  >
-                     {saved ? (editMeal ? "Saved!" : "Added!") : (editMeal ? "Save Changes" : "Add Meal")}
-                  </button>
-               </div>
-             </div>
+              <div className="flex flex-col sm:flex-row items-center gap-6 w-full justify-center">
+                <button
+                  onClick={() => {
+                    setForm({ name: "", category: "", price: "", time: "", description: "" });
+                    setMealImagePreview(null);
+                    setLocalIngredients([]);
+                  }}
+                  className="cursor-pointer bg-white text-[#1a1a1a] font-bold py-3.5 px-12 rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.06)] border border-gray-100 hover:bg-gray-300 transition-colors w-full sm:w-auto"
+                >
+                  Discard
+                </button>
+                <button
+                  onClick={handleSave}
+                  className="cursor-pointer bg-orange-400 text-white font-bold py-3.5 px-12 rounded-2xl shadow-[0_4px_15px_rgba(249,115,22,0.3)] hover:bg-orange-600 transition-colors w-full sm:w-auto"
+                >
+                  {saved ? (editMeal ? "Saved!" : "Added!") : (editMeal ? "Save Changes" : "Add Meal")}
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
