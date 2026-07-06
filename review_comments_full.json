@@ -1,0 +1,212 @@
+﻿{
+    "value":  [
+                  {
+                      "url":  "https://api.github.com/repos/Revive-Graduation-Project/Revive-Front-End/pulls/comments/3519976802",
+                      "pull_request_review_id":  4625910865,
+                      "id":  3519976802,
+                      "node_id":  "PRRC_kwDOQSbbxs7RzpVi",
+                      "diff_hunk":  "@@ -1,68 +1,27 @@\n import axios from \"axios\";\n-import { useAuthStore } from \"../store\";\n import { restoreSessionService } from \"./auth.service\";\n-import { resolveMockHandler } from \"../mocks/handlers\";\n \n // ============================================================\n-// MOCK MODE\n+// API CONFIGURATION\n // ============================================================\n-// When VITE_USE_MOCK=true, axios uses a custom adapter that\n-// intercepts every request and returns mock data from\n-// src/mocks/handlers.js instead of hitting the network.\n-//\n-// To switch to the real backend:\n-//   1. Set VITE_USE_MOCK=false in .env\n-//   2. Set VITE_API_BASE_URL to your real backend URL in .env\n-//   3. That\u0027s it — no service files need to change.\n-// ============================================================\n-\n-const USE_MOCK = import.meta.env.VITE_USE_MOCK !== \"false\";\n-\n-const mockAdapter = async (config) =\u003e {\n-  // Simulate realistic network delay (100–350ms)\n-  const delay = Math.floor(Math.random() * 250) + 100;\n-  await new Promise((resolve) =\u003e setTimeout(resolve, delay));\n-\n-  const { status, data } = resolveMockHandler(config);\n-\n-  // Axios expects a specific response shape from adapters\n-  const response = {\n-    data,\n-    status,\n-    statusText: status === 200 || status === 201 ? \"OK\" : \"Error\",\n-    headers: {},\n-    config,\n-    request: {},\n-  };\n \n-  // Reject 4xx/5xx so axios error interceptors still fire correctly\n-  if (status \u003e= 400) {\n-    const error = new Error(`Mock error: ${status}`);\n-    error.response = response;\n-    error.config = config;\n-    return Promise.reject(error);\n-  }\n-\n-  return response;\n+// Determine baseURL based on VITE_ENV (local, dev, prod)\n+const getBaseURL = () =\u003e {\n+  const env = import.meta.env.VITE_ENV || \"local\";\n+  if (env === \"prod\") return import.meta.env.VITE_API_URL_PROD;\n+  if (env === \"dev\") return import.meta.env.VITE_API_URL_DEV;\n+  return import.meta.env.VITE_API_URL_LOCAL || \"http://localhost:8080/\";\n };",
+                      "path":  "src/services/api.js",
+                      "commit_id":  "eb1bf8001d498ae98f528442e7e1a8f15cc142f2",
+                      "original_commit_id":  "eb1bf8001d498ae98f528442e7e1a8f15cc142f2",
+                      "user":  {
+                                   "login":  "coderabbitai[bot]",
+                                   "id":  136622811,
+                                   "node_id":  "BOT_kgDOCCSy2w",
+                                   "avatar_url":  "https://avatars.githubusercontent.com/in/347564?v=4",
+                                   "gravatar_id":  "",
+                                   "url":  "https://api.github.com/users/coderabbitai%5Bbot%5D",
+                                   "html_url":  "https://github.com/apps/coderabbitai",
+                                   "followers_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/followers",
+                                   "following_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/following{/other_user}",
+                                   "gists_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/gists{/gist_id}",
+                                   "starred_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/starred{/owner}{/repo}",
+                                   "subscriptions_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/subscriptions",
+                                   "organizations_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/orgs",
+                                   "repos_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/repos",
+                                   "events_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/events{/privacy}",
+                                   "received_events_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/received_events",
+                                   "type":  "Bot",
+                                   "user_view_type":  "public",
+                                   "site_admin":  false
+                               },
+                      "body":  "_🎯 Functional Correctness_ | _🟡 Minor_ | _⚡ Quick win_\n\n**Missing fallback when `VITE_API_URL_DEV`/`VITE_API_URL_PROD` are unset.**\n\nOnly the `local` branch has a fallback (`|| \"http://localhost:8080/\"`); the `dev` and `prod` branches return `undefined` if the corresponding env var is missing, silently making axios use relative paths against the frontend\u0027s own origin instead of failing loudly.\n\n\u003cdetails\u003e\n\u003csummary\u003e🛠️ Suggested fix\u003c/summary\u003e\n\n```diff\n const getBaseURL = () =\u003e {\n   const env = import.meta.env.VITE_ENV || \"local\";\n-  if (env === \"prod\") return import.meta.env.VITE_API_URL_PROD;\n-  if (env === \"dev\") return import.meta.env.VITE_API_URL_DEV;\n+  if (env === \"prod\" \u0026\u0026 import.meta.env.VITE_API_URL_PROD) return import.meta.env.VITE_API_URL_PROD;\n+  if (env === \"dev\" \u0026\u0026 import.meta.env.VITE_API_URL_DEV) return import.meta.env.VITE_API_URL_DEV;\n   return import.meta.env.VITE_API_URL_LOCAL || \"http://localhost:8080/\";\n };\n```\n\u003c/details\u003e\n\n\u003c!-- suggestion_start --\u003e\n\n\u003cdetails\u003e\n\u003csummary\u003e📝 Committable suggestion\u003c/summary\u003e\n\n\u003e ‼️ **IMPORTANT**\n\u003e Carefully review the code before committing. Ensure that it accurately replaces the highlighted code, contains no missing lines, and has no issues with indentation. Thoroughly test \u0026 benchmark the code to ensure it meets the requirements.\n\n```suggestion\nconst getBaseURL = () =\u003e {\n  const env = import.meta.env.VITE_ENV || \"local\";\n  if (env === \"prod\" \u0026\u0026 import.meta.env.VITE_API_URL_PROD) return import.meta.env.VITE_API_URL_PROD;\n  if (env === \"dev\" \u0026\u0026 import.meta.env.VITE_API_URL_DEV) return import.meta.env.VITE_API_URL_DEV;\n  return import.meta.env.VITE_API_URL_LOCAL || \"http://localhost:8080/\";\n};\n```\n\n\u003c/details\u003e\n\n\u003c!-- suggestion_end --\u003e\n\n\u003cdetails\u003e\n\u003csummary\u003e🤖 Prompt for AI Agents\u003c/summary\u003e\n\n```\nVerify each finding against current code. Fix only still-valid issues, skip the\nrest with a brief reason, keep changes minimal, and validate.\n\nIn `@src/services/api.js` around lines 9 - 14, The getBaseURL helper returns\nundefined for the VITE_API_URL_DEV and VITE_API_URL_PROD branches when those env\nvars are missing, so update this logic to use an explicit fallback or fail fast\nwith a clear error instead of silently falling back to relative axios requests.\nAdjust the getBaseURL function so the dev/prod cases behave consistently with\nthe local branch, and keep the base URL resolution centralized in this helper.\n```\n\n\u003c/details\u003e\n\n\u003c!-- fingerprinting:phantom:poseidon:beignet --\u003e\n\n\u003c!-- cr-indicator-types:potential_issue --\u003e\n\n\u003c!-- cr-comment:v1:161f4e75a3b30034d8b62529 --\u003e\n\n\u003c!-- This is an auto-generated comment by CodeRabbit --\u003e",
+                      "created_at":  "2026-07-03T12:55:39Z",
+                      "updated_at":  "2026-07-03T12:55:41Z",
+                      "html_url":  "https://github.com/Revive-Graduation-Project/Revive-Front-End/pull/47#discussion_r3519976802",
+                      "pull_request_url":  "https://api.github.com/repos/Revive-Graduation-Project/Revive-Front-End/pulls/47",
+                      "_links":  {
+                                     "self":  {
+                                                  "href":  "https://api.github.com/repos/Revive-Graduation-Project/Revive-Front-End/pulls/comments/3519976802"
+                                              },
+                                     "html":  {
+                                                  "href":  "https://github.com/Revive-Graduation-Project/Revive-Front-End/pull/47#discussion_r3519976802"
+                                              },
+                                     "pull_request":  {
+                                                          "href":  "https://api.github.com/repos/Revive-Graduation-Project/Revive-Front-End/pulls/47"
+                                                      }
+                                 },
+                      "reactions":  {
+                                        "url":  "https://api.github.com/repos/Revive-Graduation-Project/Revive-Front-End/pulls/comments/3519976802/reactions",
+                                        "total_count":  0,
+                                        "+1":  0,
+                                        "-1":  0,
+                                        "laugh":  0,
+                                        "hooray":  0,
+                                        "confused":  0,
+                                        "heart":  0,
+                                        "rocket":  0,
+                                        "eyes":  0
+                                    },
+                      "start_line":  9,
+                      "original_start_line":  9,
+                      "start_side":  "RIGHT",
+                      "line":  14,
+                      "original_line":  14,
+                      "side":  "RIGHT",
+                      "author_association":  "NONE",
+                      "original_position":  54,
+                      "position":  54,
+                      "subject_type":  "line"
+                  },
+                  {
+                      "url":  "https://api.github.com/repos/Revive-Graduation-Project/Revive-Front-End/pulls/comments/3519976819",
+                      "pull_request_review_id":  4625910865,
+                      "id":  3519976819,
+                      "node_id":  "PRRC_kwDOQSbbxs7RzpVz",
+                      "diff_hunk":  "@@ -117,13 +77,22 @@ api.interceptors.response.use(\n \n       try {\n         const res = await restoreSessionService();\n-        const expiresAt = Date.now() + 1000 * 60 * 60 * 24;\n-        setAccessToken(res.data.token, expiresAt);\n+        const token = res.data.token;\n+        \n+        let expiresAt = Date.now() + 1000 * 60 * 60 * 24; // fallback\n+        try {\n+          const payload = JSON.parse(atob(token.split(\u0027.\u0027)[1]));\n+          if (payload.exp) {\n+            expiresAt = payload.exp * 1000;\n+          }\n+        } catch (e) {\n+          console.warn(\"Failed to decode JWT payload\", e);\n+        }\n+\n+        setAccessToken(token, expiresAt);\n         isRefreshing = false;\n \n-        originalRequest.headers[\"Authorization\"] = `Bearer ${getAccessToken()}`;\n-\n-        refreshQueue.forEach((p) =\u003e p.resolve(getAccessToken()));\n+        refreshQueue.forEach((p) =\u003e p.resolve(token));",
+                      "path":  "src/services/api.js",
+                      "commit_id":  "eb1bf8001d498ae98f528442e7e1a8f15cc142f2",
+                      "original_commit_id":  "eb1bf8001d498ae98f528442e7e1a8f15cc142f2",
+                      "user":  {
+                                   "login":  "coderabbitai[bot]",
+                                   "id":  136622811,
+                                   "node_id":  "BOT_kgDOCCSy2w",
+                                   "avatar_url":  "https://avatars.githubusercontent.com/in/347564?v=4",
+                                   "gravatar_id":  "",
+                                   "url":  "https://api.github.com/users/coderabbitai%5Bbot%5D",
+                                   "html_url":  "https://github.com/apps/coderabbitai",
+                                   "followers_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/followers",
+                                   "following_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/following{/other_user}",
+                                   "gists_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/gists{/gist_id}",
+                                   "starred_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/starred{/owner}{/repo}",
+                                   "subscriptions_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/subscriptions",
+                                   "organizations_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/orgs",
+                                   "repos_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/repos",
+                                   "events_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/events{/privacy}",
+                                   "received_events_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/received_events",
+                                   "type":  "Bot",
+                                   "user_view_type":  "public",
+                                   "site_admin":  false
+                               },
+                      "body":  "_🎯 Functional Correctness_ | _🟠 Major_ | _⚡ Quick win_\n\n\u003cdetails\u003e\n\u003csummary\u003e🧩 Analysis chain\u003c/summary\u003e\n\n🌐 Web query:\n\n`Do JSON Web Tokens (JWT) always use base64url encoding for the header and payload segments, and will the JavaScript atob() function throw on \u0027-\u0027 or \u0027_\u0027 characters?`\n\n💡 Result:\n\nYes, JSON Web Tokens (JWT) use Base64url encoding for their header, payload, and signature segments [1][2][3]. According to the official JWT specification (RFC 7519), a JWT is represented as a sequence of URL-safe parts separated by period (\u0027.\u0027) characters, where each part contains a Base64url-encoded value [3][4]. The JavaScript atob function will throw a DOMException if it encounters \u0027-\u0027 or \u0027_\u0027 characters [5][6]. The atob function implements standard Base64 decoding, which uses the \u0027+\u0027 and \u0027/\u0027 characters for values 62 and 63, respectively [5][7][6]. Because Base64url is a URL-safe variant that replaces \u0027+\u0027 with \u0027-\u0027 and \u0027/\u0027 with \u0027_\u0027, and omits the \u0027=\u0027 padding characters, passing a Base64url-encoded segment directly to atob results in an \"Invalid character\" error [5][8][6]. To correctly decode JWT segments in a browser environment using atob, you must first transform the Base64url string back into standard Base64 by: 1. Replacing \u0027-\u0027 with \u0027+\u0027 and \u0027_\u0027 with \u0027/\u0027 [5][8][6]. 2. Adding back the necessary \u0027=\u0027 padding characters so that the string length is a multiple of 4 [5][8][6]. Alternatively, many developers use dedicated JWT libraries or, in modern environments, alternative decoding methods that handle these conversions automatically [5][6].\n\nCitations:\n\n- 1: https://jwtdecode.app/jwt-header-payload-signature-explained\n- 2: https://en.wikipedia.org/wiki/JSON_Web_Token\n- 3: https://www.rfc-editor.org/rfc/rfc7519?adobe_mc=MCMID%3D19116174769159930413680846041420205648%7CMCORGID%3DA8833BC75245AF9E0A490D4D%40AdobeOrg%7CTS%3D1755870864\n- 4: https://datatracker.ietf.org/doc/html/rfc7519.html\n- 5: https://bytejson.com/tutorials/base64-decode-errors/\n- 6: https://developertools.app/articles/how-to-decode-base64-javascript.html\n- 7: https://stackoverflow.com/questions/69368185/why-does-atob-fail-in-safari-and-chrome-on-this-base-64-string\n- 8: https://dev.to/tommy_worklab/i-built-a-jwt-decoder-and-lost-half-a-day-to-atob-2cok\n\n---\n\n🏁 Script executed:\n\n```shell\n#!/bin/bash\nset -euo pipefail\n\n# Show the relevant implementation with line numbers\nsed -n \u00271,180p\u0027 src/services/api.js | cat -n\n\n# Inspect the related test file if present\nif [ -f api.test.js ]; then\n  sed -n \u00271,220p\u0027 api.test.js | cat -n\nelif [ -f src/services/api.test.js ]; then\n  sed -n \u00271,220p\u0027 src/services/api.test.js | cat -n\nelse\n  fd -a \u0027api.test.js\u0027 .\nfi\n```\n\nRepository: Revive-Graduation-Project/Revive-Front-End\n\nLength of output: 4641\n\n---\n\n🏁 Script executed:\n\n```shell\n#!/bin/bash\nset -euo pipefail\n\n# Inspect the test around the mocked JWT payload and refresh response\nsed -n \u00271,240p\u0027 src/tests/services/api.test.js | cat -n\n\n# Find the refresh service implementation and any assumptions about its response shape\nfd -a \u0027auth.service.*\u0027 src\nrg -n \"restoreSessionService|setAccessToken\\\\(|res\\\\.data\\\\.token|token.split\\\\(\u0027\\\\.\u0027\" src -g \u0027!**/node_modules/**\u0027\n```\n\nRepository: Revive-Graduation-Project/Revive-Front-End\n\nLength of output: 7480\n\n---\n\n🏁 Script executed:\n\n```shell\n#!/bin/bash\nset -euo pipefail\n\n# Inspect the refresh service and token store expectations\nsed -n \u00271,220p\u0027 src/services/auth.service.js | cat -n\necho\nsed -n \u00271,260p\u0027 src/store/authStore.js | cat -n\n```\n\nRepository: Revive-Graduation-Project/Revive-Front-End\n\nLength of output: 8824\n\n---\n\n\n\n\u003c/details\u003e\n\n**Decode the refresh JWT as base64url** in `src/services/api.js:80-95`\n- `atob(token.split(\u0027.\u0027)[1])` will fail on normal JWT base64url segments, so `exp` falls back to the 24h default `expiresAt` instead of the token’s actual expiry. The current test uses `btoa(...)`, so it doesn’t exercise the URL-safe case.\n- Guard `res.data.token` before calling `setAccessToken` and resolving the queue; otherwise a malformed refresh response can write `undefined` into auth state.\n\n\u003cdetails\u003e\n\u003csummary\u003e🧰 Tools\u003c/summary\u003e\n\n\u003cdetails\u003e\n\u003csummary\u003e🪛 ast-grep (0.44.0)\u003c/summary\u003e\n\n[warning] 91-91: Avoid using the initial state variable in setState\nContext: setAccessToken(token, expiresAt)\nNote: [CWE-710] Improper Adherence to Coding Standards. Security best practice.\n\n(setstate-same-var)\n\n\u003c/details\u003e\n\n\u003c/details\u003e\n\n\u003cdetails\u003e\n\u003csummary\u003e🤖 Prompt for AI Agents\u003c/summary\u003e\n\n```\nVerify each finding against current code. Fix only still-valid issues, skip the\nrest with a brief reason, keep changes minimal, and validate.\n\nIn `@src/services/api.js` around lines 80 - 95, The refresh-token handling in\napi.js needs two fixes: decode the JWT payload as base64url instead of plain\natob(token.split(\u0027.\u0027)[1]) so exp is read correctly from normal JWTs, and guard\nres.data.token before using it. Update the token parsing logic in the refresh\nflow to convert the URL-safe segment before JSON parsing, and only call\nsetAccessToken plus resolve refreshQueue when a valid token exists; otherwise\nfail the refresh path cleanly.\n```\n\n\u003c/details\u003e\n\n\u003c!-- fingerprinting:phantom:poseidon:beignet --\u003e\n\n\u003c!-- cr-indicator-types:potential_issue --\u003e\n\n\u003c!-- cr-comment:v1:8553ec50f299d4291db76e8b --\u003e\n\n\u003c!-- This is an auto-generated comment by CodeRabbit --\u003e",
+                      "created_at":  "2026-07-03T12:55:40Z",
+                      "updated_at":  "2026-07-03T12:55:41Z",
+                      "html_url":  "https://github.com/Revive-Graduation-Project/Revive-Front-End/pull/47#discussion_r3519976819",
+                      "pull_request_url":  "https://api.github.com/repos/Revive-Graduation-Project/Revive-Front-End/pulls/47",
+                      "_links":  {
+                                     "self":  {
+                                                  "href":  "https://api.github.com/repos/Revive-Graduation-Project/Revive-Front-End/pulls/comments/3519976819"
+                                              },
+                                     "html":  {
+                                                  "href":  "https://github.com/Revive-Graduation-Project/Revive-Front-End/pull/47#discussion_r3519976819"
+                                              },
+                                     "pull_request":  {
+                                                          "href":  "https://api.github.com/repos/Revive-Graduation-Project/Revive-Front-End/pulls/47"
+                                                      }
+                                 },
+                      "reactions":  {
+                                        "url":  "https://api.github.com/repos/Revive-Graduation-Project/Revive-Front-End/pulls/comments/3519976819/reactions",
+                                        "total_count":  0,
+                                        "+1":  0,
+                                        "-1":  0,
+                                        "laugh":  0,
+                                        "hooray":  0,
+                                        "confused":  0,
+                                        "heart":  0,
+                                        "rocket":  0,
+                                        "eyes":  0
+                                    },
+                      "start_line":  80,
+                      "original_start_line":  80,
+                      "start_side":  "RIGHT",
+                      "line":  95,
+                      "original_line":  95,
+                      "side":  "RIGHT",
+                      "author_association":  "NONE",
+                      "original_position":  129,
+                      "position":  129,
+                      "subject_type":  "line"
+                  },
+                  {
+                      "url":  "https://api.github.com/repos/Revive-Graduation-Project/Revive-Front-End/pulls/comments/3519976823",
+                      "pull_request_review_id":  4625910865,
+                      "id":  3519976823,
+                      "node_id":  "PRRC_kwDOQSbbxs7RzpV3",
+                      "diff_hunk":  "@@ -0,0 +1,84 @@\n+import { test, expect } from \u0027@playwright/test\u0027;\n+\n+test.describe(\u0027Kitchen Integration E2E\u0027, () =\u003e {\n+\n+  // Increase test timeout since we need to wait for RabbitMQ saga + kitchen polling\n+  test.setTimeout(120_000);\n+\n+  test.beforeEach(async ({ page }) =\u003e {\n+    // Navigate to login\n+    await page.goto(\u0027http://localhost:5173/auth/login\u0027);\n+    \n+    try {\n+      await page.fill(\u0027input[type=\"email\"]\u0027, \u0027admin@revive.com\u0027);\n+      await page.fill(\u0027input[type=\"password\"]\u0027, \u0027admin123\u0027);\n+      await page.click(\u0027button[type=\"submit\"]\u0027);\n+      await page.waitForURL(\u0027http://localhost:5173/\u0027, { timeout: 10000 });\n+    } catch (e) {\n+      console.log(\"Login failed or timed out: \", e);\n+    }\n+  });",
+                      "path":  "tests/kitchen-integration.spec.js",
+                      "commit_id":  "eb1bf8001d498ae98f528442e7e1a8f15cc142f2",
+                      "original_commit_id":  "eb1bf8001d498ae98f528442e7e1a8f15cc142f2",
+                      "user":  {
+                                   "login":  "coderabbitai[bot]",
+                                   "id":  136622811,
+                                   "node_id":  "BOT_kgDOCCSy2w",
+                                   "avatar_url":  "https://avatars.githubusercontent.com/in/347564?v=4",
+                                   "gravatar_id":  "",
+                                   "url":  "https://api.github.com/users/coderabbitai%5Bbot%5D",
+                                   "html_url":  "https://github.com/apps/coderabbitai",
+                                   "followers_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/followers",
+                                   "following_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/following{/other_user}",
+                                   "gists_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/gists{/gist_id}",
+                                   "starred_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/starred{/owner}{/repo}",
+                                   "subscriptions_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/subscriptions",
+                                   "organizations_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/orgs",
+                                   "repos_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/repos",
+                                   "events_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/events{/privacy}",
+                                   "received_events_url":  "https://api.github.com/users/coderabbitai%5Bbot%5D/received_events",
+                                   "type":  "Bot",
+                                   "user_view_type":  "public",
+                                   "site_admin":  false
+                               },
+                      "body":  "_🩺 Stability \u0026 Availability_ | _🟠 Major_ | _⚡ Quick win_\n\n**Login failure is silently swallowed, masking real test failures.**\n\nCatching and just logging the login error lets the test proceed unauthenticated. Downstream failures (menu, checkout, kitchen board) will then produce confusing errors unrelated to the actual root cause (failed login), making the suite unreliable and hard to debug.\n\n\n\n\n\u003cdetails\u003e\n\u003csummary\u003e🔧 Proposed fix\u003c/summary\u003e\n\n```diff\n   test.beforeEach(async ({ page }) =\u003e {\n     // Navigate to login\n     await page.goto(\u0027http://localhost:5173/auth/login\u0027);\n     \n-    try {\n-      await page.fill(\u0027input[type=\"email\"]\u0027, \u0027admin@revive.com\u0027);\n-      await page.fill(\u0027input[type=\"password\"]\u0027, \u0027admin123\u0027);\n-      await page.click(\u0027button[type=\"submit\"]\u0027);\n-      await page.waitForURL(\u0027http://localhost:5173/\u0027, { timeout: 10000 });\n-    } catch (e) {\n-      console.log(\"Login failed or timed out: \", e);\n-    }\n+    await page.fill(\u0027input[type=\"email\"]\u0027, process.env.E2E_ADMIN_EMAIL);\n+    await page.fill(\u0027input[type=\"password\"]\u0027, process.env.E2E_ADMIN_PASSWORD);\n+    await page.click(\u0027button[type=\"submit\"]\u0027);\n+    await page.waitForURL(\u0027http://localhost:5173/\u0027, { timeout: 10000 });\n   });\n```\n\u003c/details\u003e\n\n\u003c!-- suggestion_start --\u003e\n\n\u003cdetails\u003e\n\u003csummary\u003e📝 Committable suggestion\u003c/summary\u003e\n\n\u003e ‼️ **IMPORTANT**\n\u003e Carefully review the code before committing. Ensure that it accurately replaces the highlighted code, contains no missing lines, and has no issues with indentation. Thoroughly test \u0026 benchmark the code to ensure it meets the requirements.\n\n```suggestion\n  test.beforeEach(async ({ page }) =\u003e {\n    // Navigate to login\n    await page.goto(\u0027http://localhost:5173/auth/login\u0027);\n    \n    await page.fill(\u0027input[type=\"email\"]\u0027, process.env.E2E_ADMIN_EMAIL);\n    await page.fill(\u0027input[type=\"password\"]\u0027, process.env.E2E_ADMIN_PASSWORD);\n    await page.click(\u0027button[type=\"submit\"]\u0027);\n    await page.waitForURL(\u0027http://localhost:5173/\u0027, { timeout: 10000 });\n  });\n```\n\n\u003c/details\u003e\n\n\u003c!-- suggestion_end --\u003e\n\n\u003cdetails\u003e\n\u003csummary\u003e🤖 Prompt for AI Agents\u003c/summary\u003e\n\n```\nVerify each finding against current code. Fix only still-valid issues, skip the\nrest with a brief reason, keep changes minimal, and validate.\n\nIn `@tests/kitchen-integration.spec.js` around lines 8 - 20, The login flow in\ntest.beforeEach is swallowing failures, so the suite keeps running\nunauthenticated and hides the real root cause. Update the beforeEach in\nkitchen-integration.spec.js to let the page.fill/page.click/page.waitForURL\nfailure fail the test instead of catching it, or rethrow after logging so\nfailures stop immediately. Keep the login setup centered around the existing\nbeforeEach hook and the page.goto/page.waitForURL flow so downstream tests only\nrun after a successful login.\n```\n\n\u003c/details\u003e\n\n\u003c!-- fingerprinting:phantom:poseidon:beignet --\u003e\n\n\u003c!-- cr-indicator-types:potential_issue --\u003e\n\n\u003c!-- cr-comment:v1:e2590aca4fa7f65cf7606f01 --\u003e\n\n\u003c!-- This is an auto-generated comment by CodeRabbit --\u003e",
+                      "created_at":  "2026-07-03T12:55:40Z",
+                      "updated_at":  "2026-07-03T12:55:41Z",
+                      "html_url":  "https://github.com/Revive-Graduation-Project/Revive-Front-End/pull/47#discussion_r3519976823",
+                      "pull_request_url":  "https://api.github.com/repos/Revive-Graduation-Project/Revive-Front-End/pulls/47",
+                      "_links":  {
+                                     "self":  {
+                                                  "href":  "https://api.github.com/repos/Revive-Graduation-Project/Revive-Front-End/pulls/comments/3519976823"
+                                              },
+                                     "html":  {
+                                                  "href":  "https://github.com/Revive-Graduation-Project/Revive-Front-End/pull/47#discussion_r3519976823"
+                                              },
+                                     "pull_request":  {
+                                                          "href":  "https://api.github.com/repos/Revive-Graduation-Project/Revive-Front-End/pulls/47"
+                                                      }
+                                 },
+                      "reactions":  {
+                                        "url":  "https://api.github.com/repos/Revive-Graduation-Project/Revive-Front-End/pulls/comments/3519976823/reactions",
+                                        "total_count":  0,
+                                        "+1":  0,
+                                        "-1":  0,
+                                        "laugh":  0,
+                                        "hooray":  0,
+                                        "confused":  0,
+                                        "heart":  0,
+                                        "rocket":  0,
+                                        "eyes":  0
+                                    },
+                      "start_line":  8,
+                      "original_start_line":  8,
+                      "start_side":  "RIGHT",
+                      "line":  20,
+                      "original_line":  20,
+                      "side":  "RIGHT",
+                      "author_association":  "NONE",
+                      "original_position":  20,
+                      "position":  20,
+                      "subject_type":  "line"
+                  }
+              ],
+    "Count":  3
+}

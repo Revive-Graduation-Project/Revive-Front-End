@@ -87,11 +87,13 @@ api.interceptors.response.use(
         
         let expiresAt = Date.now() + 1000 * 60 * 60 * 24; // fallback
         try {
-          const base64Url = token.split('.')[1];
-          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-          const payload = JSON.parse(atob(base64));
-          if (payload.exp) {
-            expiresAt = payload.exp * 1000;
+          if (token && typeof token === 'string' && token.split('.').length === 3) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const payload = JSON.parse(atob(base64));
+            if (payload.exp) {
+              expiresAt = payload.exp * 1000;
+            }
           }
         } catch (e) {
           console.warn("Failed to decode JWT payload", e);
