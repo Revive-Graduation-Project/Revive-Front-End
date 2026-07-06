@@ -6,6 +6,7 @@ import PopularMenus from "./Sections/PopularMenus";
 import SpecialOffer from "./Sections/SpecialOffer";
 import SuggestedMeals from "./Sections/SuggestedMeals";
 import Testimonials from "./Sections/Testimonials";
+import SmartMealBanners from "./Sections/SmartMealBanners";
 
 export default function Home() {
   const { isAuthenticated } = useAuthStore();
@@ -22,12 +23,12 @@ export default function Home() {
     >
       <div className="py-12 md:py-16 lg:py-20 space-y-16 md:space-y-20 lg:space-y-24">
         <Hero />
-
-        {/* Suggested Meals — only shown to authenticated users */}
-        {isAuthenticated && <SuggestedMeals />}
-
+        {/* Smart Meal & Customization Banners */}
+        <SmartMealBanners />
         {/* Popular Meals — always visible */}
         <PopularMenus />
+        {/* Suggested Meals — only shown to authenticated users */}
+        {isAuthenticated && <SuggestedMeals />}
         <SpecialOffer />
         <AboutUs />
         <FAQSection />

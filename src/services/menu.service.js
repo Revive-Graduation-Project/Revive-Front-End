@@ -1,31 +1,43 @@
-import { api } from './api';
+import { api } from "./api";
 
 // Get all meals
-export const getMenu = () => {
-  return api.get('/api/menu');
+export const getMenu = (hasDiscount) => {
+  return api.get("/api/menu", {
+    params: hasDiscount !== undefined ? { hasDiscount } : {},
+  });
 };
 
 // Get single meal
 export const getMealById = (id) => {
-  return api.get(`/menu/${id}`);
+  return api.get(`/api/menu/${id}`);
 };
 
-// Admin: create meal
-export const createMeal = (data) => {
-  return api.post('/menu', data);
+// Get all ingredients
+export const getIngredients = () => {
+  return api.get("/api/ingredients");
 };
 
-// Admin: update meal
-export const updateMeal = (id, data) => {
-  return api.put(`/menu/${id}`, data);
+// Get single ingredient
+export const getIngredientById = (id) => {
+  return api.get(`/api/ingredients/${id}`);
 };
 
-// Admin: delete meal
-export const deleteMeal = (id) => {
-  return api.delete(`/menu/${id}`);
-};
+// // Admin: create meal
+// export const createMeal = (data) => {
+//   return api.post("/api/menu", data);
+// };
 
-// Get meals recommended for a user
-export const getRecommendedMeals = (userId) => {
-  return api.get(`/menu/recommendations/${userId}`);
-};
+// // Admin: update meal
+// export const updateMeal = (id, data) => {
+//   return api.put(`/api/menu/${id}`, data);
+// };
+
+// // Admin: delete meal
+// export const deleteMeal = (id) => {
+//   return api.delete(`/api/menu/${id}`);
+// };
+
+// // Get meals recommended for a user
+// export const getRecommendedMeals = (userId) => {
+//   return api.get(`/api/menu/recommendations/${userId}`);
+// };

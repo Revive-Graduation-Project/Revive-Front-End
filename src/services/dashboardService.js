@@ -97,14 +97,17 @@ export const updateMenuDiscount    = (id, data) => api.patch(`/api/menu/${id}/di
 export const uploadMealImage       = (id, file) => {
   const formData = new FormData();
   formData.append("file", file);
-  return api.post(`/api/menu/${id}/image`, formData, {
-    headers: { "Content-Type": "multipart/form-data" }
-  }).then(r => r.data);
+  const headers = { "Content-Type": "multipart/form-data" };
+  const user = useAuthStore.getState().user;
+  if (user && user.role) {
+    headers["X-User-Role"] = user.role;
+  }
+  return api.post(`/api/menu/${id}/image`, formData, { headers }).then(r => r.data);
 };
 
 // ── Recipe Builder ────────────────────────────────────────────────
-export const getRecipeIngredients  = () => api.get("/recipes/ingredients").then(r => r.data);
-export const saveRecipe            = (data) => api.post("/recipes", data).then(r => r.data);
+export const getRecipeIngredients  = () => api.get("/api/ingredients").then(r => r.data);
+export const saveRecipe            = (data) => api.post("/api/menu", data).then(r => r.data);
 
 // ── Menu Management ───────────────────────────────────────────────
 export const getMenuUploads = () => {
@@ -143,15 +146,18 @@ export const uploadMenuFile = async (file) => {
   return result;
 };
 
-// ── Ingredients ───────────────────────────────────────────────────
-export const getIngredientsMetrics = () => api.get("/ingredients/metrics").then(r => Mappers.mapIngredientsMetrics(r.data));
-export const getIngredients        = (params = {}) => api.get("/api/ingredients", { params }).then(r => Mappers.mapIngredients(r.data));
-export const createIngredient      = (data) => api.post("/api/ingredients", data).then(r => r.data);
-export const updateIngredient      = (id, data) => api.patch(`/api/ingredients/${id}/stock`, data).then(r => r.data);
-export const deleteIngredient      = (id) => api.delete(`/api/ingredients/${id}`).then(r => r.data);
-export const bulkUpdateIngredientsStock = (data) => api.patch("/api/ingredients/bulk/stock", data).then(r => r.data);
-export const reserveIngredientsStock    = (data) => api.post("/api/ingredients/reserve", data).then(r => r.data);
-export const revertIngredientsStock     = (data) => api.post("/api/ingredients/revert", data).then(r => r.data);
+// ── Ingredients ───────────────────────────────────────────────────────────────────
+export const getIngredients             = (params = {}) => api.get("/api/ingredients", { params }).then(r => Mappers.mapIngredients(r.data));
+export const updateIngredientStock      = (id, data)    => {
+  const payload = {
+    ingredientId: Number(id),
+    stock: Number(data.stock !== undefined ? data.stock : data)
+  };
+  return api.patch(`/api/ingredients/${id}/stock`, payload).then(r => r.data);
+};
+export const bulkUpdateIngredientsStock = (data)        => api.patch("/api/ingredients/bulk/stock", data).then(r => r.data);
+export const reserveIngredientsStock    = (data)        => api.post("/api/ingredients/reserve", data).then(r => r.data);
+export const revertIngredientsStock     = (data)        => api.post("/api/ingredients/revert", data).then(r => r.data);
 
 
 export const uploadIngredientsFile = (file) => {
