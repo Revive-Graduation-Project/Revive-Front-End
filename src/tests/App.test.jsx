@@ -1,12 +1,18 @@
 import React from 'react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen, cleanup } from '@testing-library/react';
 import { MemoryRouter, Outlet } from 'react-router-dom';
 import App from '../App';
-import useAuthStore from '../store/authStore';
+import { useAuthStore } from '../store';
 
 // Mock the store
-vi.mock('../store/authStore');
+vi.mock('../store', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    useAuthStore: vi.fn(),
+  };
+});
 
 vi.mock('../pages/customization/Customization', () => ({
   default: () => <div data-testid="customization-page">Customization Page</div>
@@ -68,6 +74,10 @@ describe('App Routing - Customize (SCRUM-50)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
+  
+  afterEach(() => {
+    cleanup();
+  });
 
   it('renders ProtectedRoute fallback when accessing /customize unauthenticated', () => {
     useAuthStore.mockImplementation((selector) => {
@@ -82,9 +92,9 @@ describe('App Routing - Customize (SCRUM-50)', () => {
     );
 
     // The ProtectedRoute renders "Please log in to continue"
-    expect(screen.getByText(/Please log in to continue/i)).toBeInTheDocument();
+    expect(screen.getByText(/Please log in to continue/i)).toBeTruthy();
     // Customization page should NOT be rendered
-    expect(screen.queryByTestId('customization-page')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('customization-page')).toBeNull();
   });
 
   it('renders Customization page when accessing /customize authenticated', () => {
@@ -100,8 +110,8 @@ describe('App Routing - Customize (SCRUM-50)', () => {
     );
 
     // The Customization page SHOULD be rendered
-    expect(screen.getByTestId('customization-page')).toBeInTheDocument();
+    expect(screen.getByTestId('customization-page')).toBeTruthy();
     // Protected route fallback should NOT be rendered
-    expect(screen.queryByText(/Please log in to continue/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Please log in to continue/i)).toBeNull();
   });
 });
