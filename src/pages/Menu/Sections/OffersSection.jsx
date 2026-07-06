@@ -1,29 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useMenuItems } from "../../../hooks/dashboard/useMenuItems";
 import RegularFoodCard from "../../../components/UI/RegularFoodCard";
-import { getMenu } from "../../../services/menu.service";
 import ScrollArrows from "../../../components/UI/ScrollArrows";
 
 const OffersSection = () => {
-  const [offersMeals, setOffersMeals] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { data: offersMeals = [], isLoading: loading, error: queryError } = useMenuItems({ hasDiscount: true });
+  const error = queryError ? (queryError.message || "Failed to load offers") : null;
   const [current, setCurrent] = useState(0);
 
-  useEffect(() => {
-    const fetchOffers = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await getMenu(true); // hasDiscount = true
-        setOffersMeals(res.data);
-      } catch (err) {
-        setError(err.message || "Failed to load offers");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchOffers();
-  }, []);
 
   if (loading) {
     return (

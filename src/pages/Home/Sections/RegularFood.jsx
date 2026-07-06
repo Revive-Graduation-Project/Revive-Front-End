@@ -1,20 +1,18 @@
 // src/pages/Home/Sections/RegularFood.jsx
-import { useEffect } from "react";
-import useRestaurantStore from "../../../store/restaurantStore";
+import { useMenuItems } from "../../../hooks/dashboard/useMenuItems";
 import RegularFoodCard from "../../../components/UI/RegularFoodCard";
 import LoadingSpinner from "../../../components/UI/LoadingSpinner";
 
 const RegularFood = ({ items }) => {
-  const { meals, fetchMeals, loading, error } = useRestaurantStore();
-
-  useEffect(() => {
-    if (!items && meals.length === 0) fetchMeals(); // ✅ بس لو مفيش items جاي من برا
-  }, [meals.length, fetchMeals, items]);
+  const { data: meals = [], isLoading: loading, error } = useMenuItems({}, {
+    enabled: !items, // Don't fetch if items are passed via prop
+  });
 
   if (loading && !items) return <LoadingSpinner />;
-  if (error && !items) return <p>{error}</p>;
+  if (error && !items) return <p>{error.message || "Error loading food items"}</p>;
 
   const displayMeals = items ?? meals; // ✅ لو في items استخدمها، لو لأ استخدم meals
+
 
   return (
     <section id="regular-food" className="py-12 md:py-16 lg:py-20 bg-gray-50">
