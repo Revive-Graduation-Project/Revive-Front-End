@@ -144,4 +144,21 @@ test('Calls refresh endpoint when getting 401', async () => {
 
     console.log('✅ JWT decoding test passed!');
   });
+
+  // TEST 7: Does it ignore 401 errors from /auth/login?
+  test('Does not attempt to refresh token on 401 from /auth/login', async () => {
+    mock.onPost('/auth/login').reply(401, { message: 'Invalid email or password' });
+
+    try {
+      await api.post('/auth/login', { email: 'wrong@example.com', password: 'wrong' });
+    } catch (error) {
+      expect(error.response.status).toBe(401);
+      expect(error.response.data.message).toBe('Invalid email or password');
+    }
+
+    // Should NOT call refresh for 401 errors from /auth/login
+    expect(mock.history.post.filter(req => req.url === '/auth/refresh').length).toBe(0);
+
+    console.log('✅ Ignore 401 from login test passed!');
+  });
 });
