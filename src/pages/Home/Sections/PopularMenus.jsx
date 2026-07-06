@@ -39,7 +39,7 @@ const PopularMenus = () => {
   }, []);
 
   if (loading) return <LoadingSpinner />;
-  if (error) return <p>{error}</p>;
+  if (error) return <p>{error.message || "Failed to load popular meals"}</p>;
 
   const popular = meals.slice(0, 6);
 

@@ -12,10 +12,11 @@ export function useMenuCategories() {
   return useQuery({ queryKey: menuKeys.categories(), queryFn: getMenuCategories });
 }
 
-export function useMenuItems(filters = {}) {
+export function useMenuItems(filters = {}, options = {}) {
   return useQuery({
     queryKey: menuKeys.items(filters),
     queryFn:  () => getMenuItems(filters),
+    ...options,
   });
 }
 
