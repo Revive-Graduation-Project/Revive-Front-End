@@ -7,6 +7,8 @@ import {
   Home,
   Login,
   Signup,
+  ForgotPassword,
+  ResetPassword,
   Cart,
   Checkout,
   Payment,
@@ -75,7 +77,10 @@ export default function App() {
         <Route path="/auth" element={<AuthLayout />}>
           <Route path="login" element={<Login />} />
           <Route path="signup" element={<Signup />} />
+          <Route path="forgot-password" element={<ForgotPassword />} />
         </Route>
+
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Debug Route — remove before production */}
         <Route path="/debug" element={<StoreDebug />} />

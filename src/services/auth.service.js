@@ -40,3 +40,13 @@ export const restoreSessionService = () => {
 
   return refreshPromise;
 };
+
+// Password Reset
+export const requestPasswordReset = (data) => {
+  return api.post("/auth/password/reset-request", data);
+};
+
+export const resetPassword = (data) => {
+  return api.post("/auth/password/reset", data);
+};
+
