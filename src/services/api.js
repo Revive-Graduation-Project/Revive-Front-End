@@ -8,8 +8,14 @@ import { restoreSessionService } from "./auth.service";
 // Determine baseURL based on VITE_ENV (local, dev, prod)
 const getBaseURL = () => {
   const env = import.meta.env.VITE_ENV || "local";
-  if (env === "prod") return import.meta.env.VITE_API_URL_PROD;
-  if (env === "dev") return import.meta.env.VITE_API_URL_DEV;
+  if (env === "prod") {
+    if (!import.meta.env.VITE_API_URL_PROD) throw new Error("VITE_API_URL_PROD is not defined");
+    return import.meta.env.VITE_API_URL_PROD;
+  }
+  if (env === "dev") {
+    if (!import.meta.env.VITE_API_URL_DEV) throw new Error("VITE_API_URL_DEV is not defined");
+    return import.meta.env.VITE_API_URL_DEV;
+  }
   return import.meta.env.VITE_API_URL_LOCAL || "http://localhost:8080/";
 };
 
@@ -81,7 +87,9 @@ api.interceptors.response.use(
         
         let expiresAt = Date.now() + 1000 * 60 * 60 * 24; // fallback
         try {
-          const payload = JSON.parse(atob(token.split('.')[1]));
+          const base64Url = token.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const payload = JSON.parse(atob(base64));
           if (payload.exp) {
             expiresAt = payload.exp * 1000;
           }

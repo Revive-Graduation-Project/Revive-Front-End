@@ -7,29 +7,25 @@ test.describe('Kitchen Integration E2E', () => {
 
   test.beforeEach(async ({ page }) => {
     // Navigate to login
-    await page.goto('http://localhost:5173/auth/login');
+    await page.goto('/auth/login');
     
-    try {
-      await page.fill('input[type="email"]', 'admin@revive.com');
-      await page.fill('input[type="password"]', 'admin123');
-      await page.click('button[type="submit"]');
-      await page.waitForURL('http://localhost:5173/', { timeout: 10000 });
-    } catch (e) {
-      console.log("Login failed or timed out: ", e);
-    }
+    await page.fill('input[type="email"]', process.env.VITE_TEST_EMAIL || 'admin@revive.com');
+    await page.fill('input[type="password"]', process.env.VITE_TEST_PASSWORD || 'admin123');
+    await page.click('button[type="submit"]');
+    await page.waitForURL('/', { timeout: 10000 });
   });
 
   test('should create an order and process it in the kitchen', async ({ page }) => {
     // 1. Create an Order — navigate to menu
-    await page.goto('http://localhost:5173/menu');
+    await page.goto('/menu');
     
     // Add item to cart — target the specific Classic Cheeseburger card (visible only)
     await page.waitForSelector('button:has-text("Add to cart") >> visible=true');
     await page.locator('div.group:has(h3:has-text("Classic Cheeseburger"))').locator('button:has-text("Add to cart") >> visible=true').first().click();
-    await page.goto('http://localhost:5173/checkout');
+    await page.goto('/checkout');
     
     // Fill checkout form
-    await page.fill('#email', 'admin@revive.com');
+    await page.fill('#email', process.env.VITE_TEST_EMAIL || 'admin@revive.com');
     await page.fill('#firstName', 'System');
     await page.fill('#lastName', 'Admin');
     await page.fill('#phone', '1234567890');
@@ -51,34 +47,38 @@ test.describe('Kitchen Integration E2E', () => {
     await page.waitForTimeout(5000);
     
     // 2. Go to Live Kitchen
-    await page.goto('http://localhost:5173/dashboard/live-kitchen');
+    await page.goto('/dashboard/live-kitchen');
     
-    // Wait for the kitchen board to load and show the order in the queue
     // The board polls every 30s, but initial load happens on mount
     const queueColumn = page.locator('h3:has-text("Order Queue")').locator('..');
-    await expect(queueColumn.locator('.group')).toHaveCount(1, { timeout: 35000 });
+    const orderCard = queueColumn.locator('.group', { hasText: 'System Admin' }).first();
+    await expect(orderCard).toBeVisible({ timeout: 35000 });
     
     // Move to Preparing
-    await queueColumn.locator('button:has-text("Start Preparing")').first().click();
+    await orderCard.locator('button:has-text("Start Preparing")').first().click();
     
     // Verify it moved to Preparing
     const prepColumn = page.locator('h3:has-text("Preparing")').locator('..');
-    await expect(prepColumn.locator('.group')).toHaveCount(1, { timeout: 10000 });
+    const prepOrderCard = prepColumn.locator('.group', { hasText: 'System Admin' }).first();
+    await expect(prepOrderCard).toBeVisible({ timeout: 10000 });
     
     // Move to Ready
-    await prepColumn.locator('button:has-text("Prepared")').first().click();
+    await prepOrderCard.locator('button:has-text("Prepared")').first().click();
     
     // Verify it moved to Ready
     const readyColumn = page.locator('h3:has-text("Ready")').locator('..');
-    await expect(readyColumn.locator('.group')).toHaveCount(1, { timeout: 10000 });
+    const readyOrderCard = readyColumn.locator('.group', { hasText: 'System Admin' }).first();
+    await expect(readyOrderCard).toBeVisible({ timeout: 10000 });
 
     // Mark as Done
-    await readyColumn.locator('button:has-text("Mark Done")').first().click();
+    await readyOrderCard.locator('button:has-text("Mark Done")').first().click();
     
     // Confirm in modal — the modal has a "Ready" confirm button
     await page.getByRole('button', { name: 'Ready', exact: true }).click();
     
     // Verify it is in Done column
-    await expect(page.locator('h3:has-text("Done")').locator('..').locator('.group')).toHaveCount(1, { timeout: 10000 });
+    const doneColumn = page.locator('h3:has-text("Done")').locator('..');
+    const doneOrderCard = doneColumn.locator('.group', { hasText: 'System Admin' }).first();
+    await expect(doneOrderCard).toBeVisible({ timeout: 10000 });
   });
 });
