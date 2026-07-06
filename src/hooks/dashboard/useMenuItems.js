@@ -41,7 +41,7 @@ export function useDeleteMenuItem() {
     onError: (_err, _id, ctx) => {
       ctx?.prev?.forEach(([key, data]) => qc.setQueryData(key, data));
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: menuKeys.all }),
+    onSettled: () => qc.invalidateQueries({ queryKey: menuKeys.all, refetchType: "all" }),
   });
 }
 
@@ -159,7 +159,19 @@ export function useUpdateMenuItem() {
 
       return res;
     },
-    onSettled:  () => qc.invalidateQueries({ queryKey: menuKeys.all }),
+    onSuccess: (updatedMeal, { id, data }) => {
+      const targetId = extractMealId(updatedMeal, id) || id;
+      const mergedItem = typeof updatedMeal === "object" && updatedMeal !== null
+        ? { ...data, ...updatedMeal, id: targetId }
+        : { ...data, id: targetId };
+
+      qc.setQueriesData({ queryKey: ["menu", "items"] }, (old) =>
+        Array.isArray(old)
+          ? old.map((item) => (item.id === targetId || item._id === targetId ? { ...item, ...mergedItem } : item))
+          : old
+      );
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: menuKeys.all, refetchType: "all" }),
   });
 }
 
@@ -183,7 +195,16 @@ export function useCreateMenuItem() {
 
       return meal;
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: menuKeys.all }),
+    onSuccess: (newMeal, variables) => {
+      const itemToAdd = typeof newMeal === "object" && newMeal !== null
+        ? { ...variables, ...newMeal, id: extractMealId(newMeal) || variables.id || Date.now() }
+        : { ...variables, id: Date.now() };
+
+      qc.setQueriesData({ queryKey: ["menu", "items"] }, (old) =>
+        Array.isArray(old) ? [itemToAdd, ...old] : old
+      );
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: menuKeys.all, refetchType: "all" }),
   });
 }
 
@@ -192,6 +213,15 @@ export function useSaveRecipe() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: saveRecipe,
-    onSuccess:  () => qc.invalidateQueries({ queryKey: menuKeys.all }),
+    onSuccess: (newMeal, variables) => {
+      const itemToAdd = typeof newMeal === "object" && newMeal !== null
+        ? { ...variables, ...newMeal, id: extractMealId(newMeal) || variables.id || Date.now() }
+        : { ...variables, id: Date.now() };
+
+      qc.setQueriesData({ queryKey: ["menu", "items"] }, (old) =>
+        Array.isArray(old) ? [itemToAdd, ...old] : old
+      );
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: menuKeys.all, refetchType: "all" }),
   });
 }

@@ -126,7 +126,10 @@ export const MOCK_HANDLERS = [
     match: (url) => url.endsWith("/menu"),
     handler: (config) => {
       const body = JSON.parse(config.data || "{}");
-      return { status: 201, data: { id: Date.now(), ...body } };
+      const newItem = { id: Date.now(), ...body };
+      mockMeals.unshift(newItem);
+      if (dash?.mockMenuItems) dash.mockMenuItems.unshift(newItem);
+      return { status: 201, data: newItem };
     },
   },
   {
@@ -136,9 +139,13 @@ export const MOCK_HANDLERS = [
       const id = extractId(config.url);
       const body = JSON.parse(config.data || "{}");
       const meal = mockMeals.find((m) => m.id === id);
-      return meal
-        ? { status: 200, data: { ...meal, ...body } }
-        : { status: 404, data: { message: `Meal ${id} not found` } };
+      if (meal) {
+        Object.assign(meal, body);
+        const dashItem = dash?.mockMenuItems?.find((m) => m.id === id);
+        if (dashItem) Object.assign(dashItem, body);
+        return { status: 200, data: meal };
+      }
+      return { status: 404, data: { message: `Meal ${id} not found` } };
     },
   },
   {
