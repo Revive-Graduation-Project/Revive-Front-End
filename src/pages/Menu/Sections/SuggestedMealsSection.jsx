@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import RegularFoodCard from "../../../components/UI/RegularFoodCard";
+import RegularFoodCard from "../../../components/ui/RegularFoodCard";
 
 const SuggestedMealsSection = ({ items = [] }) => {
   const [showAll, setShowAll] = useState(false);

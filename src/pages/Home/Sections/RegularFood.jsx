@@ -1,7 +1,7 @@
 // src/pages/Home/Sections/RegularFood.jsx
 import { useMenuItems } from "../../../hooks/dashboard/useMenuItems";
-import RegularFoodCard from "../../../components/UI/RegularFoodCard";
-import LoadingSpinner from "../../../components/UI/LoadingSpinner";
+import RegularFoodCard from "../../../components/ui/RegularFoodCard";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 const RegularFood = ({ items }) => {
   const { data: meals = [], isLoading: loading, error } = useMenuItems({}, {

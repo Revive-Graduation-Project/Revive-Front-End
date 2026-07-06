@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router";
 import { useFavoritesStore } from "../../store";
-import RegularFoodCard from "../UI/RegularFoodCard";
+import RegularFoodCard from "../ui/RegularFoodCard";
 
 /**
  * FavoritesList Component
