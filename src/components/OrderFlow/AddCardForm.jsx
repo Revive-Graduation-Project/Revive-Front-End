@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CardSchema } from "./AddCard/cardValidation";
+import { CardSchema } from "./AddCard/CardValidation";
 import { formatCardNumber, formatExpiry } from "./AddCard/cardFormatters";
 import CardPreview from "./AddCard/CardPreview";
 import CardInputs from "./AddCard/CardInputs";

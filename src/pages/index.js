@@ -1,12 +1,14 @@
 export { default as Login } from "./auth/Login";
 export { default as Signup } from "./auth/Signup";
+export { default as ForgotPassword } from "./auth/ForgotPassword";
+export { default as ResetPassword } from "./auth/ResetPassword";
 export { default as Home } from "./Home/Home";
 export { default as Cart } from "./OrderFlow/Cart";
 export { default as Checkout } from "./OrderFlow/Checkout";
 export { default as Payment } from "./OrderFlow/Payment";
 export { default as Thanks } from "./OrderFlow/Thanks";
 export { default as StoreDebug } from "./StoreDebug";
-export { default as Favorites } from "./Favorites/Favorites";
+export { default as Favorites } from "./favorites/Favorites";
 export { Profile } from "./Profile";
 
 // Dashboard pages

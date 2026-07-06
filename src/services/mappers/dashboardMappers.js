@@ -6,6 +6,7 @@
  * This ensures that if the backend changes its DTO structure,
  * only these mappers need to be updated, keeping the UI safe.
  */
+import { parseNutrients } from "../../utils/nutrients";
 
 // ── Dashboard Overview Mappers ─────────────────────────────────────
 
@@ -73,7 +74,8 @@ export const mapTrendingMenus = (data) => {
     rating: item.rating || 0,
     orders: item.orders || 0,
     revenue: item.revenue || 0,
-    image: item.image || "",
+    image: item.imageUrl || item.image || "",
+    imageUrl: item.imageUrl || item.image || "",
   }));
 };
 
@@ -201,56 +203,143 @@ export const mapMenuCategories = (data) => {
   };
 };
 
+const formatGram = (val) => {
+  if (val === undefined || val === null || val === "") return "0g";
+  if (typeof val === "string") return val.endsWith("g") ? val : `${val}g`;
+  return `${val}g`;
+};
+
+const getValidNutrient = (parsedVal, fallbackVal) => {
+  if (parsedVal !== undefined && parsedVal !== null && parsedVal !== 0 && parsedVal !== "0" && parsedVal !== "0g" && parsedVal !== "") {
+    return parsedVal;
+  }
+  return fallbackVal;
+};
+
 export const mapMenuItems = (data) => {
   if (!Array.isArray(data)) return [];
-  return data.map((item) => ({
-    id: item.id || item._id,
-    name: item.name || "",
-    category: item.category || "",
-    price: item.price || 0,
-    calories: item.calories || 0,
-    protein: item.protein || "0g",
-    fat: item.fat || "0g",
-    sugar: item.sugar || "0g",
-    rating: item.rating || 0,
-    status: item.isActive !== undefined ? (item.isActive ? "Active" : "Inactive") : (item.status || "Active"),
-    image: item.image || null,
-    description: item.description || "",
-    hasDiscount: item.hasDiscount || false,
-    discountPercentage: item.discountPercentage || 0,
-    mealIngredients: item.mealIngredients || [],
-    ingredients: Array.isArray(item.ingredients) ? item.ingredients : (item.mealIngredients || []),
-  }));
+  return data.map((item) => {
+    const parsed = parseNutrients(item.nutrients || []);
+    const calVal = getValidNutrient(parsed.calories, item.calories) || 0;
+    const proVal = getValidNutrient(parsed.protein, item.protein);
+    const fatVal = getValidNutrient(parsed.fat, item.fat);
+    const sugVal = getValidNutrient(parsed.sugar, item.sugar);
+
+    const rawIngs = Array.isArray(item.ingredients) ? item.ingredients : (item.mealIngredients || []);
+    const normIngs = rawIngs.map((ing, idx) => {
+      if (typeof ing !== "object" || ing === null) {
+        return { id: idx + 1, name: String(ing), amount: "0g", unit: "g" };
+      }
+      const name = ing.name || ing.ingredient?.name || ing.ingredientName || ing.snapshotName || "Ingredient";
+      const rawAmt = ing.amount !== undefined ? ing.amount : (ing.quantityGrams !== undefined ? ing.quantityGrams : (ing.quantity !== undefined ? ing.quantity : "0"));
+      const unit = ing.unit || "g";
+      const amount = typeof rawAmt === "string" && rawAmt.endsWith(unit) ? rawAmt : `${rawAmt}${unit}`;
+      const idVal = ing.id || ing.ingredientId || ing.ingredient?.id || (idx + 1);
+      const ingredientIdVal = ing.ingredientId || ing.ingredient?.id || (typeof ing.id === "number" && ing.id < 10000000000 ? ing.id : undefined);
+
+      return {
+        ...ing,
+        id: idVal,
+        ingredientId: ingredientIdVal,
+        name: String(name).trim(),
+        amount,
+        quantity: parseFloat(rawAmt) || 0,
+        unit,
+      };
+    });
+
+    return {
+      id: item.id || item._id,
+      name: item.name || "",
+      category: item.category || "",
+      price: item.price || 0,
+      calories: calVal,
+      protein: formatGram(proVal),
+      fat: formatGram(fatVal),
+      sugar: formatGram(sugVal),
+      rating: item.rating || 0,
+      status: item.isActive !== undefined ? (item.isActive ? "Active" : "Inactive") : (item.status || "Active"),
+      image: item.imageUrl || item.image || null,
+      imageUrl: item.imageUrl || item.image || null,
+      description: item.description || "",
+      hasDiscount: item.hasDiscount || false,
+      discountPercentage: item.discountPercentage || 0,
+      nutrients: item.nutrients || [],
+      mealIngredients: normIngs,
+      ingredients: normIngs,
+    };
+  });
 };
 
 // ── Ingredients Mappers ───────────────────────────────────────────
 
-export const mapIngredientsMetrics = (data) => ({
-  total: data.total || 0,
-  totalChange: data.totalChange ?? 0,
-  lowStock: data.lowStock || 0,
-  lowStockChange: data.lowStockChange ?? 0,
-  outOfStock: data.outOfStock || 0,
-  outOfStockChange: data.outOfStockChange ?? 0,
-});
+/**
+ * Maps real IngredientDTO from GET /api/ingredients.
+ * Only maps fields that actually exist in the backend response.
+ */
+const extractStock = (item) => {
+  if (item === null || item === undefined || typeof item !== "object") return 0;
+
+  // List of candidate keys in priority order
+  const candidateKeys = [
+    "quantity", "quantityGrams", "stockQuantity", "currentStock", "stockGrams", 
+    "amount", "availableStock", "totalStock", "inStock", "stockAmount", 
+    "inventory", "stock", "count", "onHand", "total", "balance", "weight", "units", "value", "stock"
+  ];
+
+  // First, look for any candidate key that has a non-zero valid value!
+  for (const key of candidateKeys) {
+    const val = item[key];
+    if (val !== undefined && val !== null && val !== "" && val !== 0 && val !== "0" && val !== "0g") {
+      const num = Number(String(val).replace(/[^0-9.-]+/g, ""));
+      if (!isNaN(num) && num !== 0) return num;
+    }
+  }
+
+  // Next, if all standard keys were 0 or missing, dynamically check any non-ID, non-string metadata key that is non-zero
+  for (const key of Object.keys(item)) {
+    const lk = key.toLowerCase();
+    if (lk === "id" || lk === "_id" || lk.includes("name") || lk.includes("desc") || lk.includes("cat") || lk.includes("url") || lk.includes("img") || lk.includes("unit") || lk === "nutrients" || lk === "price" || lk === "cost") continue;
+    const val = item[key];
+    if (val !== undefined && val !== null && val !== "" && val !== 0 && val !== "0" && val !== "0g") {
+      const num = Number(String(val).replace(/[^0-9.-]+/g, ""));
+      if (!isNaN(num) && num !== 0) return num;
+    }
+  }
+
+  // Finally, fallback to item.stock if it was explicitly 0
+  if (item.stock !== undefined && item.stock !== null) return Number(item.stock) || 0;
+  return 0;
+};
+
+const extractUnit = (item) => {
+  if (item === null || item === undefined || typeof item !== "object") return "g";
+  return item.unit || item.unitName || item.stockUnit || item.measurementUnit || item.unitOfMeasure || "g";
+};
 
 export const mapIngredients = (data) => {
   if (!Array.isArray(data)) return [];
-  return data.map((item) => ({
-    id: item.id || item._id,
-    name: item.name || "",
-    emoji: item.emoji || "🥦",
-    image: item.image || "",
-    category: item.category || "",
-    fat: item.fat || "",
-    calories: item.calories || "",
-    protein: item.protein || "",
-    sugar: item.sugar || "",
-    stock: item.stock || 0,
-    unit: item.unit || "unit",
-    costPerUnit: item.costPerUnit || "$0.00",
-    status: item.stock > 0 ? "In Stock" : "Out of Stock",
-  }));
+  return data.map((item) => {
+    const parsed = parseNutrients(Array.isArray(item.nutrients) ? item.nutrients : []);
+    const calVal = getValidNutrient(parsed.calories, item.calories) || 0;
+    const proVal = getValidNutrient(parsed.protein, item.protein);
+    const fatVal = getValidNutrient(parsed.fat, item.fat);
+    const sugVal = getValidNutrient(parsed.sugar, item.sugar);
+
+    return {
+      id:          item.id || item._id,
+      name:        item.name        || item.ingredientName || "",
+      category:    item.category || item.categoryName || "-",
+      description: item.description || "",
+      calories:    calVal,
+      protein:     formatGram(proVal),
+      fat:         formatGram(fatVal),
+      sugar:       formatGram(sugVal),
+      nutrients:   Array.isArray(item.nutrients) ? item.nutrients : [],
+      stock:       extractStock(item),
+      unit:        extractUnit(item),
+    };
+  });
 };
 
 // ── Menu Uploads Mappers ──────────────────────────────────────────

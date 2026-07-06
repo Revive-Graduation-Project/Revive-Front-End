@@ -1,21 +1,20 @@
 import { useEffect } from "react";
-import { useRestaurantStore } from "../store";
+import { useQueryClient } from "@tanstack/react-query";
+import { menuKeys } from "./dashboard/useMenuItems";
+import { getMenuItems } from "../services/dashboardService";
 
 /**
- * Hook to initialize meal data on app load.
+ * Hook to prefetch meal data on app load via React Query.
  * Call this in App.jsx on mount.
- *
- * Single-restaurant system — only fetches meals, no restaurant selection.
- * Mock now → real API later (no changes needed here).
  */
 export const useRestaurantInit = () => {
-    const { meals, fetchMeals } = useRestaurantStore();
+  const queryClient = useQueryClient();
 
-    useEffect(() => {
-        // Only fetch if store is empty
-        if (meals.length === 0) {
-            console.log("🍽️ Fetching menu...");
-            fetchMeals();
-        }
-    }, []);
+  useEffect(() => {
+    queryClient.prefetchQuery({
+      queryKey: menuKeys.items({}),
+      queryFn: () => getMenuItems({}),
+    });
+  }, [queryClient]);
 };
+

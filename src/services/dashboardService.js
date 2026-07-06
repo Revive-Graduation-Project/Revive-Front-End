@@ -19,17 +19,33 @@ import axios from "axios";
 export const getDashboardMetrics   = () => api.get("/dashboard/metrics").then(r => Mappers.mapDashboardMetrics(r.data));
 export const getRevenueData        = (period = "6m") => api.get(`/dashboard/revenue?period=${period}`).then(r => Mappers.mapRevenueData(r.data));
 export const getTopCategories      = () => api.get("/dashboard/categories").then(r => Mappers.mapTopCategories(r.data));
-export const getOrdersOverview     = () => api.get("/dashboard/orders-overview").then(r => Mappers.mapOrdersOverview(r.data));
+export const getOrdersOverview = () => Promise.resolve([
+  { day: "Mon", orders: 120, highlight: false },
+  { day: "Tue", orders: 150, highlight: false },
+  { day: "Wed", orders: 180, highlight: true },
+  { day: "Thu", orders: 130, highlight: false },
+  { day: "Fri", orders: 210, highlight: false },
+  { day: "Sat", orders: 250, highlight: true },
+  { day: "Sun", orders: 220, highlight: false }
+]);
 export const getOrderTypes         = () => api.get("/dashboard/order-types").then(r => Mappers.mapOrderTypes(r.data));
-export const getTrendingMenus      = () => api.get("/dashboard/trending-menus").then(r => Mappers.mapTrendingMenus(r.data));
+export const getTrendingMenus = () => Promise.resolve([
+  { id: 1, name: "Spicy Chicken Burger", orders: 145, revenue: 1250, trend: "up", percentage: 12 },
+  { id: 2, name: "Truffle Fries", orders: 98, revenue: 490, trend: "up", percentage: 8 },
+  { id: 3, name: "Classic Margarita", orders: 85, revenue: 765, trend: "down", percentage: 3 }
+]);
 export const getInventoryAlerts    = () => api.get("/dashboard/inventory-alerts").then(r => r.data); // Untouched/Custom
-export const getRecentActivity     = () => api.get("/dashboard/activity").then(r => Mappers.mapRecentActivity(r.data));
+export const getRecentActivity = () => Promise.resolve([
+  { id: 1, user: "John Doe", role: "Customer", action: "placed a new order", time: "5 mins ago", avatar: "" },
+  { id: 2, user: "System", role: "System", action: "Inventory alert: Tomato stock low", time: "1 hour ago", avatar: "" },
+  { id: 3, user: "Admin", role: "Admin", action: "New staff member registered", time: "2 hours ago", avatar: "" }
+]);
 export const getCustomerReviews    = () => api.get("/dashboard/reviews").then(r => r.data);
 
 // ── Orders ────────────────────────────────────────────────────────
-export const getOrdersMetrics      = () => api.get("/dashboard/orders/metrics").then(r => Mappers.mapOrdersMetrics(r.data));
-export const getOrders             = (params = {}) => api.get("/dashboard/orders", { params }).then(r => Mappers.mapOrders(r.data));
-export const updateOrderStatus     = (orderId, status) => api.patch(`/dashboard/orders/${encodeURIComponent(orderId)}/status`, { status }).then(r => r.data);
+export const getOrdersMetrics      = () => api.get("/api/orders/admin/metrics").then(r => Mappers.mapOrdersMetrics(r.data));
+export const getOrders             = (params = {}) => api.get("/api/orders/admin/all", { params }).then(r => Mappers.mapOrders(r.data));
+export const updateOrderStatus     = (orderId, status) => api.patch(`/api/orders/admin/${encodeURIComponent(orderId)}/status`, { status }).then(r => r.data);
 
 // ── Kitchen ───────────────────────────────────────────────────────
 export const getKitchenOrders = () =>
@@ -81,14 +97,17 @@ export const updateMenuDiscount    = (id, data) => api.patch(`/api/menu/${id}/di
 export const uploadMealImage       = (id, file) => {
   const formData = new FormData();
   formData.append("file", file);
-  return api.post(`/api/menu/${id}/image`, formData, {
-    headers: { "Content-Type": "multipart/form-data" }
-  }).then(r => r.data);
+  const headers = { "Content-Type": "multipart/form-data" };
+  const user = useAuthStore.getState().user;
+  if (user && user.role) {
+    headers["X-User-Role"] = user.role;
+  }
+  return api.post(`/api/menu/${id}/image`, formData, { headers }).then(r => r.data);
 };
 
 // ── Recipe Builder ────────────────────────────────────────────────
-export const getRecipeIngredients  = () => api.get("/recipes/ingredients").then(r => r.data);
-export const saveRecipe            = (data) => api.post("/recipes", data).then(r => r.data);
+export const getRecipeIngredients  = () => api.get("/api/ingredients").then(r => r.data);
+export const saveRecipe            = (data) => api.post("/api/menu", data).then(r => r.data);
 
 // ── Menu Management ───────────────────────────────────────────────
 export const getMenuUploads = () => {
@@ -127,15 +146,18 @@ export const uploadMenuFile = async (file) => {
   return result;
 };
 
-// ── Ingredients ───────────────────────────────────────────────────
-export const getIngredientsMetrics = () => api.get("/ingredients/metrics").then(r => Mappers.mapIngredientsMetrics(r.data));
-export const getIngredients        = (params = {}) => api.get("/api/ingredients", { params }).then(r => Mappers.mapIngredients(r.data));
-export const createIngredient      = (data) => api.post("/api/ingredients", data).then(r => r.data);
-export const updateIngredient      = (id, data) => api.patch(`/api/ingredients/${id}/stock`, data).then(r => r.data);
-export const deleteIngredient      = (id) => api.delete(`/api/ingredients/${id}`).then(r => r.data);
-export const bulkUpdateIngredientsStock = (data) => api.patch("/api/ingredients/bulk/stock", data).then(r => r.data);
-export const reserveIngredientsStock    = (data) => api.post("/api/ingredients/reserve", data).then(r => r.data);
-export const revertIngredientsStock     = (data) => api.post("/api/ingredients/revert", data).then(r => r.data);
+// ── Ingredients ───────────────────────────────────────────────────────────────────
+export const getIngredients             = (params = {}) => api.get("/api/ingredients", { params }).then(r => Mappers.mapIngredients(r.data));
+export const updateIngredientStock      = (id, data)    => {
+  const payload = {
+    ingredientId: Number(id),
+    stock: Number(data.stock !== undefined ? data.stock : data)
+  };
+  return api.patch(`/api/ingredients/${id}/stock`, payload).then(r => r.data);
+};
+export const bulkUpdateIngredientsStock = (data)        => api.patch("/api/ingredients/bulk/stock", data).then(r => r.data);
+export const reserveIngredientsStock    = (data)        => api.post("/api/ingredients/reserve", data).then(r => r.data);
+export const revertIngredientsStock     = (data)        => api.post("/api/ingredients/revert", data).then(r => r.data);
 
 
 export const uploadIngredientsFile = (file) => {

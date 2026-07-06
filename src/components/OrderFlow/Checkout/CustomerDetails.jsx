@@ -1,5 +1,5 @@
 import { FiMail, FiUser, FiPhone } from "react-icons/fi";
-import FormInput from "../../UI/FormInput";
+import FormInput from "../../ui/FormInput";
 
 const CustomerDetails = ({ register, errors }) => {
   return (

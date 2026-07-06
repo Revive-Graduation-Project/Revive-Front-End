@@ -1,7 +1,7 @@
 import { FiMapPin, FiFlag, FiHash } from "react-icons/fi";
 import { REGIONS } from "../../../constants";
-import FormInput from "../../UI/FormInput";
-import FormSelect from "../../UI/FormSelect";
+import FormInput from "../../ui/FormInput";
+import FormSelect from "../../ui/FormSelect";
 
 const DeliveryDetails = ({ register, errors }) => {
   return (

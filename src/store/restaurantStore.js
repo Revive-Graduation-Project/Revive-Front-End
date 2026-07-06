@@ -1,63 +1,50 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { getMenu } from "../services/menu.service";
+import { getMenuItems, getRecipeIngredients } from "../services/dashboardService";
 
-/**
- * ==========================
- * Menu Store
- * ==========================
- * Responsibilities:
- * - Fetch and hold all meals for the single Revive Kitchen restaurant
- * - Handle loading and error states
- * - Persist meal data
- *
- * This is a single-restaurant system.
- * There is no restaurant selection or multi-restaurant logic.
- */
+const useRestaurantStore = create((set) => ({
+  meals: [],
+  ingredients: [],
+  loading: false,
+  error: null,
 
-const useRestaurantStore = create(
-  persist(
-    (set) => ({
-      /* =====================
-         STATE
-      ====================== */
-      meals: [],
-      loading: false,
-      error: null,
+  fetchMeals: async () => {
+    set({ loading: true, error: null });
+    try {
+      const [mealsRes, ingredientsRes] = await Promise.allSettled([
+        getMenuItems(),
+        getRecipeIngredients(),
+      ]);
 
-      /* =====================
-         ACTIONS
-      ====================== */
+      if (mealsRes.status !== "fulfilled") {
+        throw mealsRes.reason;
+      }
 
-      /**
-       * Fetch all meals from the service layer.
-       * Mock now → real API later (no changes needed here).
-       */
-      fetchMeals: async () => {
-        set({ loading: true, error: null });
-        try {
-          const response = await getMenu();
-          set({ meals: response.data, loading: false });
-        } catch (error) {
-          set({
-            error: error.message || "Failed to fetch meals",
-            loading: false,
-          });
-        }
-      },
+      const mealsData = Array.isArray(mealsRes.value)
+        ? mealsRes.value
+        : (mealsRes.value?.data || []);
 
-      /**
-       * Clear error state
-       */
-      clearError: () => set({ error: null }),
-    }),
-    {
-      name: "revive-restaurant-store",
-      partialize: (state) => ({
-        meals: state.meals,
-      }),
-    },
-  ),
-);
+      const ingData =
+        ingredientsRes.status === "fulfilled"
+          ? Array.isArray(ingredientsRes.value)
+            ? ingredientsRes.value
+            : (ingredientsRes.value?.data || [])
+          : [];
+
+      set({
+        meals: mealsData,
+        ingredients: ingData,
+        loading: false,
+      });
+    } catch (error) {
+      set({
+        error: error.message || "Failed to fetch meals",
+        loading: false,
+      });
+    }
+  },
+
+  clearError: () => set({ error: null }),
+}));
 
 export default useRestaurantStore;
+

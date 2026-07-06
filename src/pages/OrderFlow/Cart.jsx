@@ -4,7 +4,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useOrderStore, useFavoritesStore } from "../../store";
 import { DELIVERY_FEE } from "../../constants";
 import CartSection from "../../components/OrderFlow/CartSection";
-import { mockMeals } from "../../mocks/meals";
+
 import OrderSummary from "../../components/OrderFlow/OrderSummary";
 
 export default function Cart() {

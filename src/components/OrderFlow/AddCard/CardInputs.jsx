@@ -1,4 +1,4 @@
-import FormInput from "../../UI/FormInput";
+import FormInput from "../../ui/FormInput";
 
 const CardInputs = ({ register, errors, setValue, onFormatCardNumber, onFormatExpiry }) => {
   return (

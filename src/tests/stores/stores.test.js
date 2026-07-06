@@ -62,6 +62,9 @@ describe('🛒 OrderStore', () => {
             customerDetails: { email: '', firstName: '', lastName: '', phone: '', region: '', city: '', address: '', zipCode: '' },
             paymentMethod: 'cash', savedCard: null,
         });
+
+        const { api } = await import('../../services/api');
+        api.post.mockResolvedValue({ data: { message: 'Success' } });
     });
 
     test('addItem — adds a new item to cart', () => {
