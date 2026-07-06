@@ -1,29 +1,18 @@
 import { useState, useEffect } from "react";
+import { useMenuItems } from "../../../hooks/dashboard/useMenuItems";
 import RegularFoodCard from "../../../components/UI/RegularFoodCard";
-import { getMenu } from "../../../services/menu.service";
 import ScrollArrows from "../../../components/UI/ScrollArrows";
 
 const OffersSection = () => {
-  const [offersMeals, setOffersMeals] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { data: offersMeals = [], isLoading: loading, error: queryError } = useMenuItems({ hasDiscount: true });
+  const error = queryError ? (queryError.message || "Failed to load offers") : null;
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
-    const fetchOffers = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await getMenu(true); // hasDiscount = true
-        setOffersMeals(res.data);
-      } catch (err) {
-        setError(err.message || "Failed to load offers");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchOffers();
-  }, []);
+    if (offersMeals.length > 0 && current >= offersMeals.length) {
+      setCurrent(current % offersMeals.length);
+    }
+  }, [offersMeals.length, current]);
 
   if (loading) {
     return (
@@ -62,8 +51,9 @@ const OffersSection = () => {
     );
   }
 
-  const prevIndex = (current - 1 + offersMeals.length) % offersMeals.length;
-  const nextIndex = (current + 1) % offersMeals.length;
+  const safeCurrent = current % offersMeals.length;
+  const prevIndex = (safeCurrent - 1 + offersMeals.length) % offersMeals.length;
+  const nextIndex = (safeCurrent + 1) % offersMeals.length;
 
   const goPrev = () => setCurrent(prevIndex);
   const goNext = () => setCurrent(nextIndex);
@@ -112,7 +102,7 @@ const OffersSection = () => {
                   <RegularFoodCard meal={offersMeals[prevIndex]} />
                 </div>
                 <div className="w-95 lg:w-105 scale-105 opacity-100 -translate-y-4 transition-all duration-300">
-                  <RegularFoodCard meal={offersMeals[current]} />
+                  <RegularFoodCard meal={offersMeals[safeCurrent]} />
                 </div>
                 <div className="w-85 lg:w-90 scale-95 opacity-80 translate-y-6 transition-all duration-300">
                   <RegularFoodCard meal={offersMeals[nextIndex]} />
