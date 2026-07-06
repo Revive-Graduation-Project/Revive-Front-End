@@ -65,7 +65,7 @@ api.interceptors.response.use(
     }
 
     // If any endpoint returns 401 (unauthorized), attempt to refresh the access token
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/auth/login')) {
       // If already refreshing, queue this request and wait
       if (isRefreshing) {
         return new Promise((resolve, reject) => {

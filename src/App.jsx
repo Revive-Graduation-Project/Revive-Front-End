@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes, Navigate } from "react-router";
+import { Route, Routes, Navigate } from "react-router-dom";
 import { AppLayout, AuthLayout, DashboardLayout } from "./Layout";
 import Customization from "./pages/customization/Customization";
 import StaffRoute from "./components/StaffRoute";
