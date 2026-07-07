@@ -1,12 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { getProfile, updateProfile, updateHealthProfile } from "../services/user.service";
-
-/**
- * Profile Store
- * - Holds user profile/meta and health sub-object
- * - Contains actions that call services so components stay dumb
- */
+import { getProfileById, updateProfile } from "../services/user.service";
+import useAuthStore from "../store/authStore";
 const useProfileStore = create(
   persist(
     (set, get) => ({
@@ -15,9 +10,16 @@ const useProfileStore = create(
       error: null,
 
       fetchProfile: async () => {
+        // لو البروفايل موجود بالفعل، متجيبيش تاني
+        if (get().user) {
+          return get().user;
+        }
+
         set({ loading: true, error: null });
         try {
-          const res = await getProfile();
+          const id = useAuthStore.getState().user?.id;
+          if (!id) throw new Error("User ID not found");
+          const res = await getProfileById(id);
           const user = res?.data || null;
           if (!user) {
             set({ error: "Profile not found", loading: false });
@@ -34,7 +36,9 @@ const useProfileStore = create(
       updateUser: async (data) => {
         set({ loading: true, error: null });
         try {
-          const res = await updateProfile(data);
+          const id = useAuthStore.getState().user?.id;
+          if (!id) throw new Error("User ID not found");
+          const res = await updateProfile(id, data);
           const user = res?.data || null;
           if (user) set({ user, loading: false, error: null });
           else set({ loading: false });
@@ -45,65 +49,9 @@ const useProfileStore = create(
         }
       },
 
+      // updateHealth بقى نفس updateUser لأن مفيش endpoint منفصل للـ health
       updateHealth: async (data) => {
-        set({ loading: true, error: null });
-        try {
-          const res = await updateHealthProfile(data);
-          const user = res?.data || null;
-          if (user) set({ user, loading: false, error: null });
-          return user;
-        } catch (error) {
-          set({ error: error.message, loading: false });
-          return null;
-        } finally {
-          set({ loading: false });
-        }
-      },
-
-      addAllergy: (allergy) => {
-        if (!allergy || typeof allergy !== "string") {
-          set({ error: "Allergy cannot be empty" });
-          return;
-        }
-
-        const normalized = allergy.trim().toLowerCase();
-        const user = get().user;
-        const current = user?.profile?.allergies || [];
-        if (current.includes(normalized)) {
-          set({ error: "Allergy already added" });
-          return;
-        }
-
-        const updatedUser = {
-          ...user,
-          profile: {
-            ...user?.profile,
-            allergies: [...current, normalized],
-          },
-        };
-
-        set({ user: updatedUser, error: null });
-      },
-
-      removeAllergy: (allergy) => {
-        if (!allergy) return;
-        const normalized = allergy.trim().toLowerCase();
-        const user = get().user;
-        const current = user?.profile?.allergies || [];
-        if (!current.includes(normalized)) {
-          set({ error: "Allergy not found" });
-          return;
-        }
-
-        const updatedUser = {
-          ...user,
-          profile: {
-            ...user?.profile,
-            allergies: current.filter((a) => a !== normalized),
-          },
-        };
-
-        set({ user: updatedUser, error: null });
+        return get().updateUser(data);
       },
 
       clearError: () => set({ error: null }),
@@ -111,8 +59,8 @@ const useProfileStore = create(
     {
       name: "revive-profile-store",
       partialize: (state) => ({ user: state.user }),
-    }
-  )
+    },
+  ),
 );
 
 export default useProfileStore;

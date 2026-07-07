@@ -31,18 +31,21 @@ const useRecommendationStore = create(
        *
        * @param {string|number|Object} [param] - userId or context object
        */
-      fetchRecommendations: async (param) => {
-        const userId =
-          typeof param === "number" || typeof param === "string"
-            ? param
-            : param?.userId || param?.id || useAuthStore.getState().user?.id || "guest";
+      fetchRecommendations: async () => {
+        const role = useAuthStore.getState().user?.role;
+
+        if (!role) {
+          set({ recommendations: [], isLoading: false });
+          return;
+        }
 
         set({ isLoading: true, error: null });
 
         try {
-          const response = await getSuggestedMeals(userId);
-          const data = response.data;
-          const validRecommendations = Array.isArray(data) ? data : [];
+          const response = await getSuggestedMeals(role);
+          const validRecommendations = Array.isArray(response.data)
+            ? response.data
+            : [];
 
           set({
             recommendations: validRecommendations,
@@ -75,5 +78,3 @@ const useRecommendationStore = create(
 );
 
 export default useRecommendationStore;
-
-

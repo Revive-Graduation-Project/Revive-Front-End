@@ -1,21 +1,35 @@
-import { api } from './api';
+import { api } from "./api";
 
-// Get current user profile
+// Get current logged-in client's profile (all profiles - admin)
 export const getProfile = () => {
-  return api.get('/users/me');
+  return api.get("/api/clients/profile");
 };
 
-// Update profile
-export const updateProfile = (data) => {
-  return api.put('/users/me', data);
+// Get specific client profile by ID
+export const getProfileById = (id) => {
+  return api.get(`/api/clients/profile/${id}`);
 };
 
-// Update health profile
-export const updateHealthProfile = (data) => {
-  return api.put('/users/me/health', data);
+// Update client profile by ID
+export const updateProfile = (id, data) => {
+  return api.put(`/api/clients/profile/${id}`, data);
 };
 
-// Get order history
-export const getOrderHistory = () => {
-  return api.get('/users/me/orders');
+// Delete client profile by ID
+export const deleteProfile = (id) => {
+  return api.delete(`/api/clients/profile/${id}`);
+};
+
+// Upload profile picture
+export const uploadProfilePicture = (id, file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  return api.patch(`/api/clients/profile/${id}/picture`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+};
+
+// Delete profile picture
+export const deleteProfilePicture = (id) => {
+  return api.delete(`/api/clients/profile/${id}/picture`);
 };
