@@ -10,6 +10,13 @@ export const menuKeys = {
   ingredients: () => ["menu", "recipe-ingredients"],
 };
 
+export const isMenuItemActive = (item) => {
+  if (!item || typeof item !== "object") return false;
+  const hasImage = Boolean(item.image || item.imageUrl);
+  const isStatusActive = item.status !== "Inactive" && item.status !== "INACTIVE" && item.isActive !== false;
+  return hasImage && isStatusActive;
+};
+
 export function useMenuCategories() {
   return useQuery({ queryKey: menuKeys.categories(), queryFn: getMenuCategories });
 }
