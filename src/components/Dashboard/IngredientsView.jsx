@@ -235,15 +235,6 @@ function IngredientsView() {
     );
   }
 
-  if (error) {
-    return (
-      <div>
-        <DashboardHeader title="Ingredients" />
-        <ErrorState message="Failed to load ingredients." onRetry={refetch} />
-      </div>
-    );
-  }
-
   // ── Derived data ──────────────────────────────────────────────────────────
   const allIngredients  = ingredients || [];
   const totalCount      = allIngredients.length;
