@@ -5,7 +5,6 @@ import {
   useUploadIngredients,
   useUpdateIngredientStock,
 } from "../../hooks/dashboard/useIngredients";
-import { useToast } from "../../store/toastStore";
 import {
   FiSearch,
   FiUploadCloud,
@@ -20,6 +19,7 @@ import SortMenu from "./shared/SortMenu";
 import IngredientModal from "./shared/IngredientModal";
 import IngredientNutrientsModal from "./shared/IngredientNutrientsModal";
 import { sortItems } from "../../utils/sortItems";
+import { formatStockDisplay as formatStock } from "../../utils/stockUtils";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const ING_SORT_COLS = [
@@ -30,17 +30,6 @@ const ING_SORT_COLS = [
 const TABLE_HEADERS = ["Name", "Fat", "Cal", "Pro", "Sug", "Stock", "Actions"];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-/** Format a stock value with appropriate unit and low-stock flag */
-const formatStock = (stock, unit = "g") => {
-  const num = Number(stock) || 0;
-  if (num === 0) return { text: unit ? `0 ${unit}` : "0g", isOut: true, isLow: false };
-  if (!unit || unit === "g" || unit.toLowerCase() === "gram" || unit.toLowerCase() === "grams") {
-    if (num >= 1000) return { text: `${(num / 1000).toFixed(1)}kg`, isOut: false, isLow: false };
-    return { text: `${num}g`, isOut: false, isLow: num < 100 };
-  }
-  return { text: `${num} ${unit}`, isOut: false, isLow: num < 100 };
-};
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -163,7 +152,7 @@ function StatCard({ label, value, icon: Icon, color }) {
       style={{ borderLeft: `4px solid ${color}` }}
     >
       <div
-        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
         style={{ backgroundColor: `${color}18` }}
       >
         <Icon size={20} style={{ color }} />
@@ -186,11 +175,10 @@ function IngredientsView() {
   const [viewingNutrientsItem, setViewingNutrientsItem] = useState(null);
   const [selectedFile, setSelectedFile]           = useState(null);
 
-  const { addToast } = useToast();
 
   const { data: ingredients, isLoading, error, refetch } = useIngredients();
-  const { mutate: uploadFile, isPending: isUploading }    = useUploadIngredients();
-  const { mutate: updateStock }                           = useUpdateIngredientStock();
+  const { mutate: uploadFile, isPending: isUploading, isSuccess: isUploaded }    = useUploadIngredients();
+  const { mutate: updateStock } = useUpdateIngredientStock();
 
   // ── File handlers ─────────────────────────────────────────────────────────
   const handleFileSelect = (e) => {
@@ -202,10 +190,9 @@ function IngredientsView() {
 
   const handleFileSubmit = () => {
     if (!selectedFile) return;
-    uploadFile(selectedFile, {
-      onSuccess: () => { addToast("Ingredients updated successfully!", "success"); setSelectedFile(null); },
-      onError:   () => addToast("Failed to upload file.", "error"),
-    });
+    const fileToUpload = selectedFile;
+    setSelectedFile(null); // Clear immediately for non-blocking background upload UX
+    uploadFile(fileToUpload);
   };
 
   // ── Edit handler ──────────────────────────────────────────────────────────
@@ -215,14 +202,13 @@ function IngredientsView() {
   };
 
   const handleModalSubmit = (formData) => {
-    // formData = { stock: number } — sent to PATCH /api/ingredients/{id}/stock
-    updateStock(
-      { id: editingIngredient.id, data: formData },
-      {
-        onSuccess: () => { addToast("Stock updated!", "success"); setIsModalOpen(false); },
-        onError:   () => addToast("Failed to update stock.", "error"),
-      }
-    );
+    setIsModalOpen(false); // Close immediately for non-blocking background UX
+    updateStock({
+      id: editingIngredient.id,
+      data: formData,
+      name: editingIngredient.name,
+      unit: editingIngredient.unit,
+    });
   };
 
   // ── Loading / error states ────────────────────────────────────────────────
@@ -231,15 +217,6 @@ function IngredientsView() {
       <div>
         <DashboardHeader title="Ingredients" />
         <DashboardPageSkeleton />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div>
-        <DashboardHeader title="Ingredients" />
-        <ErrorState message="Failed to load ingredients." onRetry={refetch} />
       </div>
     );
   }
@@ -451,12 +428,12 @@ function IngredientsView() {
           {selectedFile && (
             <button
               onClick={handleFileSubmit}
-              disabled={isUploading}
+              disabled={isUploading || isUploaded}
               className={`bg-[#F97316] hover:bg-orange-600 text-white px-6 py-2 rounded-full font-bold shadow-lg w-fit transition-transform hover:scale-105 ${
-                isUploading ? "opacity-50 cursor-not-allowed" : ""
+                isUploading || isUploaded ? "opacity-75 cursor-not-allowed" : ""
               }`}
             >
-              {isUploading ? "Uploading…" : "Submit"}
+              {isUploading ? "Uploading…" : isUploaded ? "Uploaded! ✓" : "Submit"}
             </button>
           )}
         </div>

@@ -54,16 +54,6 @@ function LiveKitchenView() {
     setTicketConfirm({ ticketId, status, label });
   }, []);
 
-  // ── Error state ────────────────────────────────────────────────────────────
-  if (error) {
-    return (
-      <div className="min-h-full">
-        <DashboardHeader title="Live Kitchen" />
-        <ErrorState message="Failed to connect to kitchen stream." onRetry={refetch} />
-      </div>
-    );
-  }
-
   const doneCount = boards.done?.length ?? 0;
 
   return (
@@ -74,68 +64,76 @@ function LiveKitchenView() {
         <div className="flex flex-col gap-6 overflow-hidden mt-6">
           <LiveIndicator isFetching={isFetching} onRefresh={refetch} />
 
-          {/* 3-column kanban */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-            {COLUMNS.map((col) => {
-              const cards = boards[col.key] || [];
-              return (
-                <div key={col.key} className="flex flex-col gap-4">
-                  <h3 className="text-[20px] font-medium text-center m-0 text-[#22C55E]">
-                    {col.label} <span className="ml-1">{cards.length}</span>
-                  </h3>
-                  <div className="bg-white rounded-4xl p-5 flex flex-col gap-4 min-h-[400px] max-h-[600px] overflow-y-auto shadow-sm">
-                    {isFetching && cards.length === 0 ? (
-                      <>
-                        <KanbanCardSkeleton />
-                        <KanbanCardSkeleton />
-                      </>
-                    ) : (
-                      cards.map((order) => (
-                        <OrderCard
+          {error ? (
+            <div className="py-12 bg-white rounded-3xl shadow-sm">
+              <ErrorState message="Failed to connect to kitchen stream." onRetry={refetch} />
+            </div>
+          ) : (
+            <>
+              {/* 3-column kanban */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+                {COLUMNS.map((col) => {
+                  const cards = boards[col.key] || [];
+                  return (
+                    <div key={col.key} className="flex flex-col gap-4">
+                      <h3 className="text-[20px] font-medium text-center m-0 text-[#22C55E]">
+                        {col.label} <span className="ml-1">{cards.length}</span>
+                      </h3>
+                      <div className="bg-white rounded-4xl p-5 flex flex-col gap-4 min-h-[400px] max-h-[600px] overflow-y-auto shadow-sm">
+                        {isFetching && cards.length === 0 ? (
+                          <>
+                            <KanbanCardSkeleton />
+                            <KanbanCardSkeleton />
+                          </>
+                        ) : (
+                          cards.map((order) => (
+                            <OrderCard
+                              key={order.id}
+                              order={order}
+                              columnKey={col.key}
+                              onAction={handleAction}
+                              onViewOrder={() =>
+                                setViewingOrder({
+                                  ...order,
+                                  status: col.key === "queue" ? "Pending" : col.label,
+                                })
+                              }
+                            />
+                          ))
+                        )}
+                        {!isFetching && cards.length === 0 && (
+                          <EmptyColumn label="No orders here" />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Done section */}
+              <div className="flex flex-col gap-4 mt-8">
+                <h3 className="text-[20px] font-medium text-[#22C55E] m-0 px-2">
+                  Done <span className="ml-1">{doneCount}</span>
+                </h3>
+                <div className="bg-white rounded-4xl p-5 shadow-sm overflow-x-auto pb-6 min-h-[200px]">
+                  {boards.done?.length > 0 ? (
+                    <div className="flex gap-5">
+                      {boards.done.map((order) => (
+                        <DoneCard
                           key={order.id}
                           order={order}
-                          columnKey={col.key}
-                          onAction={handleAction}
-                          onViewOrder={() =>
-                            setViewingOrder({
-                              ...order,
-                              status: col.key === "queue" ? "Pending" : col.label,
-                            })
-                          }
+                          onViewOrder={() => setViewingOrder({ ...order, status: "Done" })}
+                          onRevert={() => setOrderToRevert(order.id)}
                         />
-                      ))
-                    )}
-                    {!isFetching && cards.length === 0 && (
-                      <EmptyColumn label="No orders here" />
-                    )}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyColumn label="No completed orders yet" />
+                  )}
                 </div>
-              );
-            })}
-          </div>
-
-          {/* Done section */}
-          <div className="flex flex-col gap-4 mt-8">
-            <h3 className="text-[20px] font-medium text-[#22C55E] m-0 px-2">
-              Done <span className="ml-1">{doneCount}</span>
-            </h3>
-            <div className="bg-white rounded-4xl p-5 shadow-sm overflow-x-auto pb-6 min-h-[200px]">
-              {boards.done?.length > 0 ? (
-                <div className="flex gap-5">
-                  {boards.done.map((order) => (
-                    <DoneCard
-                      key={order.id}
-                      order={order}
-                      onViewOrder={() => setViewingOrder({ ...order, status: "Done" })}
-                      onRevert={() => setOrderToRevert(order.id)}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <EmptyColumn label="No completed orders yet" />
-              )}
-            </div>
-          </div>
+              </div>
+            </>
+          )}
 
           {/* ══════════════════════════════════════════════════════
               SECTION: Kitchen Service — Active Tickets

@@ -60,6 +60,7 @@ export const getSuggestedMeals = async () => {
       discountPercentage: originalMeal?.discountPercentage ?? 0,
       score: rec.score_percentage,
       reasons: rec.reasons,
+      isActive: originalMeal?.isActive ?? true,
     };
   });
 

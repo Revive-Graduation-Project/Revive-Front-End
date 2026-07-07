@@ -12,6 +12,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast as sonnerToast } from "../../utils/toastUtils";
 import {
   getKitchenOrders,
   updateKitchenStatus,
@@ -22,6 +23,7 @@ import {
   updateChefDisplayName,
 } from "../../services/dashboardService";
 import { useToast } from "../../store/toastStore";
+import useUIStore from "../../store/uiStore";
 
 const POLL_INTERVAL_MS = 30_000; // 30 s — swap for WS when ready
 
@@ -55,7 +57,19 @@ export function useUpdateKitchenStatus() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ orderId, nextStatus }) => updateKitchenStatus(orderId, nextStatus),
+    mutationFn: async ({ orderId, nextStatus }) => {
+      const toastId = sonnerToast.loading(`Moving order #${orderId} to ${String(nextStatus).toUpperCase()}...`, {
+        description: "You can navigate away while this updates."
+      });
+      try {
+        const res = await updateKitchenStatus(orderId, nextStatus);
+        sonnerToast.success(`Order #${orderId} moved to ${String(nextStatus).toUpperCase()}!`, { id: toastId, description: "Kitchen board updated." });
+        return res;
+      } catch (err) {
+        sonnerToast.error(`Failed to move order #${orderId}.`, { id: toastId, description: err?.response?.data?.message || err.message || "Please try again." });
+        throw err;
+      }
+    },
     // Optimistic local board update — moves card between columns instantly
     onMutate: async ({ orderId, nextStatus }) => {
       await qc.cancelQueries({ queryKey: kitchenKeys.orders() });
@@ -106,6 +120,21 @@ export function useUpdateKitchenStatus() {
     onError: (_err, _vars, ctx) => {
       if (ctx?.prev) qc.setQueryData(kitchenKeys.orders(), ctx.prev);
     },
+    onSuccess: (_data, { orderId, nextStatus }) => {
+      const typeMap = {
+        preparing: "info",
+        ready: "success",
+        done: "success",
+        cancelled: "critical",
+        queue: "warning",
+      };
+      useUIStore.getState().addNotification({
+        title: `Kitchen Order #${orderId}`,
+        message: `Order moved to "${String(nextStatus).toUpperCase()}" on the Live Kitchen board.`,
+        type: typeMap[String(nextStatus).toLowerCase()] || "info",
+        category: "Orders",
+      });
+    },
     onSettled: () => qc.invalidateQueries({ queryKey: kitchenKeys.all }),
   });
 }
@@ -151,8 +180,20 @@ export function useUpdateTicketStatus() {
       if (ctx?.prev) qc.setQueryData(kitchenKeys.tickets(), ctx.prev);
       toast.error("Failed to update ticket status.");
     },
-    onSuccess: (_data, { status }) => {
+    onSuccess: (_data, { ticketId, status }) => {
       toast.success(`Ticket moved to ${status}.`);
+      const typeMap = {
+        preparing: "info",
+        ready: "success",
+        done: "success",
+        cancelled: "critical",
+      };
+      useUIStore.getState().addNotification({
+        title: `Ticket #${ticketId} Status`,
+        message: `Kitchen ticket has been updated to "${String(status).toUpperCase()}".`,
+        type: typeMap[String(status).toLowerCase()] || "info",
+        category: "Orders",
+      });
     },
     onSettled: () => qc.invalidateQueries({ queryKey: kitchenKeys.all }),
   });

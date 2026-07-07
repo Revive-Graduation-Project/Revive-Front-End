@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
+import { isMenuItemActive } from "../../../hooks/dashboard/useMenuItems";
 import RegularFoodCard from "../../../components/ui/RegularFoodCard";
 
 const SuggestedMealsSection = ({ items = [] }) => {
   const [showAll, setShowAll] = useState(false);
 
   const normalMeals = useMemo(
-    () => items.filter((meal) => !meal.hasDiscount),
+    () => items.filter((meal) => !meal.hasDiscount && isMenuItemActive(meal)),
     [items],
   );
 

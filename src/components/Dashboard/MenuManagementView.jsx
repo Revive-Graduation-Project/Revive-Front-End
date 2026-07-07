@@ -33,7 +33,7 @@ function MenuManagementView() {
   }, []);
 
   const { data: uploads, isLoading, error, refetch } = useMenuUploads();
-  const { mutate: uploadFile, isPending: isUploading } = useUploadMenu();
+  const { mutate: uploadFile, isPending: isUploading, isSuccess: isUploaded } = useUploadMenu();
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -79,15 +79,9 @@ function MenuManagementView() {
 
   const handleUpload = () => {
     if (!selectedFile) return;
-    uploadFile(selectedFile, {
-      onSuccess: () => {
-        addToast("Menu file uploaded and processed successfully!", "success");
-        setSelectedFile(null);
-      },
-      onError: () => {
-        addToast("Failed to process menu file. Please check the format.", "error");
-      }
-    });
+    const fileToUpload = selectedFile;
+    setSelectedFile(null); // Clear immediately for non-blocking background upload UX
+    uploadFile(fileToUpload);
   };
 
   if (isLoading) {
@@ -163,10 +157,10 @@ function MenuManagementView() {
             <button
               type="button"
               onClick={handleUpload}
-              disabled={isUploading}
-              className="mt-6 w-full py-3.5 rounded-2xl bg-[#F97316] text-white border-none font-bold text-[15px] cursor-pointer shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 transition-all"
+              disabled={isUploading || isUploaded}
+              className="mt-6 w-full py-3.5 rounded-2xl bg-[#F97316] text-white border-none font-bold text-[15px] cursor-pointer shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 transition-all disabled:opacity-75 disabled:cursor-not-allowed"
             >
-              {isUploading ? "Uploading..." : "Process Import"}
+              {isUploading ? "Uploading..." : isUploaded ? "Imported! ✓" : "Process Import"}
             </button>
           )}
         </div>

@@ -14,7 +14,6 @@ import {
   useRevenueData,
   useTopCategories,
   useOrdersOverview,
-
   useOrderTypes,
   useTrendingMenus,
   useInventoryAlerts,
@@ -22,7 +21,7 @@ import {
   useCustomerReviews,
 } from "../../hooks/dashboard/useDashboard";
 
-import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
+import { MetricCardSkeleton, ChartSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 
 function DashboardView() {
@@ -36,41 +35,15 @@ function DashboardView() {
   const { data: activity,       isLoading: loadingAct,     error: errAct     } = useRecentActivity();
   const { data: reviews,        isLoading: loadingRevw,    error: errRevw    } = useCustomerReviews();
 
-  const isLoading =
-    loadingMetrics || loadingRev || loadingCats || loadingOrdOv ||
-    loadingTypes || loadingTrend || loadingInv || loadingAct || loadingRevw;
-
-  const hasError =
-    errMetrics || errRev || errCats || errOrdOv ||
-    errTypes || errTrend || errInv || errAct || errRevw;
-
-  if (isLoading) {
-    return (
-      <div>
-        <DashboardHeader title="Dashboard" />
-        <DashboardPageSkeleton />
-      </div>
-    );
-  }
-
-  if (hasError) {
-    return (
-      <div>
-        <DashboardHeader title="Dashboard" />
-        <ErrorState message="Failed to load dashboard metrics." onRetry={() => window.location.reload()} />
-      </div>
-    );
-  }
-
-  const safeMetrics = metrics || {};
-  const safeRevenue = revenue || [];
-  const safeCategories = categories || [];
-  const safeOrdersOverview = ordersOverview || [];
-  const safeOrderTypes = orderTypes || [];
-  const safeTrending = trending || [];
-  const safeInventory = inventory || {};
-  const safeActivity = activity || [];
-  const safeReviews = reviews || [];
+  const safeMetrics = errMetrics ? {} : (metrics || {});
+  const safeRevenue = errRev ? [] : (revenue || []);
+  const safeCategories = errCats ? [] : (categories || []);
+  const safeOrdersOverview = errOrdOv ? [] : (ordersOverview || []);
+  const safeOrderTypes = errTypes ? [] : (orderTypes || []);
+  const safeTrending = errTrend ? [] : (trending || []);
+  const safeInventory = errInv ? {} : (inventory || {});
+  const safeActivity = errAct ? [] : (activity || []);
+  const safeReviews = errRevw ? [] : (reviews || []);
 
   return (
     <div>
@@ -80,30 +53,38 @@ function DashboardView() {
         <div className="flex flex-col xl:flex-row gap-6 items-start">
           {/* Left Column */}
           <div className="flex-1 flex flex-col gap-6 w-full">
-            <MetricCards metrics={safeMetrics} />
+            {loadingMetrics ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <MetricCardSkeleton />
+                <MetricCardSkeleton />
+                <MetricCardSkeleton />
+              </div>
+            ) : (
+              <MetricCards metrics={safeMetrics} />
+            )}
             
             <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
-              <RevenueChart data={safeRevenue} totalRevenue={safeMetrics?.totalRevenue?.value} />
-              <TopCategories data={safeCategories} />
+              {loadingRev ? <ChartSkeleton height={320} /> : <RevenueChart data={safeRevenue} totalRevenue={safeMetrics?.totalRevenue?.value} />}
+              {loadingCats ? <ChartSkeleton height={320} /> : <TopCategories data={safeCategories} />}
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6">
-              <OrdersOverviewChart data={safeOrdersOverview} />
-              <OrderTypes data={safeOrderTypes} />
+              {loadingOrdOv ? <ChartSkeleton height={280} /> : <OrdersOverviewChart data={safeOrdersOverview} />}
+              {loadingTypes ? <ChartSkeleton height={280} /> : <OrderTypes data={safeOrderTypes} />}
             </div>
             
-            <InventoryAlerts data={safeInventory} />
+            {loadingInv ? <ChartSkeleton height={220} /> : <InventoryAlerts data={safeInventory} />}
           </div>
 
           {/* Right Column */}
           <div className="w-full xl:w-[340px] flex flex-col gap-6">
-            <TrendingMenus data={safeTrending} />
-            <RecentActivity data={safeActivity} />
+            {loadingTrend ? <ChartSkeleton height={280} /> : <TrendingMenus data={safeTrending} />}
+            {loadingAct ? <ChartSkeleton height={380} /> : <RecentActivity data={safeActivity} />}
           </div>
         </div>
 
         {/* Bottom Row (Full Width) */}
-        <CustomerReviews data={safeReviews} />
+        {loadingRevw ? <ChartSkeleton height={180} /> : <CustomerReviews data={safeReviews} />}
       </div>
     </div>
   );

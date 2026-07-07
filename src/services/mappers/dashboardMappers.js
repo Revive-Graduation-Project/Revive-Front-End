@@ -338,9 +338,20 @@ export const mapIngredients = (data) => {
       nutrients:   Array.isArray(item.nutrients) ? item.nutrients : [],
       stock:       extractStock(item),
       unit:        extractUnit(item),
+      daysLeft:    item.daysLeft !== undefined ? Number(item.daysLeft) : (item.shelfLife !== undefined ? Number(item.shelfLife) : undefined),
+      inSeason:    item.inSeason !== undefined ? Boolean(item.inSeason) : undefined,
     };
   });
 };
+
+export const mapIngredientsMetrics = (data) => ({
+  total: data?.total || 0,
+  totalChange: data?.totalChange ?? 0,
+  lowStock: data?.lowStock || 0,
+  lowStockChange: data?.lowStockChange ?? 0,
+  outOfStock: data?.outOfStock || 0,
+  outOfStockChange: data?.outOfStockChange ?? 0,
+});
 
 // ── Menu Uploads Mappers ──────────────────────────────────────────
 

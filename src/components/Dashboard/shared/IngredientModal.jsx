@@ -18,7 +18,7 @@ const validateStock = (v) => {
  * Updates a single ingredient's stock via PATCH /api/ingredients/{id}/stock.
  * Calls onSubmit({ stock: number }) when the form is valid.
  */
-function IngredientModal({ isOpen, onClose, onSubmit, initialData }) {
+function IngredientModal({ isOpen, onClose, onSubmit, initialData, isPending, isSuccess }) {
   const [stock, setStock] = useState("");
   const [error, setError] = useState("");
 
@@ -48,6 +48,8 @@ function IngredientModal({ isOpen, onClose, onSubmit, initialData }) {
   const inputClass = error
     ? "border-red-400 focus:border-red-400"
     : "border-gray-200 focus:border-orange-400";
+
+  const submitLabel = isPending ? "Saving..." : isSuccess ? "Saved!" : "Save Changes";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -97,15 +99,17 @@ function IngredientModal({ isOpen, onClose, onSubmit, initialData }) {
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors"
+              disabled={isPending}
+              className="px-5 py-2.5 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl font-bold text-white bg-orange-500 hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/30"
+              disabled={isPending || isSuccess}
+              className="px-5 py-2.5 rounded-xl font-bold text-white bg-orange-500 hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/30 disabled:opacity-75 disabled:cursor-not-allowed"
             >
-              Save Changes
+              {submitLabel}
             </button>
           </div>
         </form>
@@ -116,3 +120,4 @@ function IngredientModal({ isOpen, onClose, onSubmit, initialData }) {
 }
 
 export default IngredientModal;
+

@@ -9,6 +9,11 @@
 @theme {
   --color-green: #2e7d32;
   --color-orange: #ff9800;
+  --z-index-100: 100;
+  --z-index-150: 150;
+  --z-index-200: 200;
+  --z-index-999: 999;
+  --z-index-99999: 99999;
 }
 
 html {

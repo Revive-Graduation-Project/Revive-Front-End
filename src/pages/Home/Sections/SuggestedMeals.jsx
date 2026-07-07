@@ -15,13 +15,13 @@ const SuggestedMeals = ({ selectedCategory = "All" }) => {
     }
   }, [user?.role]);
 
-  const filteredMeals =
-    selectedCategory === "All"
-      ? recommendations
-      : recommendations.filter(
-          (meal) =>
-            meal.category?.toLowerCase() === selectedCategory?.toLowerCase(),
-        );
+  const filteredMeals = recommendations.filter((meal) => {
+    if (meal.isActive === false) return false;
+    return (
+      selectedCategory === "All" ||
+      meal.category?.toLowerCase() === selectedCategory?.toLowerCase()
+    );
+  });
 
   if (isLoading) return <LoadingSpinner />;
   if (error) return <p className="text-red-500 text-center">{error}</p>;

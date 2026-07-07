@@ -1,19 +1,21 @@
 import React, { useRef, useState } from "react";
 import { FiX, FiCamera, FiUploadCloud } from "react-icons/fi";
 import { useUpdateMenuItem } from "../../../hooks/dashboard/useMenuItems";
-import { useToast } from "../../../store/toastStore";
+
 
 export default function InactiveMenuModal({ isOpen, onClose, inactiveItems }) {
-  const { addToast } = useToast();
   const { mutate: updateMeal, isPending } = useUpdateMenuItem();
   const fileInputRef = useRef(null);
   const [selectedItemId, setSelectedItemId] = useState(null);
+  // Tracks which item is actively uploading — persists across modal open/close cycles
+  const [uploadingItemId, setUploadingItemId] = useState(null);
+  const [uploadedItemId, setUploadedItemId] = useState(null);
 
   if (!isOpen) return null;
 
   const handleAddPhotoClick = (id) => {
     // Do not allow switching items while an upload is in progress
-    if (isPending) return;
+    if (isPending || uploadingItemId) return;
     setSelectedItemId(id);
     if (fileInputRef.current) {
       fileInputRef.current.click();
@@ -25,28 +27,29 @@ export default function InactiveMenuModal({ isOpen, onClose, inactiveItems }) {
     if (file && selectedItemId) {
       const itemToUpdate = inactiveItems.find((i) => i.id === selectedItemId);
       if (itemToUpdate) {
+        const uploadId = selectedItemId;
+        setSelectedItemId(null);
+        setUploadingItemId(uploadId); // Keep track of which item is uploading
+        setUploadedItemId(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        if (inactiveItems.length === 1) onClose(); // Auto close immediately if last item
+
         updateMeal(
-          {
-            id: itemToUpdate.id || itemToUpdate._id,
-            data: { ...itemToUpdate, imageFile: file },
-          },
+          { id: itemToUpdate.id || itemToUpdate._id, data: { ...itemToUpdate, imageFile: file } },
           {
             onSuccess: () => {
-              addToast("Photo added successfully! Dish is now active.", "success");
-              setSelectedItemId(null);
-              if (fileInputRef.current) fileInputRef.current.value = "";
-              if (inactiveItems.length === 1) onClose(); // Auto close if it was the last item
+              setUploadingItemId(null);
+              setUploadedItemId(uploadId); // Mark this item as uploaded
             },
             onError: () => {
-              addToast("Failed to upload photo. Please try again.", "error");
-              setSelectedItemId(null);
-              if (fileInputRef.current) fileInputRef.current.value = "";
+              setUploadingItemId(null); // Reset on failure so user can retry
             },
           }
         );
       }
     }
   };
+
 
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
@@ -115,11 +118,13 @@ export default function InactiveMenuModal({ isOpen, onClose, inactiveItems }) {
 
                   <button
                     onClick={() => handleAddPhotoClick(item.id)}
-                    disabled={isPending && selectedItemId === item.id}
-                    className="flex items-center gap-2 px-4 py-2 bg-orange-50 hover:bg-orange-100 text-orange-600 rounded-xl text-[13px] font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={uploadingItemId === item.id || uploadedItemId === item.id}
+                    className="flex items-center gap-2 px-4 py-2 bg-orange-50 hover:bg-orange-100 text-orange-600 rounded-xl text-[13px] font-bold transition-colors shadow-sm disabled:opacity-75 disabled:cursor-not-allowed"
                   >
-                    {isPending && selectedItemId === item.id ? (
+                    {uploadingItemId === item.id ? (
                       <span className="animate-pulse">Uploading...</span>
+                    ) : uploadedItemId === item.id ? (
+                      <span className="text-green-600">Photo Added! ✓</span>
                     ) : (
                       <>
                         <FiUploadCloud size={16} />

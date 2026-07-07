@@ -11,6 +11,7 @@ import {
 import { MAX_QUANTITY, DELIVERY_FEE, SUBMIT_DELAY } from "../constants";
 import { placeOrder } from "../services/order.service";
 import queryClient from "../lib/queryClient";
+import useUIStore from "./uiStore";
 
 /**
  * ============================================================================
@@ -482,6 +483,15 @@ const useOrderStore = create(
           // Invalidate dashboard caches so the new order appears immediately
           queryClient.invalidateQueries({ queryKey: ["kitchen"] });
           queryClient.invalidateQueries({ queryKey: ["orders"] });
+          queryClient.invalidateQueries({ queryKey: ["ingredients"] });
+
+          // Trigger dynamic notification for dashboard admin
+          useUIStore.getState().addNotification({
+            title: `New Order #${newOrder.id}`,
+            message: `Order received from ${state.customerDetails?.name || "Customer"} totaling $${totalWithDelivery.toFixed(2)}. ${state.items.length} item(s) to prepare.`,
+            type: "warning", // Orange warning badge for new incoming orders
+            category: "Orders",
+          });
 
           return true;
         } catch (err) {

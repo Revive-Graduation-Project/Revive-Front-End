@@ -24,6 +24,7 @@ import {
   LiveKitchen,
   MenuManagement,
   Ingredients,
+  Notifications,
 } from "./pages";
 import { ProfileLayout, ProfileOrders, Rewards } from "./pages/Profile";
 import { useAuthInit } from "./hooks/useAuthInit";
@@ -107,6 +108,7 @@ export default function App() {
           <Route path="live-kitchen" element={<LiveKitchen />} />
           <Route path="menu-management" element={<MenuManagement />} />
           <Route path="ingredients" element={<Ingredients />} />
+          <Route path="notifications" element={<Notifications />} />
         </Route>
       </Routes>
     </>

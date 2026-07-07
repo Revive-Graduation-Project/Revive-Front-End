@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { useMenuItems } from "../../../hooks/dashboard/useMenuItems";
+import { useMenuItems, isMenuItemActive } from "../../../hooks/dashboard/useMenuItems";
 import RegularFoodCard from "../../../components/ui/RegularFoodCard";
 import ScrollArrows from "../../../components/ui/ScrollArrows";
 
 const OffersSection = () => {
-  const { data: offersMeals = [], isLoading: loading, error: queryError } = useMenuItems({ hasDiscount: true });
+  const { data: rawOffersMeals = [], isLoading: loading, error: queryError } = useMenuItems({ hasDiscount: true });
+  const offersMeals = rawOffersMeals.filter(isMenuItemActive);
   const error = queryError ? (queryError.message || "Failed to load offers") : null;
   const [current, setCurrent] = useState(0);
 

@@ -1,5 +1,8 @@
 import { useMenuStore, useAuthStore } from "../../store";
-import { useMenuItems } from "../../hooks/dashboard/useMenuItems";
+import {
+  useMenuItems,
+  isMenuItemActive,
+} from "../../hooks/dashboard/useMenuItems";
 import { useMemo } from "react";
 import MenuFilter from "./Sections/MenuFilter";
 import OffersSection from "./Sections/OffersSection";
@@ -21,6 +24,7 @@ export default function Menu() {
 
   const filteredMeals = useMemo(() => {
     return meals.filter((item) => {
+      if (!isMenuItemActive(item)) return false;
       return selectedCategory === "All" || item.category === selectedCategory;
     });
   }, [selectedCategory, meals]);

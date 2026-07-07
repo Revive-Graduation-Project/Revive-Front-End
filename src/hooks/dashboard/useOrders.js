@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "../../utils/toastUtils";
 import { getOrdersMetrics, getOrders, updateOrderStatus, getTrendingMenus } from "../../services/dashboardService";
+import useUIStore from "../../store/uiStore";
 
 export const orderKeys = {
   all:     ["orders"],
@@ -30,7 +32,20 @@ export function useOrdersTrending() {
 export function useUpdateOrderStatus() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ orderId, status }) => updateOrderStatus(orderId, status),
+    mutationFn: async ({ orderId, status }) => {
+      const toastId = toast.loading(`Updating order #${orderId} to ${String(status).toUpperCase()}...`, {
+        duration: 6000,
+        description: "You can navigate away while this updates."
+      });
+      try {
+        const res = await updateOrderStatus(orderId, status);
+        toast.success(`Order #${orderId} marked as ${String(status).toUpperCase()}!`, { id: toastId, duration: 6000, description: "Order status updated successfully." });
+        return res;
+      } catch (err) {
+        toast.error(`Failed to update order #${orderId}.`, { id: toastId, duration: 6000, description: err?.response?.data?.message || err.message || "Please try again." });
+        throw err;
+      }
+    },
     // Optimistic update
     onMutate: async ({ orderId, status }) => {
       await qc.cancelQueries({ queryKey: orderKeys.list({}) });
@@ -48,6 +63,21 @@ export function useUpdateOrderStatus() {
       if (ctx?.prev) {
         ctx.prev.forEach(([key, data]) => qc.setQueryData(key, data));
       }
+    },
+    onSuccess: (_data, { orderId, status }) => {
+      const typeMap = {
+        preparing: "info",
+        ready: "success",
+        done: "success",
+        cancelled: "critical",
+        pending: "warning",
+      };
+      useUIStore.getState().addNotification({
+        title: `Order #${orderId} Updated`,
+        message: `Order status has been updated to "${String(status).toUpperCase()}".`,
+        type: typeMap[String(status).toLowerCase()] || "info",
+        category: "Orders",
+      });
     },
     onSettled: () => qc.invalidateQueries({ queryKey: orderKeys.all }),
   });
