@@ -338,6 +338,8 @@ export const mapIngredients = (data) => {
       nutrients:   Array.isArray(item.nutrients) ? item.nutrients : [],
       stock:       extractStock(item),
       unit:        extractUnit(item),
+      daysLeft:    item.daysLeft !== undefined ? Number(item.daysLeft) : (item.shelfLife !== undefined ? Number(item.shelfLife) : undefined),
+      inSeason:    item.inSeason !== undefined ? Boolean(item.inSeason) : undefined,
     };
   });
 };

@@ -76,7 +76,7 @@ function DashboardHeader({ title = "Dashboard", subtitle }) {
           >
             <FiBell size={20} className="text-[#1a1a1a]" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1 bg-orange-500 text-white text-[11px] font-bold rounded-full flex items-center justify-center shadow-xs border-[2px] border-white animate-pulse">
+              <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1 bg-orange-500 text-white text-[11px] font-bold rounded-full flex items-center justify-center shadow-xs border-2 border-white animate-pulse">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}

@@ -75,6 +75,29 @@ const useUIStore = create(
         }));
       },
       clearNotifications: () => set({ notifications: [] }),
+      addUniqueNotification: (notification) => {
+        if (!notification) return;
+        const id = notification.id;
+        const existingIdx = get().notifications.findIndex((n) => n.id === id);
+        if (existingIdx !== -1) {
+          // Update in place if message changed, otherwise skip
+          if (get().notifications[existingIdx].message !== notification.message) {
+            set((state) => {
+              const updated = [...state.notifications];
+              updated[existingIdx] = { ...updated[existingIdx], ...notification, time: "Just now" };
+              return { notifications: updated };
+            });
+          }
+          return;
+        }
+        get().addNotification(notification);
+      },
+      removeNotificationsByPrefix: (prefix) => {
+        if (!prefix) return;
+        set((state) => ({
+          notifications: state.notifications.filter((n) => !String(n.id || "").startsWith(prefix)),
+        }));
+      },
 
       // Modal control
       openModal: (type, data = null) =>

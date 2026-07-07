@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -6,6 +7,7 @@ import {
   uploadIngredientsFile,
 } from "../../services/dashboardService";
 import useUIStore from "../../store/uiStore";
+import { evaluateStock } from "../../utils/stockUtils";
 
 // ── Query keys ────────────────────────────────────────────────────────────────
 export const ingredientKeys = {
@@ -15,12 +17,51 @@ export const ingredientKeys = {
 
 // ── Queries ───────────────────────────────────────────────────────────────────
 
-/** Fetch the full ingredient list from GET /api/ingredients */
+/** Fetch the full ingredient list from GET /api/ingredients and scan stock levels */
 export function useIngredients(filters = {}) {
-  return useQuery({
+  const query = useQuery({
     queryKey: ingredientKeys.list(filters),
     queryFn:  () => getIngredients(filters),
   });
+
+  useEffect(() => {
+    if (Array.isArray(query.data)) {
+      const outOfStockItems = query.data.filter((i) => evaluateStock(i.stock, i.unit).isOutOfStock);
+      const lowStockItems = query.data.filter((i) => evaluateStock(i.stock, i.unit).isLowStock);
+
+      // 1. Out of stock alert scanner
+      if (outOfStockItems.length > 0) {
+        const names = outOfStockItems.map((i) => i.name).slice(0, 3).join(", ");
+        const more = outOfStockItems.length > 3 ? ` and ${outOfStockItems.length - 3} others` : "";
+        useUIStore.getState().addUniqueNotification({
+          id: "inv-scanner-out-of-stock",
+          title: "Out of Stock Alert",
+          message: `${names}${more} are completely OUT OF STOCK! Restock immediately.`,
+          type: "critical",
+          category: "Inventory",
+        });
+      } else {
+        useUIStore.getState().removeNotificationsByPrefix("inv-scanner-out-of-stock");
+      }
+
+      // 2. Low stock alert scanner
+      if (lowStockItems.length > 0) {
+        const names = lowStockItems.map((i) => `${i.name} (${i.stock} ${i.unit || "g"})`).slice(0, 3).join(", ");
+        const more = lowStockItems.length > 3 ? ` and ${lowStockItems.length - 3} others` : "";
+        useUIStore.getState().addUniqueNotification({
+          id: "inv-scanner-low-stock",
+          title: "Low Stock Warning",
+          message: `${names}${more} are running low on stock! Restock needed.`,
+          type: "warning",
+          category: "Inventory",
+        });
+      } else {
+        useUIStore.getState().removeNotificationsByPrefix("inv-scanner-low-stock");
+      }
+    }
+  }, [query.data]);
+
+  return query;
 }
 
 // ── Mutations ─────────────────────────────────────────────────────────────────
@@ -33,11 +74,12 @@ export function useUpdateIngredientStock() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }) => updateIngredientStock(id, data),
-    onSuccess: (_res, { id, data }) => {
+    onSuccess: (_res, { id, data, unit }) => {
+      const { isLowStock, isOutOfStock } = evaluateStock(data.stock, unit || "g");
       useUIStore.getState().addNotification({
         title: "Stock Level Updated",
         message: `Ingredient #${id} stock level was adjusted to ${data.stock} units.`,
-        type: data.stock < 5 ? "critical" : "info",
+        type: isOutOfStock || isLowStock ? "critical" : "info",
         category: "Inventory",
       });
     },

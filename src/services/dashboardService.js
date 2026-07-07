@@ -13,6 +13,7 @@
 import { api } from "./api";
 import * as Mappers from "./mappers/dashboardMappers";
 import { useAuthStore } from "../store";
+import { evaluateStock } from "../utils/stockUtils";
 import axios from "axios";
 
 // ── Dashboard Overview ────────────────────────────────────────────
@@ -96,13 +97,36 @@ export const getTrendingMenus = () => Promise.resolve([
   { id: 2, name: "Truffle Fries", orders: 98, revenue: 490, trend: "up", percentage: 8 },
   { id: 3, name: "Classic Margarita", orders: 85, revenue: 765, trend: "down", percentage: 3 }
 ]);
-export const getInventoryAlerts    = () => api.get("/dashboard/inventory-alerts").then(r => r.data); // Untouched/Custom
+export const getInventoryAlerts = async () => {
+  const ingredients = await getIngredients().catch(() => []);
+  
+  const lowStock = ingredients
+    .filter(i => {
+      const { isOutOfStock, isLowStock } = evaluateStock(i.stock, i.unit);
+      return isOutOfStock || isLowStock;
+    })
+    .map(i => ({
+      id: i.id,
+      name: i.name,
+      stock: `${i.stock} ${i.unit || "g"}`,
+      unit: i.unit || "g",
+      image: i.image || ""
+    }));
+
+  return {
+    lowStock
+  };
+};
 export const getRecentActivity = () => Promise.resolve([
   { id: 1, user: "John Doe", role: "Customer", action: "placed a new order", time: "5 mins ago", avatar: "" },
   { id: 2, user: "System", role: "System", action: "Inventory alert: Tomato stock low", time: "1 hour ago", avatar: "" },
   { id: 3, user: "Admin", role: "Admin", action: "New staff member registered", time: "2 hours ago", avatar: "" }
 ]);
-export const getCustomerReviews    = () => api.get("/dashboard/reviews").then(r => r.data);
+export const getCustomerReviews    = () => api.get("/dashboard/reviews").then(r => r.data).catch(() => [
+  { id: 1, name: "Sarah K.", rating: 5, comment: "The food was amazing and arrived super fast! Loved the new menu layout.", time: "10 mins ago", avatar: "" },
+  { id: 2, name: "Mike R.", rating: 4, comment: "Great burger, but fries could be a bit crispier. Good service overall.", time: "1 hour ago", avatar: "" },
+  { id: 3, name: "Emily D.", rating: 5, comment: "Best healthy food option in town. Highly recommend the avocado salad!", time: "3 hours ago", avatar: "" }
+]);
 
 // ── Orders ────────────────────────────────────────────────────────
 export const getOrdersMetrics      = () => api.get("/api/orders/admin/metrics").then(r => Mappers.mapOrdersMetrics(r.data));
@@ -221,8 +245,8 @@ export const uploadMenuFile = async (payload) => {
 export const getIngredientsMetrics = async () => {
   const ingredients = await getIngredients().catch(() => []);
   const total = ingredients.length;
-  const outOfStock = ingredients.filter(i => i.stock === 0 || i.stock === "0").length;
-  const lowStock = ingredients.filter(i => i.stock > 0 && i.stock < 20).length;
+  const outOfStock = ingredients.filter(i => evaluateStock(i.stock, i.unit).isOutOfStock).length;
+  const lowStock = ingredients.filter(i => evaluateStock(i.stock, i.unit).isLowStock).length;
   return Mappers.mapIngredientsMetrics({
     total, totalChange: 0,
     lowStock, lowStockChange: 0,

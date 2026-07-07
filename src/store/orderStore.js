@@ -483,6 +483,7 @@ const useOrderStore = create(
           // Invalidate dashboard caches so the new order appears immediately
           queryClient.invalidateQueries({ queryKey: ["kitchen"] });
           queryClient.invalidateQueries({ queryKey: ["orders"] });
+          queryClient.invalidateQueries({ queryKey: ["ingredients"] });
 
           // Trigger dynamic notification for dashboard admin
           useUIStore.getState().addNotification({
