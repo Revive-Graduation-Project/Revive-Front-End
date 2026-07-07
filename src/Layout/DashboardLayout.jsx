@@ -1,4 +1,5 @@
 import { Outlet, useLocation, Navigate } from "react-router-dom";
+import { Toaster } from "sonner";
 import DashboardSidebar from "../components/Dashboard/DashboardSidebar";
 import { useDashboardRealtime } from "../hooks/dashboard/useDashboardRealtime";
 import { ToastContainer } from "../components/Dashboard/shared/useToast";
@@ -37,6 +38,7 @@ function DashboardLayout() {
 
       {/* Global toast notifications — renders on top of everything */}
       <ToastContainer />
+      <Toaster position="top-right" richColors expand={false} duration={3000} style={{ zIndex: 99999 }} />
     </div>
   );
 }

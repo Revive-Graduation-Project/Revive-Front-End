@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { getOrdersMetrics, getOrders, updateOrderStatus, getTrendingMenus } from "../../services/dashboardService";
 import useUIStore from "../../store/uiStore";
 
@@ -31,7 +32,19 @@ export function useOrdersTrending() {
 export function useUpdateOrderStatus() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ orderId, status }) => updateOrderStatus(orderId, status),
+    mutationFn: async ({ orderId, status }) => {
+      const toastId = toast.loading(`Updating order #${orderId} to ${String(status).toUpperCase()}...`, {
+        description: "You can navigate away while this updates."
+      });
+      try {
+        const res = await updateOrderStatus(orderId, status);
+        toast.success(`Order #${orderId} marked as ${String(status).toUpperCase()}!`, { id: toastId, description: "Order status updated successfully." });
+        return res;
+      } catch (err) {
+        toast.error(`Failed to update order #${orderId}.`, { id: toastId, description: err?.response?.data?.message || err.message || "Please try again." });
+        throw err;
+      }
+    },
     // Optimistic update
     onMutate: async ({ orderId, status }) => {
       await qc.cancelQueries({ queryKey: orderKeys.list({}) });

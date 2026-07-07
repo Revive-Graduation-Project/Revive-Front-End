@@ -25,25 +25,14 @@ export default function InactiveMenuModal({ isOpen, onClose, inactiveItems }) {
     if (file && selectedItemId) {
       const itemToUpdate = inactiveItems.find((i) => i.id === selectedItemId);
       if (itemToUpdate) {
-        updateMeal(
-          {
-            id: itemToUpdate.id || itemToUpdate._id,
-            data: { ...itemToUpdate, imageFile: file },
-          },
-          {
-            onSuccess: () => {
-              addToast("Photo added successfully! Dish is now active.", "success");
-              setSelectedItemId(null);
-              if (fileInputRef.current) fileInputRef.current.value = "";
-              if (inactiveItems.length === 1) onClose(); // Auto close if it was the last item
-            },
-            onError: () => {
-              addToast("Failed to upload photo. Please try again.", "error");
-              setSelectedItemId(null);
-              if (fileInputRef.current) fileInputRef.current.value = "";
-            },
-          }
-        );
+        setSelectedItemId(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        if (inactiveItems.length === 1) onClose(); // Auto close immediately if last item
+
+        updateMeal({
+          id: itemToUpdate.id || itemToUpdate._id,
+          data: { ...itemToUpdate, imageFile: file },
+        });
       }
     }
   };
