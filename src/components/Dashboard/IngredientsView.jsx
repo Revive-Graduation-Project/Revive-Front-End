@@ -20,6 +20,7 @@ import SortMenu from "./shared/SortMenu";
 import IngredientModal from "./shared/IngredientModal";
 import IngredientNutrientsModal from "./shared/IngredientNutrientsModal";
 import { sortItems } from "../../utils/sortItems";
+import { formatStockDisplay as formatStock } from "../../utils/stockUtils";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const ING_SORT_COLS = [
@@ -30,17 +31,6 @@ const ING_SORT_COLS = [
 const TABLE_HEADERS = ["Name", "Fat", "Cal", "Pro", "Sug", "Stock", "Actions"];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-/** Format a stock value with appropriate unit and low-stock flag */
-const formatStock = (stock, unit = "g") => {
-  const num = Number(stock) || 0;
-  if (num === 0) return { text: unit ? `0 ${unit}` : "0g", isOut: true, isLow: false };
-  if (!unit || unit === "g" || unit.toLowerCase() === "gram" || unit.toLowerCase() === "grams") {
-    if (num >= 1000) return { text: `${(num / 1000).toFixed(1)}kg`, isOut: false, isLow: false };
-    return { text: `${num}g`, isOut: false, isLow: num < 100 };
-  }
-  return { text: `${num} ${unit}`, isOut: false, isLow: num < 100 };
-};
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -163,7 +153,7 @@ function StatCard({ label, value, icon: Icon, color }) {
       style={{ borderLeft: `4px solid ${color}` }}
     >
       <div
-        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
         style={{ backgroundColor: `${color}18` }}
       >
         <Icon size={20} style={{ color }} />
@@ -202,10 +192,9 @@ function IngredientsView() {
 
   const handleFileSubmit = () => {
     if (!selectedFile) return;
-    uploadFile(selectedFile, {
-      onSuccess: () => { addToast("Ingredients updated successfully!", "success"); setSelectedFile(null); },
-      onError:   () => addToast("Failed to upload file.", "error"),
-    });
+    const fileToUpload = selectedFile;
+    setSelectedFile(null); // Clear immediately for non-blocking background upload UX
+    uploadFile(fileToUpload);
   };
 
   // ── Edit handler ──────────────────────────────────────────────────────────

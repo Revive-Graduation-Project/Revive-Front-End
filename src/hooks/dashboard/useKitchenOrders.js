@@ -22,6 +22,7 @@ import {
   updateChefDisplayName,
 } from "../../services/dashboardService";
 import { useToast } from "../../store/toastStore";
+import useUIStore from "../../store/uiStore";
 
 const POLL_INTERVAL_MS = 30_000; // 30 s — swap for WS when ready
 
@@ -106,6 +107,21 @@ export function useUpdateKitchenStatus() {
     onError: (_err, _vars, ctx) => {
       if (ctx?.prev) qc.setQueryData(kitchenKeys.orders(), ctx.prev);
     },
+    onSuccess: (_data, { orderId, nextStatus }) => {
+      const typeMap = {
+        preparing: "info",
+        ready: "success",
+        done: "success",
+        cancelled: "critical",
+        queue: "warning",
+      };
+      useUIStore.getState().addNotification({
+        title: `Kitchen Order #${orderId}`,
+        message: `Order moved to "${String(nextStatus).toUpperCase()}" on the Live Kitchen board.`,
+        type: typeMap[String(nextStatus).toLowerCase()] || "info",
+        category: "Orders",
+      });
+    },
     onSettled: () => qc.invalidateQueries({ queryKey: kitchenKeys.all }),
   });
 }
@@ -151,8 +167,20 @@ export function useUpdateTicketStatus() {
       if (ctx?.prev) qc.setQueryData(kitchenKeys.tickets(), ctx.prev);
       toast.error("Failed to update ticket status.");
     },
-    onSuccess: (_data, { status }) => {
+    onSuccess: (_data, { ticketId, status }) => {
       toast.success(`Ticket moved to ${status}.`);
+      const typeMap = {
+        preparing: "info",
+        ready: "success",
+        done: "success",
+        cancelled: "critical",
+      };
+      useUIStore.getState().addNotification({
+        title: `Ticket #${ticketId} Status`,
+        message: `Kitchen ticket has been updated to "${String(status).toUpperCase()}".`,
+        type: typeMap[String(status).toLowerCase()] || "info",
+        category: "Orders",
+      });
     },
     onSettled: () => qc.invalidateQueries({ queryKey: kitchenKeys.all }),
   });

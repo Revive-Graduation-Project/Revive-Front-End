@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getOrdersMetrics, getOrders, updateOrderStatus, getTrendingMenus } from "../../services/dashboardService";
+import useUIStore from "../../store/uiStore";
 
 export const orderKeys = {
   all:     ["orders"],
@@ -48,6 +49,21 @@ export function useUpdateOrderStatus() {
       if (ctx?.prev) {
         ctx.prev.forEach(([key, data]) => qc.setQueryData(key, data));
       }
+    },
+    onSuccess: (_data, { orderId, status }) => {
+      const typeMap = {
+        preparing: "info",
+        ready: "success",
+        done: "success",
+        cancelled: "critical",
+        pending: "warning",
+      };
+      useUIStore.getState().addNotification({
+        title: `Order #${orderId} Updated`,
+        message: `Order status has been updated to "${String(status).toUpperCase()}".`,
+        type: typeMap[String(status).toLowerCase()] || "info",
+        category: "Orders",
+      });
     },
     onSettled: () => qc.invalidateQueries({ queryKey: orderKeys.all }),
   });

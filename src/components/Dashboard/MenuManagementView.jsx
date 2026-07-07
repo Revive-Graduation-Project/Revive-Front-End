@@ -79,15 +79,9 @@ function MenuManagementView() {
 
   const handleUpload = () => {
     if (!selectedFile) return;
-    uploadFile(selectedFile, {
-      onSuccess: () => {
-        addToast("Menu file uploaded and processed successfully!", "success");
-        setSelectedFile(null);
-      },
-      onError: () => {
-        addToast("Failed to process menu file. Please check the format.", "error");
-      }
-    });
+    const fileToUpload = selectedFile;
+    setSelectedFile(null); // Clear immediately for non-blocking background upload UX
+    uploadFile(fileToUpload);
   };
 
   if (isLoading) {
