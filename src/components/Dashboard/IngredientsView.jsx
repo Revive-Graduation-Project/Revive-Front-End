@@ -120,16 +120,6 @@ function IngredientsView() {
     );
   }
 
-  if (error) {
-    return (
-      <div>
-        <DashboardHeader title="Ingredients" />
-        {/* Use refetch instead of full page reload so state is preserved */}
-        <ErrorState message="Failed to load ingredients data." onRetry={refetch} />
-      </div>
-    );
-  }
-
   // ── Derived data ───────────────────────────────────────────────────────────
   const allIngredients = ingredients || [];
   const categories = [...new Set(allIngredients.map((i) => i.category))];

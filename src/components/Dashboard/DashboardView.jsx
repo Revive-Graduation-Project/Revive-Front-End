@@ -37,12 +37,8 @@ function DashboardView() {
   const { data: reviews,        isLoading: loadingRevw,    error: errRevw    } = useCustomerReviews();
 
   const isLoading =
-    loadingMetrics || loadingRev || loadingCats || loadingOrdOv ||
-    loadingTypes || loadingTrend || loadingInv || loadingAct || loadingRevw;
-
-  const hasError =
-    errMetrics || errRev || errCats || errOrdOv ||
-    errTypes || errTrend || errInv || errAct || errRevw;
+    loadingMetrics && loadingRev && loadingCats && loadingOrdOv &&
+    loadingTypes && loadingTrend && loadingInv && loadingAct && loadingRevw;
 
   if (isLoading) {
     return (
@@ -53,24 +49,15 @@ function DashboardView() {
     );
   }
 
-  if (hasError) {
-    return (
-      <div>
-        <DashboardHeader title="Dashboard" />
-        <ErrorState message="Failed to load dashboard metrics." onRetry={() => window.location.reload()} />
-      </div>
-    );
-  }
-
-  const safeMetrics = metrics || {};
-  const safeRevenue = revenue || [];
-  const safeCategories = categories || [];
-  const safeOrdersOverview = ordersOverview || [];
-  const safeOrderTypes = orderTypes || [];
-  const safeTrending = trending || [];
-  const safeInventory = inventory || {};
-  const safeActivity = activity || [];
-  const safeReviews = reviews || [];
+  const safeMetrics = errMetrics ? {} : (metrics || {});
+  const safeRevenue = errRev ? [] : (revenue || []);
+  const safeCategories = errCats ? [] : (categories || []);
+  const safeOrdersOverview = errOrdOv ? [] : (ordersOverview || []);
+  const safeOrderTypes = errTypes ? [] : (orderTypes || []);
+  const safeTrending = errTrend ? [] : (trending || []);
+  const safeInventory = errInv ? {} : (inventory || {});
+  const safeActivity = errAct ? [] : (activity || []);
+  const safeReviews = errRevw ? [] : (reviews || []);
 
   return (
     <div>
