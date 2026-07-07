@@ -10,7 +10,6 @@ import {
 } from "../../hooks/dashboard/useMenuItems";
 import { useTrendingMenus } from "../../hooks/dashboard/useDashboard";
 import { FiEdit2, FiPlus, FiTrash2 } from "react-icons/fi";
-import { useToast } from "../../store/toastStore";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 import EmptyState from "./shared/EmptyState";
@@ -43,16 +42,12 @@ function ChefMenuView() {
   const [isInactiveModalOpen, setIsInactiveModalOpen] = useState(false);
 
   const navigate = useNavigate();
-  const { addToast } = useToast();
   const { mutate: deleteItem } = useDeleteMenuItem();
 
   // ── CRUD handlers ──────────────────────────────────────────────────────────
   const confirmDelete = () => {
     if (!deletingId) return;
-    deleteItem(deletingId, {
-      onSuccess: () => addToast("Menu item deleted", "success"),
-      onError: () => addToast("Failed to delete menu item", "error"),
-    });
+    deleteItem(deletingId);
     setDeletingId(null);
   };
 

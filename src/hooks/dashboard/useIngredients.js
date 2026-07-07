@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "../../utils/toastUtils";
 import {
   getIngredients,
   updateIngredientStock,
@@ -76,14 +76,15 @@ export function useUpdateIngredientStock() {
     mutationFn: async ({ id, data, name }) => {
       const ingName = name || `Ingredient #${id}`;
       const toastId = toast.loading(`Updating stock for "${ingName}" in background...`, {
+        duration: 6000,
         description: "You can navigate away while this updates in background."
       });
       try {
         const res = await updateIngredientStock(id, data);
-        toast.success(`Updated stock for "${ingName}"!`, { id: toastId, description: `Stock level adjusted to ${data.stock}.` });
+        toast.success(`Updated stock for "${ingName}"!`, { id: toastId, duration: 6000, description: `Stock level adjusted to ${data.stock}.` });
         return res;
       } catch (err) {
-        toast.error(`Failed to update stock for "${ingName}".`, { id: toastId, description: err?.response?.data?.message || err.message || "Please try again." });
+        toast.error(`Failed to update stock for "${ingName}".`, { id: toastId, duration: 6000, description: err?.response?.data?.message || err.message || "Please try again." });
         throw err;
       }
     },
@@ -107,6 +108,7 @@ export function useUploadIngredients() {
     mutationFn: async (fileOrPayload) => {
       const file = fileOrPayload?.file || fileOrPayload;
       const toastId = toast.loading(`Uploading ${file.name || "CSV file"} (0%)...`, {
+        duration: 6000,
         description: "You can navigate away while this uploads in the background."
       });
 
@@ -118,12 +120,13 @@ export function useUploadIngredients() {
               const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
               toast.loading(`Uploading ${file.name || "CSV file"} (${percent}%)...`, {
                 id: toastId,
+                duration: 6000,
                 description: "You can navigate away while this uploads in the background."
               });
             }
           }
         });
-        toast.success(`Successfully uploaded ${file.name || "CSV file"}!`, { id: toastId, description: "Inventory updated successfully." });
+        toast.success(`Successfully uploaded ${file.name || "CSV file"}!`, { id: toastId, duration: 6000, description: "Inventory updated successfully." });
         useUIStore.getState().addNotification({
           title: "Inventory File Uploaded",
           message: `File "${file.name || "CSV"}" was uploaded in background. Inventory stock levels updated.`,
@@ -132,7 +135,7 @@ export function useUploadIngredients() {
         });
         return result;
       } catch (err) {
-        toast.error(`Failed to upload ${file.name || "CSV file"}.`, { id: toastId, description: err?.response?.data?.message || err.message || "Please try again." });
+        toast.error(`Failed to upload ${file.name || "CSV file"}.`, { id: toastId, duration: 6000, description: err?.response?.data?.message || err.message || "Please try again." });
         throw err;
       }
     },

@@ -23,7 +23,7 @@ function InventoryAlerts({ data }) {
 
   return (
     <div className="bg-white rounded-3xl px-6 py-6 shadow-sm border border-gray-100/60">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2.5">
           <FiAlertTriangle size={20} className="text-red-600" fill="#fee2e2" />
           <h3 className="text-[14px] font-bold text-[#1a1a1a] m-0 uppercase tracking-wider">
@@ -39,6 +39,10 @@ function InventoryAlerts({ data }) {
           </button>
         )}
       </div>
+      {/* Threshold hint */}
+      <p className="text-[11px] font-medium text-gray-400 mb-4">
+        Ingredients with stock below <span className="font-bold text-red-400">100g</span> or <span className="font-bold text-red-400">100ml</span> are flagged as low stock.
+      </p>
 
       <div className="bg-white border border-[#FEE2E2] rounded-2xl p-4 shadow-[0_2px_10px_rgba(254,226,226,0.3)] flex flex-col justify-between min-h-[100px]">
         <div className="flex gap-5 items-center overflow-x-auto py-2">
@@ -79,6 +83,9 @@ function InventoryAlerts({ data }) {
                 <h3 className="text-[18px] font-bold text-[#1a1a1a] m-0">
                   Low Stock Ingredients ({lowStockItems.length})
                 </h3>
+                <p className="text-[11px] font-medium text-gray-400 mt-0.5">
+                  Below <span className="font-bold text-red-400">100g</span> or <span className="font-bold text-red-400">100ml</span>
+                </p>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}

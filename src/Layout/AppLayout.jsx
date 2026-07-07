@@ -10,7 +10,7 @@ function AppLayout() {
     <div className="min-h-screen bg-center bg-cover">
       <Navbar />
       <SideCartDrawer />
-       <Toaster
+      <Toaster
         position="top-right"
         richColors
         expand={false}
