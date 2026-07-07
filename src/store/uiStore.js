@@ -43,12 +43,14 @@ const useUIStore = create(
       addNotification: (notification) => {
         if (!notification) return;
 
+        const now = Date.now();
         const newNotification = {
           read: false,
           group: "Today",
           time: "Just now",
+          createdAt: notification.createdAt || now,
           ...notification,
-          id: notification.id || `notif-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+          id: notification.id || `notif-${now}-${Math.random().toString(36).substr(2, 4)}`,
         };
 
         if (!newNotification.type) return;
@@ -84,7 +86,7 @@ const useUIStore = create(
           if (get().notifications[existingIdx].message !== notification.message) {
             set((state) => {
               const updated = [...state.notifications];
-              updated[existingIdx] = { ...updated[existingIdx], ...notification, time: "Just now" };
+              updated[existingIdx] = { ...updated[existingIdx], ...notification, time: "Just now", createdAt: Date.now() };
               return { notifications: updated };
             });
           }
@@ -127,5 +129,44 @@ const useUIStore = create(
     }
   )
 );
+
+export function formatNotificationTime(notif) {
+  const timestamp = notif?.createdAt || notif?.timestamp;
+  if (!timestamp || isNaN(new Date(timestamp).getTime())) {
+    return notif?.time || "Just now";
+  }
+
+  const now = Date.now();
+  const diffMs = Math.max(0, now - new Date(timestamp).getTime());
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHours = Math.floor(diffMin / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffSec < 60) return "Just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays}d ago`;
+
+  return new Date(timestamp).toLocaleDateString();
+}
+
+export function getNotificationGroup(notif) {
+  const timestamp = notif?.createdAt || notif?.timestamp;
+  if (!timestamp || isNaN(new Date(timestamp).getTime())) {
+    return notif?.group || "Today";
+  }
+  const now = new Date();
+  const notifDate = new Date(timestamp);
+
+  if (now.toDateString() === notifDate.toDateString()) return "Today";
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (yesterday.toDateString() === notifDate.toDateString()) return "Yesterday";
+
+  return "Earlier";
+}
 
 export default useUIStore;

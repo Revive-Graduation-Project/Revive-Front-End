@@ -1,11 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiBell, FiCheckCircle, FiAlertCircle, FiClock, FiInfo, FiCheck, FiTrash2, FiFilter } from "react-icons/fi";
 import DashboardHeader from "./DashboardHeader";
-import useUIStore from "../../store/uiStore";
+import useUIStore, { formatNotificationTime, getNotificationGroup } from "../../store/uiStore";
 
 function NotificationsView() {
   const { notifications = [], markAllAsRead, markAsRead, removeNotification, clearNotifications } = useUIStore();
   const [activeTab, setActiveTab] = useState("All");
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setTick((v) => v + 1), 60000);
+    return () => clearInterval(t);
+  }, []);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -16,9 +22,9 @@ function NotificationsView() {
     return n.category === activeTab;
   });
 
-  // Group notifications by `group` (e.g., "Today", "Yesterday", "Earlier")
+  // Group notifications dynamically by timestamp (e.g., "Today", "Yesterday", "Earlier")
   const groupedNotifications = filteredNotifications.reduce((acc, notif) => {
-    const groupName = notif.group || "Today";
+    const groupName = getNotificationGroup(notif);
     if (!acc[groupName]) acc[groupName] = [];
     acc[groupName].push(notif);
     return acc;
@@ -191,7 +197,7 @@ function NotificationsView() {
                     {/* Right: Timestamp & Actions */}
                     <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100 sm:border-none">
                       <span className="text-[12px] font-bold text-gray-400">
-                        {notif.time}
+                        {formatNotificationTime(notif)}
                       </span>
 
                       <div className="flex items-center gap-2">

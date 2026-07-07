@@ -12,6 +12,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast as sonnerToast } from "sonner";
 import {
   getKitchenOrders,
   updateKitchenStatus,
@@ -56,7 +57,19 @@ export function useUpdateKitchenStatus() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ orderId, nextStatus }) => updateKitchenStatus(orderId, nextStatus),
+    mutationFn: async ({ orderId, nextStatus }) => {
+      const toastId = sonnerToast.loading(`Moving order #${orderId} to ${String(nextStatus).toUpperCase()}...`, {
+        description: "You can navigate away while this updates."
+      });
+      try {
+        const res = await updateKitchenStatus(orderId, nextStatus);
+        sonnerToast.success(`Order #${orderId} moved to ${String(nextStatus).toUpperCase()}!`, { id: toastId, description: "Kitchen board updated." });
+        return res;
+      } catch (err) {
+        sonnerToast.error(`Failed to move order #${orderId}.`, { id: toastId, description: err?.response?.data?.message || err.message || "Please try again." });
+        throw err;
+      }
+    },
     // Optimistic local board update — moves card between columns instantly
     onMutate: async ({ orderId, nextStatus }) => {
       await qc.cancelQueries({ queryKey: kitchenKeys.orders() });

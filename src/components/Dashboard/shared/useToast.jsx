@@ -25,7 +25,7 @@ export function ToastContainer() {
   const { toasts, removeToast } = useToastStore();
 
   return (
-    <div className="fixed bottom-5 right-5 z-200 flex flex-col gap-2 pointer-events-none">
+    <div className="fixed bottom-5 right-5 z-99999 flex flex-col gap-2 pointer-events-none">
       {toasts.map((toast) => {
         const cfg = TOAST_STYLES[toast.type] ?? TOAST_STYLES.info;
         const Icon = cfg.icon;

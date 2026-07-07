@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiBell, FiCheckCircle, FiAlertCircle, FiClock, FiInfo, FiCheck } from "react-icons/fi";
 import useAuthStore from "../../store/authStore";
-import useUIStore from "../../store/uiStore";
+import useUIStore, { formatNotificationTime } from "../../store/uiStore";
 
 function DashboardHeader({ title = "Dashboard", subtitle }) {
   const { user } = useAuthStore();
@@ -11,6 +11,12 @@ function DashboardHeader({ title = "Dashboard", subtitle }) {
   
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setTick((v) => v + 1), 60000);
+    return () => clearInterval(t);
+  }, []);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -25,7 +31,11 @@ function DashboardHeader({ title = "Dashboard", subtitle }) {
     ? safeName.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()
     : "U";
 
-  const displaySubtitle = subtitle || (firstName ? `Hello ${firstName}, Welcome back` : "Welcome back");
+  const displaySubtitle = subtitle 
+    ? subtitle 
+    : firstName 
+      ? `Welcome back, ${firstName}! Here's what's happening in your restaurant today.`
+      : `Here's what's happening in your restaurant today.`;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -51,13 +61,13 @@ function DashboardHeader({ title = "Dashboard", subtitle }) {
     switch (type) {
       case "critical": return "border-l-4 border-red-500 bg-red-50/40";
       case "success":  return "border-l-4 border-green-500 bg-green-50/40";
-      case "warning":  return "border-l-4 border-orange-400 bg-orange-50/40";
+      case "warning":  return "border-l-4 border-orange-500 bg-orange-50/40";
       default:         return "border-l-4 border-blue-500 bg-blue-50/40";
     }
   };
 
   return (
-    <header className="flex flex-col md:flex-row items-start md:items-center justify-between px-6 md:px-8 py-6 bg-transparent sticky top-0 z-20 gap-4 md:gap-0">
+    <header className="flex flex-col md:flex-row items-start md:items-center justify-between px-6 md:px-8 py-6 bg-transparent sticky top-0 z-150 gap-4 md:gap-0">
       {/* Title + greeting */}
       <div>
         <h1 className="text-[28px] font-bold text-[#1a1a1a] m-0 tracking-tight">{title}</h1>
@@ -84,7 +94,7 @@ function DashboardHeader({ title = "Dashboard", subtitle }) {
 
           {/* Notifications Dropdown Popover */}
           {showDropdown && (
-            <div className="absolute right-0 top-[56px] w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="absolute right-0 top-[56px] w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 z-999 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
               {/* Popover Header */}
               <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between bg-gray-50/60">
                 <div className="flex items-center gap-2">
@@ -126,7 +136,7 @@ function DashboardHeader({ title = "Dashboard", subtitle }) {
                           </span>
                         </div>
                         <span className="text-[11px] text-gray-400 shrink-0 font-medium">
-                          {notif.time}
+                          {formatNotificationTime(notif)}
                         </span>
                       </div>
                       <p className="text-[12px] text-gray-600 line-clamp-2 m-0 leading-relaxed pl-5">

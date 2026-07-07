@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { getMenuCategories, getMenuItems, deleteMenuItem, updateMenuItem, createMenuItem, saveRecipe, getRecipeIngredients, uploadMealImage } from "../../services/dashboardService";
 import useUIStore from "../../store/uiStore";
 
@@ -29,7 +30,19 @@ export function useRecipeIngredients() {
 export function useDeleteMenuItem() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id) => deleteMenuItem(id),
+    mutationFn: async (id) => {
+      const toastId = toast.loading(`Deleting dish #${id} in background...`, {
+        description: "You can navigate away while this deletes."
+      });
+      try {
+        const res = await deleteMenuItem(id);
+        toast.success(`Successfully deleted dish #${id}!`, { id: toastId, description: "Removed from kitchen menu." });
+        return res;
+      } catch (err) {
+        toast.error(`Failed to delete dish #${id}.`, { id: toastId, description: err?.response?.data?.message || err.message || "Please try again." });
+        throw err;
+      }
+    },
     onMutate:  async (id) => {
       await qc.cancelQueries({ queryKey: menuKeys.all });
       const prev = qc.getQueriesData({ queryKey: menuKeys.all });
@@ -153,20 +166,28 @@ export function useUpdateMenuItem() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, data }) => {
-      const payload = await buildMenuPayload(data, id);
+      const itemName = data.name || `Item #${id}`;
+      const toastId = toast.loading(`Updating "${itemName}" in background...`, {
+        description: "You can navigate away while this updates in background."
+      });
+      try {
+        const payload = await buildMenuPayload(data, id);
+        const res = await updateMenuItem(id, payload);
 
-      const res = await updateMenuItem(id, payload);
-
-      // Image upload is a partial-success step: a failed upload should not
-      // roll back the already-committed meal update.
-      if (data.imageFile) {
-        const mealId = extractMealId(res, id);
-        if (mealId !== undefined && mealId !== null) {
-          await uploadMealImage(mealId, data.imageFile);
+        if (data.imageFile) {
+          toast.loading(`Uploading photo for "${itemName}" in background...`, { id: toastId, description: "You can navigate away while this uploads." });
+          const mealId = extractMealId(res, id);
+          if (mealId !== undefined && mealId !== null) {
+            await uploadMealImage(mealId, data.imageFile);
+          }
         }
-      }
 
-      return res;
+        toast.success(`Successfully updated "${itemName}"!`, { id: toastId, description: "Menu item updated successfully." });
+        return res;
+      } catch (err) {
+        toast.error(`Failed to update "${itemName}".`, { id: toastId, description: err?.response?.data?.message || err.message || "Please try again." });
+        throw err;
+      }
     },
     onSuccess: (updatedMeal, { id, data }) => {
       const targetId = extractMealId(updatedMeal, id) || id;
@@ -196,20 +217,28 @@ export function useCreateMenuItem() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (data) => {
-      const payload = await buildMenuPayload(data);
+      const itemName = data.name || "New Meal";
+      const toastId = toast.loading(`Creating "${itemName}" in background...`, {
+        description: "You can navigate away while this processes in background."
+      });
+      try {
+        const payload = await buildMenuPayload(data);
+        const meal = await createMenuItem(payload);
 
-      const meal = await createMenuItem(payload);
-
-      // Image upload is a partial-success step: a failed upload should not
-      // roll back the already-committed meal create.
-      if (data.imageFile && meal) {
-        const mealId = extractMealId(meal);
-        if (mealId !== undefined && mealId !== null) {
-          await uploadMealImage(mealId, data.imageFile);
+        if (data.imageFile && meal) {
+          toast.loading(`Uploading photo for "${itemName}" in background...`, { id: toastId, description: "You can navigate away while this uploads." });
+          const mealId = extractMealId(meal);
+          if (mealId !== undefined && mealId !== null) {
+            await uploadMealImage(mealId, data.imageFile);
+          }
         }
-      }
 
-      return meal;
+        toast.success(`Successfully created "${itemName}"!`, { id: toastId, description: "Added to menu successfully." });
+        return meal;
+      } catch (err) {
+        toast.error(`Failed to create "${itemName}".`, { id: toastId, description: err?.response?.data?.message || err.message || "Please try again." });
+        throw err;
+      }
     },
     onSuccess: (newMeal, variables) => {
       const itemToAdd = typeof newMeal === "object" && newMeal !== null
@@ -235,7 +264,20 @@ export function useCreateMenuItem() {
 export function useSaveRecipe() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: saveRecipe,
+    mutationFn: async (data) => {
+      const recipeName = data.name || "New Recipe";
+      const toastId = toast.loading(`Saving recipe "${recipeName}" in background...`, {
+        description: "You can navigate away while this saves in background."
+      });
+      try {
+        const res = await saveRecipe(data);
+        toast.success(`Successfully saved recipe "${recipeName}"!`, { id: toastId, description: "Recipe added to kitchen system." });
+        return res;
+      } catch (err) {
+        toast.error(`Failed to save recipe "${recipeName}".`, { id: toastId, description: err?.response?.data?.message || err.message || "Please try again." });
+        throw err;
+      }
+    },
     onSuccess: (newMeal, variables) => {
       const itemToAdd = typeof newMeal === "object" && newMeal !== null
         ? { ...variables, ...newMeal, id: extractMealId(newMeal) || variables.id || Date.now() }

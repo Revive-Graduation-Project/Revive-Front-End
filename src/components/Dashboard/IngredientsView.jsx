@@ -204,14 +204,13 @@ function IngredientsView() {
   };
 
   const handleModalSubmit = (formData) => {
-    // formData = { stock: number } — sent to PATCH /api/ingredients/{id}/stock
-    updateStock(
-      { id: editingIngredient.id, data: formData },
-      {
-        onSuccess: () => { addToast("Stock updated!", "success"); setIsModalOpen(false); },
-        onError:   () => addToast("Failed to update stock.", "error"),
-      }
-    );
+    setIsModalOpen(false); // Close immediately for non-blocking background UX
+    updateStock({
+      id: editingIngredient.id,
+      data: formData,
+      name: editingIngredient.name,
+      unit: editingIngredient.unit,
+    });
   };
 
   // ── Loading / error states ────────────────────────────────────────────────

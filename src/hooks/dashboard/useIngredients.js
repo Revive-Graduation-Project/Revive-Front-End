@@ -73,7 +73,20 @@ export function useIngredients(filters = {}) {
 export function useUpdateIngredientStock() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }) => updateIngredientStock(id, data),
+    mutationFn: async ({ id, data, name }) => {
+      const ingName = name || `Ingredient #${id}`;
+      const toastId = toast.loading(`Updating stock for "${ingName}" in background...`, {
+        description: "You can navigate away while this updates in background."
+      });
+      try {
+        const res = await updateIngredientStock(id, data);
+        toast.success(`Updated stock for "${ingName}"!`, { id: toastId, description: `Stock level adjusted to ${data.stock}.` });
+        return res;
+      } catch (err) {
+        toast.error(`Failed to update stock for "${ingName}".`, { id: toastId, description: err?.response?.data?.message || err.message || "Please try again." });
+        throw err;
+      }
+    },
     onSuccess: (_res, { id, data, unit }) => {
       const { isLowStock, isOutOfStock } = evaluateStock(data.stock, unit || "g");
       useUIStore.getState().addNotification({
