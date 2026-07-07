@@ -3,7 +3,6 @@ import { useAuthStore } from "../../../store";
 import { getSuggestedMeals } from "../../../services/recommendation.service";
 import RegularFoodCard from "../../../components/UI/RegularFoodCard";
 import LoadingSpinner from "../../../components/UI/LoadingSpinner";
-
 /**
  * SuggestedMeals
  * ---------------
