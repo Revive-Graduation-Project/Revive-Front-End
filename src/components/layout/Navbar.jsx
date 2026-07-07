@@ -1,5 +1,5 @@
 import { Link, NavLink, useLocation } from "react-router";
-import Cart from "../UI/Cart";
+import Cart from "../ui/Cart";
 import SearchBar from "./SearchBar";
 import { FaUserCircle } from "react-icons/fa";
 import { MdOutlineKeyboardArrowDown, MdDashboard } from "react-icons/md";

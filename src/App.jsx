@@ -1,4 +1,5 @@
-import { Route, Routes, Navigate } from "react-router";
+import React from 'react';
+import { Route, Routes, Navigate } from "react-router-dom";
 import { AppLayout, AuthLayout, DashboardLayout } from "./Layout";
 import Customization from "./pages/customization/Customization";
 import StaffRoute from "./components/StaffRoute";
@@ -57,9 +58,9 @@ export default function App() {
           {/* Public routes */}
           <Route index element={<Home />} />
           <Route path="menu" element={<Menu />} />
-          <Route path="customize" element={<Customization />} />
 
           {/* Protected routes — ProtectedRoute shows a message + redirects to login if not authenticated */}
+          <Route path="customize" element={<ProtectedRoute><Customization /></ProtectedRoute>} />
           <Route path="favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
           <Route path="cart"      element={<Cart />} />
           <Route path="checkout"  element={<Checkout />} />

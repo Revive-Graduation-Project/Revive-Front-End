@@ -1,4 +1,5 @@
 import { useOrderStore, useFavoritesStore } from "../../store";
+import { parseNutrients } from "../../utils/nutrients";
 
 // Max 2 decimal places, strips trailing zeros: 140.9888 → 140.99 | 140.00 → 140
 const formatPrice = (val) => {
@@ -16,27 +17,29 @@ const RegularFoodCard = ({ meal }) => {
     name,
     description,
     price,
-    finalPrice,
+    hasDiscount,
+    discountPercentage,
     imageUrl,
-    calories,
-    protein,
-    fat,
-    sugar = 0,
+    nutrients = [],
   } = meal;
 
-  const hasDiscount = finalPrice < price;
-  const displayPrice = finalPrice ?? price;
+  const { calories, protein, fat, sugar } = parseNutrients(nutrients);
+
+  const basePrice = Number(price);
+  const displayPrice = hasDiscount
+    ? Number((basePrice - (basePrice * discountPercentage) / 100).toFixed(2))
+    : Number(basePrice.toFixed(2));
 
   return (
     <div className="group relative bg-white rounded-xl sm:rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 w-full flex flex-col overflow-hidden border border-gray-100">
-
       {/* ── Top: circular image + heart ── */}
       <div className="relative flex justify-center pt-5 sm:pt-7 md:pt-8 pb-2 sm:pb-3 px-3 sm:px-4">
-
         {/* Heart button */}
         <button
           onClick={() => toggleFavorite(meal)}
-          aria-label={isFavorite ? "Remove from favourites" : "Add to favourites"}
+          aria-label={
+            isFavorite ? "Remove from favourites" : "Add to favourites"
+          }
           className={`absolute top-2 right-2 sm:top-3 sm:right-3 transition-all duration-200 cursor-pointer z-5 ${
             isFavorite
               ? "text-red-500 scale-110"
@@ -71,7 +74,6 @@ const RegularFoodCard = ({ meal }) => {
 
       {/* ── Content ── */}
       <div className="px-2 sm:px-3 md:px-4 pb-3 sm:pb-4 flex flex-col flex-1 gap-1 sm:gap-1.5">
-
         {/* Name */}
         <h3 className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-gray-900 text-center line-clamp-1">
           {name}
@@ -87,28 +89,35 @@ const RegularFoodCard = ({ meal }) => {
           {/* Fat */}
           <div className="flex items-center gap-0.5 sm:gap-1">
             <span className="font-semibold text-gray-700">Fat</span>
-            <span className="text-(--color-green) font-semibold ml-auto">{fat}g</span>
+            <span className="text-(--color-green) font-semibold ml-auto">
+              {fat}g
+            </span>
           </div>
           {/* Pro */}
           <div className="flex items-center gap-0.5 sm:gap-1">
             <span className="font-semibold text-gray-700">Pro</span>
-            <span className="text-(--color-green) font-semibold ml-auto">{protein}g</span>
+            <span className="text-(--color-green) font-semibold ml-auto">
+              {protein}g
+            </span>
           </div>
           {/* Cal */}
           <div className="flex items-center gap-0.5 sm:gap-1">
             <span className="font-semibold text-gray-700">Cal</span>
-            <span className="text-(--color-green) font-semibold ml-auto">{calories}</span>
+            <span className="text-(--color-green) font-semibold ml-auto">
+              {calories}
+            </span>
           </div>
           {/* Sug */}
           <div className="flex items-center gap-0.5 sm:gap-1">
             <span className="font-semibold text-gray-700">Sug</span>
-            <span className="text-(--color-green) font-semibold ml-auto">{sugar}g</span>
+            <span className="text-(--color-green) font-semibold ml-auto">
+              {sugar}g
+            </span>
           </div>
         </div>
 
         {/* ── Price + Add to cart ── */}
         <div className="flex items-center justify-between gap-1 sm:gap-2 mt-auto pt-2">
-
           {/* Price block */}
           <div className="flex flex-col xs:flex-row items-start xs:items-baseline gap-0.5 xs:gap-1.5 shrink-0">
             {hasDiscount && (
@@ -131,7 +140,7 @@ const RegularFoodCard = ({ meal }) => {
               addItem({
                 id: meal.id,
                 name,
-                price: parseFloat(displayPrice),
+                price: displayPrice,
                 imageUrl,
               })
             }

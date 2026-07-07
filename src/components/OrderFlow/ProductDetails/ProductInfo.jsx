@@ -43,16 +43,22 @@ const ProductInfo = ({ product }) => {
           </span>
         </div>
         <div className="flex gap-4">
-          {product.ingredients?.map((ing, idx) => (
-            <div key={idx} className="flex flex-col items-center gap-2 group cursor-help">
-              <div className="w-12 h-12 flex items-center justify-center bg-gray-50 border border-gray-100 rounded-full shadow-sm group-hover:bg-white group-hover:shadow-md group-hover:border-orange-200 transition-all font-bold text-xl">
-                {ing.icon || "🥗"}
+          {product.ingredients?.map((ing, idx) => {
+            const name = typeof ing === "object" && ing !== null
+              ? (ing.name || ing.ingredient?.name || ing.ingredientName || "Ingredient")
+              : String(ing);
+            const icon = typeof ing === "object" && ing !== null ? (ing.icon || ing.emoji || "🥗") : "🥗";
+            return (
+              <div key={idx} className="flex flex-col items-center gap-2 group cursor-help">
+                <div className="w-12 h-12 flex items-center justify-center bg-gray-50 border border-gray-100 rounded-full shadow-sm group-hover:bg-white group-hover:shadow-md group-hover:border-orange-200 transition-all font-bold text-xl">
+                  {icon}
+                </div>
+                <span className="text-xs text-gray-600 text-center font-medium">
+                  {name}
+                </span>
               </div>
-              <span className="text-xs text-gray-600">
-                {ing.name}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

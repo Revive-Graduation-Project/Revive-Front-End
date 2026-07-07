@@ -49,19 +49,19 @@ export default function DishDetailsModal({ isOpen, onClose, dish }) {
           <div className="grid grid-cols-4 gap-2 text-center">
             <div className="bg-orange-50 rounded-xl p-2">
               <span className="block text-[10px] uppercase font-bold text-orange-400 tracking-wider">Calories</span>
-              <span className="block text-[13px] font-bold text-[#1a1a1a] mt-0.5">{dish.calories || "-"}</span>
+              <span className="block text-[13px] font-bold text-[#1a1a1a] mt-0.5">{dish.calories ?? "-"}</span>
             </div>
             <div className="bg-orange-50 rounded-xl p-2">
               <span className="block text-[10px] uppercase font-bold text-orange-400 tracking-wider">Protein</span>
-              <span className="block text-[13px] font-bold text-[#1a1a1a] mt-0.5">{dish.protein || "-"}</span>
+              <span className="block text-[13px] font-bold text-[#1a1a1a] mt-0.5">{dish.protein ?? "-"}</span>
             </div>
             <div className="bg-orange-50 rounded-xl p-2">
               <span className="block text-[10px] uppercase font-bold text-orange-400 tracking-wider">Fat</span>
-              <span className="block text-[13px] font-bold text-[#1a1a1a] mt-0.5">{dish.fat || "-"}</span>
+              <span className="block text-[13px] font-bold text-[#1a1a1a] mt-0.5">{dish.fat ?? "-"}</span>
             </div>
             <div className="bg-orange-50 rounded-xl p-2">
               <span className="block text-[10px] uppercase font-bold text-orange-400 tracking-wider">Sugar</span>
-              <span className="block text-[13px] font-bold text-[#1a1a1a] mt-0.5">{dish.sugar || "-"}</span>
+              <span className="block text-[13px] font-bold text-[#1a1a1a] mt-0.5">{dish.sugar ?? "-"}</span>
             </div>
           </div>
 
@@ -70,11 +70,20 @@ export default function DishDetailsModal({ isOpen, onClose, dish }) {
             <h3 className="text-[14px] font-bold text-[#1a1a1a] mb-2">Key Ingredients</h3>
             <div className="flex flex-wrap gap-2">
               {dish.ingredients && dish.ingredients.length > 0 ? (
-                dish.ingredients.map((ing, idx) => (
-                  <span key={idx} className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-[12px] font-medium">
-                    {ing}
-                  </span>
-                ))
+                dish.ingredients.map((ing, idx) => {
+                  const name = typeof ing === "object" && ing !== null
+                    ? (ing.name || ing.ingredient?.name || ing.ingredientName || "Ingredient")
+                    : String(ing);
+                  const amount = typeof ing === "object" && ing !== null
+                    ? (ing.amount || ing.quantityGrams || ing.quantity || "")
+                    : "";
+                  const displayStr = amount ? `${name} (${amount}${typeof amount === "number" ? "g" : ""})` : name;
+                  return (
+                    <span key={idx} className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-[12px] font-medium">
+                      {displayStr}
+                    </span>
+                  );
+                })
               ) : (
                 <>
                   <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-[12px] font-medium">Premium Protein</span>

@@ -1,9 +1,9 @@
 import {
-  useMenuStore,
-  useAuthStore,
-  useRecommendationStore,
+    useMenuStore,
+    useAuthStore,
+    useRecommendationStore,
 } from "../../store";
-import useRestaurantStore from "../../store/restaurantStore";
+import { useMenuItems } from "../../hooks/dashboard/useMenuItems";
 import { useMemo, useEffect } from "react";
 import MenuFilter from "./Sections/MenuFilter";
 import OffersSection from "./Sections/OffersSection";
@@ -11,78 +11,65 @@ import SuggestedMealsSection from "./Sections/SuggestedMealsSection";
 import RegularFood from "../Home/Sections/RegularFood";
 
 export default function Menu() {
-  const { user } = useAuthStore();
-  const {
-    recommendations,
-    fetchRecommendations,
-    isLoading: recLoading,
-    error: recError,
-  } = useRecommendationStore();
-  const {
-    meals,
-    fetchMeals,
-    loading: mealsLoading,
-    error: mealsError,
-  } = useRestaurantStore();
-  const { meal, category } = useMenuStore();
+    const { user } = useAuthStore();
+    const {
+        recommendations,
+        fetchRecommendations,
+    } = useRecommendationStore();
+    const { data: meals = [], isLoading: mealsLoading, error: mealsErrorObj } = useMenuItems({});
+    const mealsError = mealsErrorObj ? (mealsErrorObj.message || "Failed to load meals") : null;
+    const { selectedCategory } = useMenuStore();
 
-  const isGuest = !user;
+    const isGuest = !user;
 
-  useEffect(() => {
-    if (isGuest) {
-      if (meals.length === 0) fetchMeals();
-    } else {
-      fetchRecommendations({
-        userHealth: user?.health ?? null,
-        preferences: user?.preferences ?? [],
-      });
-    }
-  }, [user, isGuest]);
+    useEffect(() => {
+        // If user is logged in, fetch personalized recommendations
+        if (!isGuest) {
+            fetchRecommendations(user?.id);
+        }
+    }, [user, isGuest, fetchRecommendations]);
 
-  const sourceItems = isGuest ? meals : recommendations;
-  const isLoading = isGuest ? mealsLoading : recLoading;
-  const error = isGuest ? mealsError : recError;
 
-  const filteredMenu = useMemo(() => {
-    return sourceItems.filter((item) => {
-      const mealMatch = meal === "all" || item.mainCategory === meal;
-      const categoryMatch = category === "All" || item.category === category;
-      return mealMatch && categoryMatch;
-    });
-  }, [meal, category, sourceItems]);
+    const filteredMeals = useMemo(() => {
+        return meals.filter((item) => {
+            return selectedCategory === "All" || item.category === selectedCategory;
+        });
+    }, [selectedCategory, meals]);
 
-  if (isLoading)
+    const filteredRecommendations = useMemo(() => {
+        return (recommendations || []).filter((item) => {
+            return selectedCategory === "All" || item.category === selectedCategory;
+        });
+    }, [selectedCategory, recommendations]);
+
     return (
-      <div className="flex justify-center items-center h-screen">
-        <p className="text-lg font-medium">Loading...</p>
-      </div>
-    );
+        <div className="bg-white min-h-screen px-4 md:px-10 lg:px-20 overflow-hidden">
+            <div className="py-12 md:py-16 lg:py-20 space-y-5 md:space-y-2 lg:space-y-2">
+                <MenuFilter />
+                <OffersSection />
 
-  if (error)
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <p className="text-lg font-medium text-red-500">{error}</p>
-      </div>
-    );
+                {/* Suggested Meals Section (Displayed for logged-in users when recommendations exist) */}
+                {!isGuest && (
+                    <SuggestedMealsSection items={filteredRecommendations} />
+                )}
 
-  if (sourceItems.length === 0)
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <p className="text-lg font-medium">No meals available</p>
-      </div>
+                {/* Regular Food Section (Always displayed for everyone) */}
+                {mealsLoading && meals.length === 0 ? (
+                    <div className="flex justify-center items-center h-64">
+                        <p className="text-lg font-medium text-gray-600">Loading menu...</p>
+                    </div>
+                ) : mealsError && meals.length === 0 ? (
+                    <div className="flex justify-center items-center h-64">
+                        <p className="text-lg font-medium text-red-500">{mealsError}</p>
+                    </div>
+                ) : filteredMeals.length === 0 ? (
+                    <div className="flex justify-center items-center h-64">
+                        <p className="text-lg font-medium text-gray-500">No meals available in this category</p>
+                    </div>
+                ) : (
+                    <RegularFood items={filteredMeals} />
+                )}
+            </div>
+        </div>
     );
-
-  return (
-    <div className="bg-white min-h-screen px-4 md:px-10 lg:px-20 overflow-hidden">
-      <div className="py-12 md:py-16 lg:py-20 space-y-5 md:space-y-2 lg:space-y-2">
-        <MenuFilter />
-        <OffersSection items={filteredMenu} />
-        {isGuest ? (
-          <RegularFood items={filteredMenu} />
-        ) : (
-          <SuggestedMealsSection items={filteredMenu} />
-        )}
-      </div>
-    </div>
-  );
 }

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useOrderStore } from "../../store";
-import Modal from "../UI/Modal";
+import Modal from "../ui/Modal";
 import AddCardForm from "./AddCardForm";
 import PaymentMethodSelector from "./Payment/PaymentMethodSelector";
 

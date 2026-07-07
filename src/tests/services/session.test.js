@@ -8,11 +8,11 @@ describe("Session Logic & Security Tests", () => {
   let mock;
   const { restoreSession, login, getAccessToken } = useAuthStore.getState();
   beforeEach(() => {
-    // Reset Zustand store state
     useAuthStore.setState({
       user: null,
       token: null,
       isAuthenticated: false,
+      loading: false,
     });
 
     // Clear localStorage

@@ -1,22 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import useRestaurantStore from "../../../store/restaurantStore";
-import PopularMenuCard from "../../../components/UI/PopularMenuCard";
-import LoadingSpinner from "../../../components/UI/LoadingSpinner";
-import ScrollArrows from "../../../components/UI/ScrollArrows";
+import { useMenuItems } from "../../../hooks/dashboard/useMenuItems";
+import PopularMenuCard from "../../../components/ui/PopularMenuCard";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
+import ScrollArrows from "../../../components/ui/ScrollArrows";
 
 const SCROLL_AMOUNT = 340; // px per button click
 
 const PopularMenus = () => {
-  const { meals, fetchMeals, loading, error } = useRestaurantStore();
+  const { data: meals = [], isLoading: loading, error } = useMenuItems({});
   const scrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
-  useEffect(() => {
-    if (meals.length === 0) {
-      fetchMeals();
-    }
-  }, [meals.length, fetchMeals]);
 
   // Track scroll position so buttons hide/show at the edges
   const updateScrollState = useCallback(() => {
@@ -44,7 +39,7 @@ const PopularMenus = () => {
   }, []);
 
   if (loading) return <LoadingSpinner />;
-  if (error) return <p>{error}</p>;
+  if (error) return <p>{error.message || "Failed to load popular meals"}</p>;
 
   const popular = meals.slice(0, 6);
 

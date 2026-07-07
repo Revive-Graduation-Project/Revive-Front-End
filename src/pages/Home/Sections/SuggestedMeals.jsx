@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthStore } from "../../../store";
 import { getSuggestedMeals } from "../../../services/recommendation.service";
-import PopularMenuCard from "../../../components/UI/PopularMenuCard";
-import LoadingSpinner from "../../../components/UI/LoadingSpinner";
-import ScrollArrows from "../../../components/UI/ScrollArrows";
+import PopularMenuCard from "../../../components/ui/PopularMenuCard";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
+import ScrollArrows from "../../../components/ui/ScrollArrows";
 const SCROLL_AMOUNT = 340; // px per button click
 
 /**
