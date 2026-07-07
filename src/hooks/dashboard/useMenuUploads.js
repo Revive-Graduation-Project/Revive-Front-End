@@ -50,6 +50,10 @@ export function useUploadMenu() {
         throw err;
       }
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: menuUploadKeys.all }),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: menuUploadKeys.all });
+      qc.invalidateQueries({ queryKey: ["menu"], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["ingredients"], refetchType: "all" });
+    },
   });
 }

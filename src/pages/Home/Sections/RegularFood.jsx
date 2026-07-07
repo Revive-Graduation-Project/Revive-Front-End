@@ -1,5 +1,5 @@
 // src/pages/Home/Sections/RegularFood.jsx
-import { useMenuItems } from "../../../hooks/dashboard/useMenuItems";
+import { useMenuItems, isMenuItemActive } from "../../../hooks/dashboard/useMenuItems";
 import RegularFoodCard from "../../../components/ui/RegularFoodCard";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
@@ -11,7 +11,7 @@ const RegularFood = ({ items }) => {
   if (loading && !items) return <LoadingSpinner />;
   if (error && !items) return <p>{error.message || "Error loading food items"}</p>;
 
-  const displayMeals = items ?? meals; 
+  const displayMeals = (items ?? meals).filter(isMenuItemActive); 
 
 
   return (

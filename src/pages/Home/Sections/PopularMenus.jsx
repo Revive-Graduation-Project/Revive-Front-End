@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useMenuItems } from "../../../hooks/dashboard/useMenuItems";
+import { useMenuItems, isMenuItemActive } from "../../../hooks/dashboard/useMenuItems";
 import PopularMenuCard from "../../../components/ui/PopularMenuCard";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import ScrollArrows from "../../../components/ui/ScrollArrows";
@@ -41,7 +41,7 @@ const PopularMenus = () => {
   if (loading) return <LoadingSpinner />;
   if (error) return <p>{error.message || "Failed to load popular meals"}</p>;
 
-  const popular = meals.slice(0, 6);
+  const popular = meals.filter(isMenuItemActive).slice(0, 6);
 
   return (
     <section id="popular-meals" className="py-8 md:py-12">

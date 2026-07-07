@@ -136,6 +136,9 @@ export function useUploadIngredients() {
         throw err;
       }
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ingredientKeys.all }),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ingredientKeys.all, refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["menu"], refetchType: "all" });
+    },
   });
 }

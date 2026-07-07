@@ -3,7 +3,7 @@ import {
     useAuthStore,
     useRecommendationStore,
 } from "../../store";
-import { useMenuItems } from "../../hooks/dashboard/useMenuItems";
+import { useMenuItems, isMenuItemActive } from "../../hooks/dashboard/useMenuItems";
 import { useMemo, useEffect } from "react";
 import MenuFilter from "./Sections/MenuFilter";
 import OffersSection from "./Sections/OffersSection";
@@ -32,12 +32,14 @@ export default function Menu() {
 
     const filteredMeals = useMemo(() => {
         return meals.filter((item) => {
+            if (!isMenuItemActive(item)) return false;
             return selectedCategory === "All" || item.category === selectedCategory;
         });
     }, [selectedCategory, meals]);
 
     const filteredRecommendations = useMemo(() => {
         return (recommendations || []).filter((item) => {
+            if (!isMenuItemActive(item)) return false;
             return selectedCategory === "All" || item.category === selectedCategory;
         });
     }, [selectedCategory, recommendations]);

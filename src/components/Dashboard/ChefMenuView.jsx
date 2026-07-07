@@ -6,6 +6,7 @@ import {
   useMenuCategories,
   useMenuItems,
   useDeleteMenuItem,
+  isMenuItemActive,
 } from "../../hooks/dashboard/useMenuItems";
 import { useTrendingMenus } from "../../hooks/dashboard/useDashboard";
 import { FiEdit2, FiPlus, FiTrash2 } from "react-icons/fi";
@@ -86,8 +87,8 @@ function ChefMenuView() {
 
   // ── Derived data ───────────────────────────────────────────────────────────
   const allItems = menuItems || [];
-  const activeItems = allItems.filter(item => item.image);
-  const inactiveItems = allItems.filter(item => !item.image);
+  const activeItems = allItems.filter(isMenuItemActive);
+  const inactiveItems = allItems.filter(item => !isMenuItemActive(item));
   const totalMeals = activeItems.length;
 
   const totalChange = categories?.totalChange ?? 0;
