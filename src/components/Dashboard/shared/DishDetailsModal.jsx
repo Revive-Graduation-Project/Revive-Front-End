@@ -39,7 +39,7 @@ export default function DishDetailsModal({ isOpen, onClose, dish }) {
               </p>
             </div>
             <div className="text-right shrink-0">
-              <span className="block text-[22px] font-black text-[#38761d]">${dish.price}</span>
+              <span className="block text-[22px] font-black text-[#38761d]">{dish.price} EGP</span>
             </div>
           </div>
 

@@ -14,7 +14,7 @@ export const formatCurrency = (value) => {
   // Ensure we are working with a number and force 2 decimal places
   const amount = Number(value).toFixed(2);
   
-  return CURRENCY_FORMAT === "PRE" 
-    ? `${CURRENCY_SYMBOL}${amount}` 
-    : `${amount}${CURRENCY_SYMBOL}`;
+  return CURRENCY_FORMAT === "PRE"
+    ? `${CURRENCY_SYMBOL} ${amount}`
+    : `${amount} ${CURRENCY_SYMBOL}`;
 };

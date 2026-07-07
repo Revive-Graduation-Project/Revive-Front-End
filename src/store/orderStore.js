@@ -488,7 +488,7 @@ const useOrderStore = create(
           // Trigger dynamic notification for dashboard admin
           useUIStore.getState().addNotification({
             title: `New Order #${newOrder.id}`,
-            message: `Order received from ${state.customerDetails?.name || "Customer"} totaling $${totalWithDelivery.toFixed(2)}. ${state.items.length} item(s) to prepare.`,
+            message: `Order received from ${state.customerDetails?.name || "Customer"} totaling ${totalWithDelivery.toFixed(2)} EGP. ${state.items.length} item(s) to prepare.`,
             type: "warning", // Orange warning badge for new incoming orders
             category: "Orders",
           });

@@ -22,7 +22,7 @@ export default function OrderDetailsModal({ isOpen, onClose, order, showCustomer
   const customerAddress = order.address || "123 Main Street, Food District, Cityville";
 
   // Parse total price safely
-  const totalPrice = order.total !== undefined ? `$${Number(order.total).toFixed(2)}` : "Paid / N/A";
+  const totalPrice = order.total !== undefined ? `${Number(order.total).toFixed(2)} EGP` : "Paid / N/A";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">

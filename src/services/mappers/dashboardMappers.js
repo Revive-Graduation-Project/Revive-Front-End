@@ -47,15 +47,6 @@ export const mapTopCategories = (data) => {
   }));
 };
 
-export const mapOrdersOverview = (data) => {
-  if (!Array.isArray(data)) return [];
-  return data.map((item) => ({
-    day: item.day || "",
-    orders: item.orders || 0,
-    highlight: !!item.highlight,
-  }));
-};
-
 export const mapOrderTypes = (data) => {
   if (!Array.isArray(data)) return [];
   return data.map((item) => ({
@@ -63,31 +54,6 @@ export const mapOrderTypes = (data) => {
     percentage: item.percentage || 0,
     count: item.count || 0,
     color: item.color || "#000",
-  }));
-};
-
-export const mapTrendingMenus = (data) => {
-  if (!Array.isArray(data)) return [];
-  return data.map((item) => ({
-    id: item.id || item._id,
-    name: item.name || "",
-    rating: item.rating || 0,
-    orders: item.orders || 0,
-    revenue: item.revenue || 0,
-    image: item.imageUrl || item.image || "",
-    imageUrl: item.imageUrl || item.image || "",
-  }));
-};
-
-export const mapRecentActivity = (data) => {
-  if (!Array.isArray(data)) return [];
-  return data.map((item) => ({
-    id: item.id || item._id,
-    user: item.user || "",
-    role: item.role || "",
-    action: item.action || "",
-    time: item.time || "",
-    avatar: item.avatar || "",
   }));
 };
 
@@ -101,63 +67,80 @@ export const mapOrdersMetrics = (data) => ({
   completed: data.completed || 0,
   completedChange: data.completedChange ?? 0,
   dailyGoal: {
-    salesCurrent: data.dailyGoal?.salesCurrent || 0,
-    salesTarget: data.dailyGoal?.salesTarget || 5000,
-    ordersCurrent: data.dailyGoal?.ordersCurrent || 0,
-    ordersTarget: data.dailyGoal?.ordersTarget || 100,
+    salesCurrent: data.dailyGoal?.salesCurrent ?? data.salesCurrent ?? 0,
+    salesTarget: data.dailyGoal?.salesTarget ?? data.salesTarget ?? 10000,
+    ordersCurrent: data.dailyGoal?.ordersCurrent ?? data.ordersCurrent ?? 0,
+    ordersTarget: data.dailyGoal?.ordersTarget ?? data.ordersTarget ?? 200,
   },
 });
 
 export const mapOrders = (data) => {
-  // Handle both plain array and { orders, total, pages } shapes
-  const list = Array.isArray(data) ? data : (Array.isArray(data?.orders) ? data.orders : []);
-  return list.map((item) => ({
-    id: item.id || item._id || "",
-    time: item.time || "",
-    name: item.name || "",
-    items: item.items || 0,
-    total: item.total || 0,
-    customer: item.customer || "",
-    status: item.status || "Pending",
-  }));
+  // Spring Page<OrderResponse>: { content: [...] }
+  // Plain array fallback, or legacy { orders: [...] }
+  const list = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.content)
+    ? data.content
+    : Array.isArray(data?.orders)
+    ? data.orders
+    : [];
+
+  // Backend status enum → UI display label
+  const STATUS_MAP = {
+    PENDING:            "Pending",
+    AWAITING_PAYMENT:   "Pending",
+    PAID:               "Pending",
+    CONFIRMED:          "Preparing",
+    PREPARING:          "Preparing",
+    CANCELLED:          "Cancelled",
+    READY_FOR_PICKUP:   "Ready",
+    READY:              "Ready",
+    COMPLETED:          "Done",
+    DELIVERED:          "Done",
+  };
+
+  return list.map((item) => {
+    const rawStatus = (item.status || "PENDING").toUpperCase();
+    const status = STATUS_MAP[rawStatus] || rawStatus;
+
+    // Build display name from first item snapshot
+    const firstItem = Array.isArray(item.items) ? item.items[0] : null;
+    const displayName = firstItem?.snapshotName || item.name || "Order";
+
+    // Count total item quantity across all order lines
+    const totalItems = Array.isArray(item.items)
+      ? item.items.reduce((s, i) => s + (i.quantity || 1), 0)
+      : (typeof item.items === "number" ? item.items : 0);
+
+    // Format display time from ISO createdAt
+    const createdAt = item.createdAt || null;
+    const displayTime = createdAt
+      ? new Date(createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
+      : (item.time || "");
+
+    return {
+      id:         `#${item.id || item._id || ""}`,
+      time:       displayTime,
+      name:       displayName,
+      items:      totalItems,
+      total:      item.totalPrice ?? item.total ?? 0,
+      customer:   item.clientId ? `Client #${item.clientId}` : (item.customer || (item.customerDetails ? `${item.customerDetails.firstName || ""} ${item.customerDetails.lastName || ""}`.trim() : "")),
+      phone:      item.phone || item.phoneNumber || item.customerDetails?.phone || item.customerPhone || item.user?.phone || item.customerDetails?.phoneNumber || "",
+      address:    item.address || (item.customerDetails ? `${item.customerDetails.address || ""}, ${item.customerDetails.city || ""}` : "") || item.deliveryAddress || "",
+      status,
+      createdAt,  // preserve ISO for Revenue Chart / Orders Overview / Daily Goal
+      orderItems: Array.isArray(item.items)
+        ? item.items.map(i => ({
+            mealId:   i.mealId,
+            name:     i.snapshotName   || "",
+            price:    i.snapshotPrice  || 0,
+            image:    i.snapshotImageUrl || "",
+            quantity: i.quantity       || 1,
+          }))
+        : [],
+    };
+  });
 };
-
-/**
- * mapOrderResponse
- * Maps the real OrderResponse from the Order Service (POST /api/order, GET /api/order/:id).
- *
- * Real status enum: PENDING | AWAITING_PAYMENT | PAID | CONFIRMED | CANCELLED | READY_FOR_PICKUP
- */
-export const ORDER_STATUS_LABELS = {
-  PENDING:            "Pending",
-  AWAITING_PAYMENT:   "Awaiting Payment",
-  PAID:               "Paid",
-  CONFIRMED:          "Confirmed",
-  CANCELLED:          "Cancelled",
-  READY_FOR_PICKUP:   "Ready for Pickup",
-};
-
-export const mapOrderResponse = (data) => ({
-  id:                 data.id,
-  customerId:         data.customerId,
-  status:             data.status || "PENDING",
-  statusLabel:        ORDER_STATUS_LABELS[data.status || "PENDING"] ?? (data.status || "PENDING"),
-  totalPrice:         data.totalPrice || 0,
-  discount:           data.discount   || 0,
-  createdAt:          data.createdAt  || null,
-  // Stripe client secret — pass to Stripe.js to collect payment
-  stripeClientSecret: data.stripeClientSecret || null,
-  items: Array.isArray(data.items)
-    ? data.items.map((item) => ({
-        id:            item.id,
-        mealId:        item.mealId,
-        name:          item.snapshotName  || "",
-        price:         item.snapshotPrice || 0,
-        quantity:      item.quantity      || 1,
-      }))
-    : [],
-});
-
 
 // ── Live Kitchen Mappers ──────────────────────────────────────────
 
@@ -167,10 +150,13 @@ export const mapKitchenOrders = (data) => {
 
   const mapOrder = (o) => ({
     id: o.id || o._id || "",
+    orderId: o.orderId || o.id || o._id || "",
     time: o.time || "",
     items: Array.isArray(o.items) ? o.items : [],
     notes: o.notes || "",
-    customer: o.customer || "",
+    customer: o.customer || (o.customerDetails ? `${o.customerDetails.firstName || ""} ${o.customerDetails.lastName || ""}`.trim() : ""),
+    phone: o.phone || o.phoneNumber || o.customerDetails?.phone || o.customerPhone || "",
+    address: o.address || (o.customerDetails ? `${o.customerDetails.address || ""}, ${o.customerDetails.city || ""}` : ""),
     startedAt: o.startedAt || null,
     readyAt: o.readyAt || null,
   });
@@ -181,6 +167,26 @@ export const mapKitchenOrders = (data) => {
     ready: Array.isArray(data.ready) ? data.ready.map(mapOrder) : [],
     done: Array.isArray(data.done) ? data.done.map(mapOrder) : [],
   };
+};
+
+export const mapKitchenTickets = (list) => {
+  if (!Array.isArray(list)) return [];
+  const STATUS_MAP = {
+    QUEUED:    "Queue",
+    PREPARING: "Preparing",
+    READY:     "Ready",
+    DONE:      "Done",
+    CANCELED:  "Cancelled",
+    CANCELLED: "Cancelled",
+  };
+  return list.map(ticket => ({
+    ...ticket,
+    id: ticket.id || ticket._id || "",
+    orderId: ticket.orderId || ticket.id || "",
+    status: STATUS_MAP[(ticket.status || "").toUpperCase()] || ticket.status || "Queue",
+    assignedChefId: ticket.assignedChefId ?? null,
+    createdAt: ticket.createdAt || null,
+  }));
 };
 
 // ── Menu / Chef Mappers ───────────────────────────────────────────

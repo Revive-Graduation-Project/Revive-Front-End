@@ -68,7 +68,7 @@ function DashboardView() {
               {loadingCats ? <ChartSkeleton height={320} /> : <TopCategories data={safeCategories} />}
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
               {loadingOrdOv ? <ChartSkeleton height={280} /> : <OrdersOverviewChart data={safeOrdersOverview} />}
               {loadingTypes ? <ChartSkeleton height={280} /> : <OrderTypes data={safeOrderTypes} />}
             </div>
@@ -83,8 +83,7 @@ function DashboardView() {
           </div>
         </div>
 
-        {/* Bottom Row (Full Width) */}
-        {loadingRevw ? <ChartSkeleton height={180} /> : <CustomerReviews data={safeReviews} />}
+        {loadingRevw ? <ChartSkeleton height={200} /> : <CustomerReviews data={safeReviews} />}
       </div>
     </div>
   );

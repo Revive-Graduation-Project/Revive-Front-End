@@ -89,28 +89,28 @@ const RegularFoodCard = ({ meal }) => {
           {/* Fat */}
           <div className="flex items-center gap-0.5 sm:gap-1">
             <span className="font-semibold text-gray-700">Fat</span>
-            <span className="text-(--color-green) font-semibold ml-auto">
+            <span className="text-green font-semibold ml-auto">
               {fat}g
             </span>
           </div>
           {/* Pro */}
           <div className="flex items-center gap-0.5 sm:gap-1">
             <span className="font-semibold text-gray-700">Pro</span>
-            <span className="text-(--color-green) font-semibold ml-auto">
+            <span className="text-green font-semibold ml-auto">
               {protein}g
             </span>
           </div>
           {/* Cal */}
           <div className="flex items-center gap-0.5 sm:gap-1">
             <span className="font-semibold text-gray-700">Cal</span>
-            <span className="text-(--color-green) font-semibold ml-auto">
+            <span className="text-green font-semibold ml-auto">
               {calories}
             </span>
           </div>
           {/* Sug */}
           <div className="flex items-center gap-0.5 sm:gap-1">
             <span className="font-semibold text-gray-700">Sug</span>
-            <span className="text-(--color-green) font-semibold ml-auto">
+            <span className="text-green font-semibold ml-auto">
               {sugar}g
             </span>
           </div>
@@ -122,15 +122,15 @@ const RegularFoodCard = ({ meal }) => {
           <div className="flex flex-col xs:flex-row items-start xs:items-baseline gap-0.5 xs:gap-1.5 shrink-0">
             {hasDiscount && (
               <span className="text-[10px] sm:text-xs text-gray-400 line-through">
-                ${formatPrice(price)}
+                {formatPrice(price)} EGP
               </span>
             )}
             <span
               className={`text-sm sm:text-base md:text-lg lg:text-xl font-extrabold leading-none ${
-                hasDiscount ? "text-(--color-orange)" : "text-gray-900"
+                hasDiscount ? "text-orange" : "text-gray-900"
               }`}
             >
-              ${formatPrice(displayPrice)}
+              {formatPrice(displayPrice)} EGP
             </span>
           </div>
 
@@ -144,7 +144,7 @@ const RegularFoodCard = ({ meal }) => {
                 imageUrl,
               })
             }
-            className="w-1/2 bg-(--color-orange) hover:bg-orange-500 active:bg-orange-600 text-white text-[10px] sm:text-xs md:text-sm font-semibold py-1.5 sm:py-2 px-1 sm:px-3 rounded-full transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer text-center"
+            className="w-1/2 bg-orange hover:bg-orange-500 active:bg-orange-600 text-white text-[10px] sm:text-xs md:text-sm font-semibold py-1.5 sm:py-2 px-1 sm:px-3 rounded-full transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer text-center"
           >
             Add to cart
           </button>

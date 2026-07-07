@@ -111,7 +111,7 @@ export default function InactiveMenuModal({ isOpen, onClose, inactiveItems }) {
                       <div className="flex items-center gap-2 text-[12px] font-medium text-gray-500">
                         <span>{item.category}</span>
                         <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                        <span className="text-orange-500 font-bold">${item.price}</span>
+                        <span className="text-orange-500 font-bold">{item.price} EGP</span>
                       </div>
                     </div>
                   </div>

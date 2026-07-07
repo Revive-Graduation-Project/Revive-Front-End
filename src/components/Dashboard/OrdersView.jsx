@@ -211,7 +211,7 @@ function OrdersView() {
                 <div className="flex justify-between items-end w-full mt-auto">
                   <p className="text-[11px] font-bold text-[#1a1a1a] m-0">Today Sales</p>
                   <p className="text-[11px] font-semibold text-gray-400 m-0">
-                    (${metrics.dailyGoal.salesCurrent.toLocaleString()} / ${metrics.dailyGoal.salesTarget.toLocaleString()})
+                    ({metrics.dailyGoal.salesCurrent.toLocaleString()} / {metrics.dailyGoal.salesTarget.toLocaleString()} EGP)
                   </p>
                 </div>
               </div>
@@ -275,7 +275,7 @@ function OrdersView() {
                       <td className="px-5 py-4 text-[13px] text-[#1a1a1a] font-medium">{order.time.replace(/ (AM|PM)/, "")}</td>
                       <td className="px-5 py-4 text-[13px] font-medium text-[#1a1a1a] max-w-[180px] truncate">{order.name}</td>
                       <td className="px-5 py-4 text-[13px] text-[#1a1a1a] font-medium">{order.items}</td>
-                      <td className="px-5 py-4 text-[13px] font-bold text-orange-500">${order.total.toFixed(0)}</td>
+                      <td className="px-5 py-4 text-[13px] font-bold text-orange-500">{order.total.toFixed(0)} EGP</td>
                       <td className="px-5 py-4 text-[13px] text-[#1a1a1a] font-medium">{order.customer}</td>
                       <td className="px-5 py-4">
                         <StatusBadge status={order.status} />
