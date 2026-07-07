@@ -12,7 +12,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast as sonnerToast } from "sonner";
+import { toast as sonnerToast } from "../../utils/toastUtils";
 import {
   getKitchenOrders,
   updateKitchenStatus,

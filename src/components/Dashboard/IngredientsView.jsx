@@ -5,7 +5,6 @@ import {
   useUploadIngredients,
   useUpdateIngredientStock,
 } from "../../hooks/dashboard/useIngredients";
-import { useToast } from "../../store/toastStore";
 import {
   FiSearch,
   FiUploadCloud,
@@ -176,11 +175,10 @@ function IngredientsView() {
   const [viewingNutrientsItem, setViewingNutrientsItem] = useState(null);
   const [selectedFile, setSelectedFile]           = useState(null);
 
-  const { addToast } = useToast();
 
   const { data: ingredients, isLoading, error, refetch } = useIngredients();
-  const { mutate: uploadFile, isPending: isUploading }    = useUploadIngredients();
-  const { mutate: updateStock }                           = useUpdateIngredientStock();
+  const { mutate: uploadFile, isPending: isUploading, isSuccess: isUploaded }    = useUploadIngredients();
+  const { mutate: updateStock } = useUpdateIngredientStock();
 
   // ── File handlers ─────────────────────────────────────────────────────────
   const handleFileSelect = (e) => {
@@ -430,12 +428,12 @@ function IngredientsView() {
           {selectedFile && (
             <button
               onClick={handleFileSubmit}
-              disabled={isUploading}
+              disabled={isUploading || isUploaded}
               className={`bg-[#F97316] hover:bg-orange-600 text-white px-6 py-2 rounded-full font-bold shadow-lg w-fit transition-transform hover:scale-105 ${
-                isUploading ? "opacity-50 cursor-not-allowed" : ""
+                isUploading || isUploaded ? "opacity-75 cursor-not-allowed" : ""
               }`}
             >
-              {isUploading ? "Uploading…" : "Submit"}
+              {isUploading ? "Uploading…" : isUploaded ? "Uploaded! ✓" : "Submit"}
             </button>
           )}
         </div>

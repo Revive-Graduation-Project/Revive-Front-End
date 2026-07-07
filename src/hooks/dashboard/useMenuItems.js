@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "../../utils/toastUtils";
 import { getMenuCategories, getMenuItems, deleteMenuItem, updateMenuItem, createMenuItem, saveRecipe, getRecipeIngredients, uploadMealImage } from "../../services/dashboardService";
 import useUIStore from "../../store/uiStore";
 
@@ -39,14 +39,15 @@ export function useDeleteMenuItem() {
   return useMutation({
     mutationFn: async (id) => {
       const toastId = toast.loading(`Deleting dish #${id} in background...`, {
+        duration: 6000,
         description: "You can navigate away while this deletes."
       });
       try {
         const res = await deleteMenuItem(id);
-        toast.success(`Successfully deleted dish #${id}!`, { id: toastId, description: "Removed from kitchen menu." });
+        toast.success(`Successfully deleted dish #${id}!`, { id: toastId, duration: 6000, description: "Removed from kitchen menu." });
         return res;
       } catch (err) {
-        toast.error(`Failed to delete dish #${id}.`, { id: toastId, description: err?.response?.data?.message || err.message || "Please try again." });
+        toast.error(`Failed to delete dish #${id}.`, { id: toastId, duration: 6000, description: err?.response?.data?.message || err.message || "Please try again." });
         throw err;
       }
     },
@@ -175,6 +176,7 @@ export function useUpdateMenuItem() {
     mutationFn: async ({ id, data }) => {
       const itemName = data.name || `Item #${id}`;
       const toastId = toast.loading(`Updating "${itemName}" in background...`, {
+        duration: 6000,
         description: "You can navigate away while this updates in background."
       });
       try {
@@ -182,17 +184,17 @@ export function useUpdateMenuItem() {
         const res = await updateMenuItem(id, payload);
 
         if (data.imageFile) {
-          toast.loading(`Uploading photo for "${itemName}" in background...`, { id: toastId, description: "You can navigate away while this uploads." });
+          toast.loading(`Uploading photo for "${itemName}" in background...`, { id: toastId, duration: 6000, description: "You can navigate away while this uploads." });
           const mealId = extractMealId(res, id);
           if (mealId !== undefined && mealId !== null) {
             await uploadMealImage(mealId, data.imageFile);
           }
         }
 
-        toast.success(`Successfully updated "${itemName}"!`, { id: toastId, description: "Menu item updated successfully." });
+        toast.success(`Successfully updated "${itemName}"!`, { id: toastId, duration: 6000, description: "Menu item updated successfully." });
         return res;
       } catch (err) {
-        toast.error(`Failed to update "${itemName}".`, { id: toastId, description: err?.response?.data?.message || err.message || "Please try again." });
+        toast.error(`Failed to update "${itemName}".`, { id: toastId, duration: 6000, description: err?.response?.data?.message || err.message || "Please try again." });
         throw err;
       }
     },
@@ -226,6 +228,7 @@ export function useCreateMenuItem() {
     mutationFn: async (data) => {
       const itemName = data.name || "New Meal";
       const toastId = toast.loading(`Creating "${itemName}" in background...`, {
+        duration: 6000,
         description: "You can navigate away while this processes in background."
       });
       try {
@@ -233,17 +236,17 @@ export function useCreateMenuItem() {
         const meal = await createMenuItem(payload);
 
         if (data.imageFile && meal) {
-          toast.loading(`Uploading photo for "${itemName}" in background...`, { id: toastId, description: "You can navigate away while this uploads." });
+          toast.loading(`Uploading photo for "${itemName}" in background...`, { id: toastId, duration: 6000, description: "You can navigate away while this uploads." });
           const mealId = extractMealId(meal);
           if (mealId !== undefined && mealId !== null) {
             await uploadMealImage(mealId, data.imageFile);
           }
         }
 
-        toast.success(`Successfully created "${itemName}"!`, { id: toastId, description: "Added to menu successfully." });
+        toast.success(`Successfully created "${itemName}"!`, { id: toastId, duration: 6000, description: "Added to menu successfully." });
         return meal;
       } catch (err) {
-        toast.error(`Failed to create "${itemName}".`, { id: toastId, description: err?.response?.data?.message || err.message || "Please try again." });
+        toast.error(`Failed to create "${itemName}".`, { id: toastId, duration: 6000, description: err?.response?.data?.message || err.message || "Please try again." });
         throw err;
       }
     },
@@ -274,14 +277,15 @@ export function useSaveRecipe() {
     mutationFn: async (data) => {
       const recipeName = data.name || "New Recipe";
       const toastId = toast.loading(`Saving recipe "${recipeName}" in background...`, {
+        duration: 6000,
         description: "You can navigate away while this saves in background."
       });
       try {
         const res = await saveRecipe(data);
-        toast.success(`Successfully saved recipe "${recipeName}"!`, { id: toastId, description: "Recipe added to kitchen system." });
+        toast.success(`Successfully saved recipe "${recipeName}"!`, { id: toastId, duration: 6000, description: "Recipe added to kitchen system." });
         return res;
       } catch (err) {
-        toast.error(`Failed to save recipe "${recipeName}".`, { id: toastId, description: err?.response?.data?.message || err.message || "Please try again." });
+        toast.error(`Failed to save recipe "${recipeName}".`, { id: toastId, duration: 6000, description: err?.response?.data?.message || err.message || "Please try again." });
         throw err;
       }
     },

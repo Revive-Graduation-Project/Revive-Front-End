@@ -3,7 +3,6 @@ import { useLocation } from "react-router";
 import DashboardHeader from "./DashboardHeader";
 import { useCreateMenuItem, useUpdateMenuItem } from "../../hooks/dashboard/useMenuItems";
 import { useIngredients } from "../../hooks/dashboard/useIngredients";
-import { useToast } from "../../store/toastStore";
 import {
   FiPlus, FiTrash2, FiCamera, FiBookOpen, FiDollarSign,
   FiAlignLeft, FiChevronDown, FiGrid, FiUploadCloud, FiSearch, FiX
@@ -24,10 +23,11 @@ export default function RecipeBuilderView() {
   const [imageFile, setImageFile] = useState(null);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
 
-  const { addToast } = useToast();
+
   const { data: availableIngredients = [] } = useIngredients();
-  const { mutate: createMeal, isSuccess: created, reset: resetCreate } = useCreateMenuItem();
-  const { mutate: updateMeal, isSuccess: updated, reset: resetUpdate } = useUpdateMenuItem();
+  const { mutate: createMeal, isSuccess: created, isPending: creating, isLoading: createLoading, reset: resetCreate } = useCreateMenuItem();
+  const { mutate: updateMeal, isSuccess: updated, isPending: updating, isLoading: updateLoading, reset: resetUpdate } = useUpdateMenuItem();
+  const isSaving = creating || createLoading || updating || updateLoading;
   const saved = created || updated;
 
   // Pre-fill form when editing an existing meal
@@ -107,7 +107,6 @@ export default function RecipeBuilderView() {
     const payload = { ...(editMeal || {}), ...form, id: editMeal ? (editMeal.id || editMeal._id) : undefined, ingredients: localIngredients, imageFile };
     const options = {
       onSuccess: () => {
-        addToast(editMeal ? "Recipe updated successfully!" : "Recipe saved successfully!", "success");
         setTimeout(() => {
           if (!editMeal) {
             setForm({ name: "", category: "", price: "", description: "" });
@@ -119,9 +118,6 @@ export default function RecipeBuilderView() {
           resetUpdate();
         }, 2000);
       },
-      onError: () => {
-        addToast(editMeal ? "Failed to update recipe. Please try again." : "Failed to save recipe. Please try again.", "error");
-      }
     };
 
     if (editMeal) {
@@ -322,7 +318,7 @@ export default function RecipeBuilderView() {
           <div className="col-span-1 lg:col-span-2 mt-2 mb-12 flex justify-center transition-all duration-300">
             <div className="bg-white rounded-[2.5rem] p-10 flex flex-col items-center justify-center shadow-sm w-full max-w-2xl">
               <h2 className="text-[18px] font-bold text-[#1a1a1a] mb-8">
-                {editMeal ? "Save your changes?" : "Do you want to Add this meal to Menu ?"}
+                {editMeal ? "Do you want to update this meal in Menu ?" : "Do you want to add this meal to Menu ?"}
               </h2>
               <div className="flex flex-col sm:flex-row items-center gap-6 w-full justify-center">
                 <button
@@ -337,9 +333,14 @@ export default function RecipeBuilderView() {
                 </button>
                 <button
                   onClick={handleSave}
-                  className="cursor-pointer bg-orange-400 text-white font-bold py-3.5 px-12 rounded-2xl shadow-[0_4px_15px_rgba(249,115,22,0.3)] hover:bg-orange-600 transition-colors w-full sm:w-auto"
+                  disabled={isSaving || saved}
+                  className="cursor-pointer bg-orange-400 text-white font-bold py-3.5 px-12 rounded-2xl shadow-[0_4px_15px_rgba(249,115,22,0.3)] hover:bg-orange-600 transition-colors w-full sm:w-auto disabled:opacity-75 disabled:cursor-not-allowed"
                 >
-                  {saved ? (editMeal ? "Saved!" : "Added!") : (editMeal ? "Save Changes" : "Add Meal")}
+                  {isSaving
+                    ? (editMeal ? "Updating..." : "Adding...")
+                    : saved
+                      ? (editMeal ? "Updated!" : "Added!")
+                      : (editMeal ? "Update Meal" : "Add Meal")}
                 </button>
               </div>
             </div>

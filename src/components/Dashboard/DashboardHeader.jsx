@@ -67,7 +67,7 @@ function DashboardHeader({ title = "Dashboard", subtitle }) {
   };
 
   return (
-    <header className="flex flex-col md:flex-row items-start md:items-center justify-between px-6 md:px-8 py-6 bg-transparent sticky top-0 z-150 gap-4 md:gap-0">
+    <header className="flex flex-col md:flex-row items-start md:items-center justify-between px-6 md:px-8 py-6 bg-transparent sticky top-0 z-100   gap-4 md:gap-0">
       {/* Title + greeting */}
       <div>
         <h1 className="text-[28px] font-bold text-[#1a1a1a] m-0 tracking-tight">{title}</h1>
@@ -94,7 +94,7 @@ function DashboardHeader({ title = "Dashboard", subtitle }) {
 
           {/* Notifications Dropdown Popover */}
           {showDropdown && (
-            <div className="absolute right-0 top-[56px] w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 z-999 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="absolute right-0 top-[56px] w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 z-200 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
               {/* Popover Header */}
               <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between bg-gray-50/60">
                 <div className="flex items-center gap-2">

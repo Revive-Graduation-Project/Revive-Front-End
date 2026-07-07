@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "../../utils/toastUtils";
 import { getMenuUploads, uploadMenuFile } from "../../services/dashboardService";
 import useUIStore from "../../store/uiStore";
 
@@ -21,6 +21,7 @@ export function useUploadMenu() {
     mutationFn: async (fileOrPayload) => {
       const file = fileOrPayload?.file || fileOrPayload;
       const toastId = toast.loading(`Uploading ${file.name || "Menu CSV"} (0%)...`, {
+        duration: 6000,
         description: "You can navigate away while this uploads in the background."
       });
 
@@ -32,12 +33,13 @@ export function useUploadMenu() {
               const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
               toast.loading(`Uploading ${file.name || "Menu CSV"} (${percent}%)...`, {
                 id: toastId,
+                duration: 6000,
                 description: "You can navigate away while this uploads in the background."
               });
             }
           }
         });
-        toast.success(`Successfully uploaded ${file.name || "Menu CSV"}!`, { id: toastId, description: "Menu updated successfully." });
+        toast.success(`Successfully uploaded ${file.name || "Menu CSV"}!`, { id: toastId, duration: 6000, description: "Menu updated successfully." });
         useUIStore.getState().addNotification({
           title: "Menu CSV Uploaded",
           message: `File "${file.name || "Menu CSV"}" uploaded successfully. Menu items updated.`,
@@ -46,7 +48,7 @@ export function useUploadMenu() {
         });
         return result;
       } catch (err) {
-        toast.error(`Failed to upload ${file.name || "Menu CSV"}.`, { id: toastId, description: err?.response?.data?.message || err.message || "Please try again." });
+        toast.error(`Failed to upload ${file.name || "Menu CSV"}.`, { id: toastId, duration: 6000, description: err?.response?.data?.message || err.message || "Please try again." });
         throw err;
       }
     },
