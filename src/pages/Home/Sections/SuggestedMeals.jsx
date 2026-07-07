@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useAuthStore } from "../../../store";
 import useRecommendationStore from "../../../store/recommendationStore";
-import RegularFoodCard from "../../../components/UI/RegularFoodCard";
-import LoadingSpinner from "../../../components/UI/LoadingSpinner";
+import RegularFoodCard from "../../../components/ui/RegularFoodCard";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 const SuggestedMeals = ({ selectedCategory = "All" }) => {
   const { user } = useAuthStore();

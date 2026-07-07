@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import RegularFoodCard from "../../../components/UI/RegularFoodCard";
+import RegularFoodCard from "../../../components/ui/RegularFoodCard";
 
 const PLACEHOLDER_MEALS = [
   {
