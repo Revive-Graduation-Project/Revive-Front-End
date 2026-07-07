@@ -55,7 +55,9 @@ const SuggestedMealsTeaser = () => {
           {/* Cards with light blur */}
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-8 blur-[2px] pointer-events-none select-none opacity-60">
             {PLACEHOLDER_MEALS.map((meal) => (
-              <RegularFoodCard key={meal.id} meal={meal} />
+              <div key={meal.id} aria-hidden="true" inert className="w-full">
+                <RegularFoodCard meal={meal} />
+              </div>
             ))}
           </div>
 

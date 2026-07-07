@@ -1,10 +1,6 @@
-import axios from "axios";
 import { api } from "./api";
 import { getMenu } from "./menu.service";
 import { useAuthStore } from "../store";
-
-const AI_API_URL =
-  "https://youssef-ashraf-healthy-meal-ai-api.hf.space/recommend";
 
 /**
  * Fetch AI meal recommendations for the authenticated user.
@@ -12,10 +8,10 @@ const AI_API_URL =
  * 2. Sends both to the AI recommendation engine
  * 3. Enriches the recommendations with imageUrl & nutrients from the original meals
  *
- * @param {string} role - The authenticated user's role (e.g. "CLIENT")
+ * @param {string} [role] - The authenticated user's role (e.g. "CLIENT")
  * @returns {{ data: Array }} - Enriched recommended meals
  */
-export const getSuggestedMeals = async () => {
+export const getSuggestedMeals = async (role) => {
   const [profileRes, mealsRes] = await Promise.allSettled([
     api.get(`/api/clients/profile/${useAuthStore.getState().user?.id}`),
     getMenu(),
@@ -31,15 +27,34 @@ export const getSuggestedMeals = async () => {
   const user = profileRes.value.data;
   const meals = mealsRes.value.data;
 
-  const aiResponse = await axios.post(
-    AI_API_URL,
-    {
-      user,
-      meals,
-      top_n: 5,
-    },
-    { timeout: 10000 },
-  );
+  const minimalProfile = {
+    id: user?.id,
+    age: user?.age,
+    gender: user?.gender,
+    goal: user?.goal,
+    weight: user?.weight,
+    height: user?.height,
+    exercisesRegularly: user?.exercisesRegularly,
+    healthConditions: user?.healthConditions,
+    phoneNumber: user?.phoneNumber,
+  };
+
+  const minimalMeals = (Array.isArray(meals) ? meals : []).map((meal) => ({
+    id: meal?.id,
+    name: meal?.name,
+    category: meal?.category,
+    price: meal?.price,
+    nutrients: meal?.nutrients,
+    hasDiscount: meal?.hasDiscount,
+    discountPercentage: meal?.discountPercentage,
+  }));
+
+  const aiResponse = await api.post("/api/recommendations", {
+    user: minimalProfile,
+    meals: minimalMeals,
+    role,
+    top_n: 5,
+  });
 
   const aiPayload = aiResponse?.data;
   const recommendations = Array.isArray(aiPayload?.recommendations)

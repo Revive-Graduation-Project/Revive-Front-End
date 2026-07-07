@@ -12,14 +12,22 @@ export default function Profile() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const formattedJoinDate = user?.createdAt
+    ? new Date(user.createdAt).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : "-";
+
   useEffect(() => {
     fetchProfile();
-  }, []);
+  }, [fetchProfile]);
 
   return (
     <div>
       <ProfileHeader
-        joinDate={user?.createdAt}
+        joinDate={formattedJoinDate}
         onEdit={() => setEditing(true)}
       />
 

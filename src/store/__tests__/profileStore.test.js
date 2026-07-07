@@ -11,16 +11,18 @@ const { getProfileById } = await import("../../services/user.service");
 
 describe("useProfileStore", () => {
   beforeEach(() => {
-    useProfileStore.setState({ user: null, loading: false, error: null }, true);
-    useAuthStore.setState(
-      { user: { id: 1 }, token: null, expiresAt: null, isAuthenticated: true },
-      true,
-    );
+    useProfileStore.setState({ user: null, loading: false, error: null });
+    useAuthStore.setState({
+      user: { id: 1 },
+      token: null,
+      expiresAt: null,
+      isAuthenticated: true,
+    });
     vi.clearAllMocks();
   });
 
   it("does not reuse a cached profile from a different auth user", async () => {
-    useProfileStore.setState({ user: { id: 99, firstName: "Old" } }, true);
+    useProfileStore.setState({ user: { id: 99, firstName: "Old" } });
 
     getProfileById.mockResolvedValue({ data: { id: 1, firstName: "New" } });
 
