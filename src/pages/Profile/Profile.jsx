@@ -18,13 +18,16 @@ export default function Profile() {
 
   return (
     <div>
-      <ProfileHeader onEdit={() => setEditing(true)} />
+      <ProfileHeader
+        joinDate={user?.createdAt}
+        onEdit={() => setEditing(true)}
+      />
 
       <hr className="my-6" />
 
       {!editing ? (
         <div>
-          <InfoGrid user={user} />
+          <InfoGrid user={user} profile={user} />
         </div>
       ) : (
         <HealthForm

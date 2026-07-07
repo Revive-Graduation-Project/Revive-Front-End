@@ -31,13 +31,20 @@ export const getSuggestedMeals = async () => {
   const user = profileRes.value.data;
   const meals = mealsRes.value.data;
 
-  const aiResponse = await axios.post(AI_API_URL, {
-    user,
-    meals,
-    top_n: 5,
-  });
+  const aiResponse = await axios.post(
+    AI_API_URL,
+    {
+      user,
+      meals,
+      top_n: 5,
+    },
+    { timeout: 10000 },
+  );
 
-  const recommendations = aiResponse.data.recommendations ?? [];
+  const aiPayload = aiResponse?.data;
+  const recommendations = Array.isArray(aiPayload?.recommendations)
+    ? aiPayload.recommendations
+    : [];
 
   // Enrich recommendations with original meal data (imageUrl, nutrients, discount)
   const enrichedMeals = recommendations.map((rec) => {

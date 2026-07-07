@@ -10,9 +10,15 @@ const useProfileStore = create(
       error: null,
 
       fetchProfile: async () => {
-        // لو البروفايل موجود بالفعل، متجيبيش تاني
-        if (get().user) {
-          return get().user;
+        const activeUserId = useAuthStore.getState().user?.id;
+        const cachedUser = get().user;
+
+        if (cachedUser && cachedUser.id === activeUserId) {
+          return cachedUser;
+        }
+
+        if (cachedUser && cachedUser.id != null && activeUserId != null) {
+          set({ user: null, loading: false, error: null });
         }
 
         set({ loading: true, error: null });

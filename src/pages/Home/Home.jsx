@@ -5,6 +5,7 @@ import Hero from "./Sections/Hero";
 import PopularMenus from "./Sections/PopularMenus";
 import SpecialOffer from "./Sections/SpecialOffer";
 import SuggestedMeals from "./Sections/SuggestedMeals";
+import SuggestedMealsTeaser from "./Sections/SuggestedMealsTeaser";
 import Testimonials from "./Sections/Testimonials";
 import SmartMealBanners from "./Sections/SmartMealBanners";
 
@@ -28,7 +29,8 @@ export default function Home() {
         {/* Popular Meals — always visible */}
         <PopularMenus />
         {/* Suggested Meals — only shown to authenticated users */}
-        {isAuthenticated && <SuggestedMeals />}
+        {isAuthenticated ? <SuggestedMeals /> : <SuggestedMealsTeaser />}
+
         <SpecialOffer />
         <AboutUs />
         <FAQSection />

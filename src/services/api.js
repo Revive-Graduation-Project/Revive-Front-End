@@ -31,15 +31,12 @@ export const api = axios.create({
 let isRefreshing = false;
 const refreshQueue = [];
 
-// Attach access token + role to every outgoing request
+// Attach access token to every outgoing request
 api.interceptors.request.use(
   (config) => {
-    const { getAccessToken, user } = useAuthStore.getState();
+    const { getAccessToken } = useAuthStore.getState();
     if (getAccessToken()) {
       config.headers["Authorization"] = `Bearer ${getAccessToken()}`;
-    }
-    if (user?.role) {
-      config.headers["X-User-Role"] = user.role;
     }
     return config;
   },

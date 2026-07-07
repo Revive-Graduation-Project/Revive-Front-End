@@ -24,9 +24,7 @@ export const deleteProfile = (id) => {
 export const uploadProfilePicture = (id, file) => {
   const formData = new FormData();
   formData.append("file", file);
-  return api.patch(`/api/clients/profile/${id}/picture`, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  return api.patch(`/api/clients/profile/${id}/picture`, formData);
 };
 
 // Delete profile picture

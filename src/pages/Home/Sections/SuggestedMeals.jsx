@@ -1,64 +1,32 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAuthStore } from "../../../store";
-import { getSuggestedMeals } from "../../../services/recommendation.service";
+import useRecommendationStore from "../../../store/recommendationStore";
 import RegularFoodCard from "../../../components/UI/RegularFoodCard";
 import LoadingSpinner from "../../../components/UI/LoadingSpinner";
-/**
- * SuggestedMeals
- * ---------------
- * Shown only when the user is authenticated (gated in Home.jsx).
- * Fetches personalised meal recommendations from the service layer.
- *
- * Mock mode: getSuggestedMeals returns local mock data — no backend needed.
- * API integration: when ready, just swap recommendation.service.js — no
- * changes needed here.
- */
-const SuggestedMeals = () => {
-  const { user } = useAuthStore();
 
-  const [meals, setMeals] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const SuggestedMeals = ({ selectedCategory = "All" }) => {
+  const { user } = useAuthStore();
+  const { recommendations, isLoading, error, fetchRecommendations } =
+    useRecommendationStore();
 
   useEffect(() => {
-    if (!user?.role) return;
-
-    let cancelled = false;
-
-    const fetchSuggestions = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await getSuggestedMeals();
-        if (!cancelled) {
-          setMeals(response.data);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err.message || "Failed to load suggestions");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchSuggestions();
-
-    return () => {
-      cancelled = true;
-    };
+    if (user?.role && recommendations.length === 0) {
+      fetchRecommendations();
+    }
   }, [user?.role]);
 
-  // Track scroll position so buttons hide/show at the edges
+  const filteredMeals =
+    selectedCategory === "All"
+      ? recommendations
+      : recommendations.filter(
+          (meal) =>
+            meal.category?.toLowerCase() === selectedCategory?.toLowerCase(),
+        );
 
-  // thoose three lines hide the suggested meals when no meal is suggested
-  //if you want to test the suggested meals comment it it
-  if (loading) return <LoadingSpinner />;
+  if (isLoading) return <LoadingSpinner />;
   if (error) return <p className="text-red-500 text-center">{error}</p>;
-  if (meals.length === 0) return null;
-  //***********************************************************************/
+  if (filteredMeals.length === 0) return null;
+
   return (
     <section className="py-8 md:py-12">
       <div className="container mx-auto px-4">
@@ -70,7 +38,7 @@ const SuggestedMeals = () => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-8">
-          {meals.map((meal) => (
+          {filteredMeals.map((meal) => (
             <RegularFoodCard key={meal.id} meal={meal} />
           ))}
         </div>

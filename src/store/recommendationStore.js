@@ -34,8 +34,8 @@ const useRecommendationStore = create(
       fetchRecommendations: async () => {
         const role = useAuthStore.getState().user?.role;
 
-        if (!role) {
-          set({ recommendations: [], isLoading: false });
+        if (!role || role !== "CLIENT") {
+          set({ recommendations: [], isLoading: false, error: null });
           return;
         }
 
