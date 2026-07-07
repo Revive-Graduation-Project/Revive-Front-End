@@ -202,10 +202,9 @@ function IngredientsView() {
 
   const handleFileSubmit = () => {
     if (!selectedFile) return;
-    uploadFile(selectedFile, {
-      onSuccess: () => { addToast("Ingredients updated successfully!", "success"); setSelectedFile(null); },
-      onError:   () => addToast("Failed to upload file.", "error"),
-    });
+    const fileToUpload = selectedFile;
+    setSelectedFile(null); // Clear immediately for non-blocking background upload UX
+    uploadFile(fileToUpload);
   };
 
   // ── Edit handler ──────────────────────────────────────────────────────────

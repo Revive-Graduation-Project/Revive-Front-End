@@ -184,7 +184,9 @@ export const getMenuUploads = () => {
   return Promise.resolve(Mappers.mapMenuUploads(uploads));
 };
 
-export const uploadMenuFile = async (file) => {
+export const uploadMenuFile = async (payload) => {
+  const file = payload?.file || payload;
+  const onUploadProgress = payload?.onUploadProgress;
   const formData = new FormData();
   formData.append("file", file);
 
@@ -194,7 +196,7 @@ export const uploadMenuFile = async (file) => {
     headers["X-User-Role"] = user.role;
   }
 
-  const result = await api.post("/api/inventory/upload", formData, { headers }).then(r => r.data);
+  const result = await api.post("/api/inventory/upload", formData, { headers, onUploadProgress }).then(r => r.data);
 
   // Store in localStorage so it appears in the Recent Uploads table
   const uploads = JSON.parse(localStorage.getItem('menuUploads') || '[]');
@@ -240,7 +242,9 @@ export const reserveIngredientsStock    = (data)        => api.post("/api/ingred
 export const revertIngredientsStock     = (data)        => api.post("/api/ingredients/revert", data).then(r => r.data);
 
 
-export const uploadIngredientsFile = (file) => {
+export const uploadIngredientsFile = (payload) => {
+  const file = payload?.file || payload;
+  const onUploadProgress = payload?.onUploadProgress;
   const formData = new FormData();
   formData.append("file", file);
 
@@ -250,5 +254,5 @@ export const uploadIngredientsFile = (file) => {
     headers["X-User-Role"] = user.role;
   }
 
-  return api.post("/api/inventory/upload", formData, { headers }).then(r => r.data);
+  return api.post("/api/inventory/upload", formData, { headers, onUploadProgress }).then(r => r.data);
 };

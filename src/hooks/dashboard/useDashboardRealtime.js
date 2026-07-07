@@ -15,6 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { orderKeys } from "./useOrders";
 import { kitchenKeys } from "./useKitchenOrders";
 import { dashboardKeys } from "./useDashboard";
+import useUIStore from "../../store/uiStore";
 
 // Fake MockSocket for architecture prep
 class MockSocket {
@@ -36,15 +37,26 @@ export function useDashboardRealtime() {
 
     // 1. Live Orders (New incoming order)
     socket.on("orders:new", (newOrder) => {
-      // Invalidate orders list or optimistic update
       qc.invalidateQueries({ queryKey: orderKeys.list({}) });
       qc.invalidateQueries({ queryKey: kitchenKeys.orders() });
+      useUIStore.getState().addNotification({
+        title: `New Order #${newOrder?.id || "Received"}`,
+        message: `An incoming order totalling $${newOrder?.totalAmount || "0.00"} has arrived in the queue.`,
+        type: "warning",
+        category: "Orders",
+      });
     });
 
     // 2. Kitchen Status Updates
     socket.on("kitchen:status_update", ({ orderId, nextStatus }) => {
-      // Refresh the board to fetch latest state
       qc.invalidateQueries({ queryKey: kitchenKeys.orders() });
+      const typeMap = { preparing: "info", ready: "success", done: "success", cancelled: "critical" };
+      useUIStore.getState().addNotification({
+        title: `Kitchen Order #${orderId}`,
+        message: `Order status changed to "${String(nextStatus).toUpperCase()}".`,
+        type: typeMap[String(nextStatus).toLowerCase()] || "info",
+        category: "Orders",
+      });
     });
 
     // 3. Analytics & Metrics Updates
@@ -66,7 +78,12 @@ export function useDashboardRealtime() {
     // 5. Inventory & Notifications
     socket.on("inventory:alert", (alert) => {
       qc.invalidateQueries({ queryKey: ["ingredients"] });
-      // Here you could also trigger a global toast notification if desired
+      useUIStore.getState().addNotification({
+        title: alert?.title || "Low Stock Alert",
+        message: alert?.message || "An ingredient is below the critical threshold.",
+        type: "critical",
+        category: "Inventory",
+      });
     });
 
     return () => {

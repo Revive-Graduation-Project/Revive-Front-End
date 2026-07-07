@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getMenuCategories, getMenuItems, deleteMenuItem, updateMenuItem, createMenuItem, saveRecipe, getRecipeIngredients, uploadMealImage } from "../../services/dashboardService";
+import useUIStore from "../../store/uiStore";
 
 export const menuKeys = {
   all:         ["menu"],
@@ -40,6 +41,14 @@ export function useDeleteMenuItem() {
     },
     onError: (_err, _id, ctx) => {
       ctx?.prev?.forEach(([key, data]) => qc.setQueryData(key, data));
+    },
+    onSuccess: (_data, id) => {
+      useUIStore.getState().addNotification({
+        title: "Menu Item Deleted",
+        message: `Menu item #${id} was deleted from the system.`,
+        type: "critical",
+        category: "Performance",
+      });
     },
     onSettled: () => qc.invalidateQueries({ queryKey: menuKeys.all, refetchType: "all" }),
   });
@@ -170,6 +179,13 @@ export function useUpdateMenuItem() {
           ? old.map((item) => (item.id === targetId || item._id === targetId ? { ...item, ...mergedItem } : item))
           : old
       );
+
+      useUIStore.getState().addNotification({
+        title: "Menu Item Updated",
+        message: `"${data.name || `Item #${id}`}" was updated with new details.`,
+        type: "info",
+        category: "Performance",
+      });
     },
     onSettled: () => qc.invalidateQueries({ queryKey: menuKeys.all, refetchType: "all" }),
   });
@@ -203,6 +219,13 @@ export function useCreateMenuItem() {
       qc.setQueriesData({ queryKey: ["menu", "items"] }, (old) =>
         Array.isArray(old) ? [itemToAdd, ...old] : old
       );
+
+      useUIStore.getState().addNotification({
+        title: "New Meal Added",
+        message: `"${variables.name || "Menu item"}" was successfully created and added to the menu.`,
+        type: "success",
+        category: "Performance",
+      });
     },
     onSettled: () => qc.invalidateQueries({ queryKey: menuKeys.all, refetchType: "all" }),
   });
