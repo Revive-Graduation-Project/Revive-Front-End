@@ -97,7 +97,10 @@ export function useUpdateIngredientStock() {
         category: "Inventory",
       });
     },
-    onSettled:  () => qc.invalidateQueries({ queryKey: ingredientKeys.all }),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ingredientKeys.all });
+      qc.invalidateQueries({ queryKey: ["menu"] });
+    },
   });
 }
 
