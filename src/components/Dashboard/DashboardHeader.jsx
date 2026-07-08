@@ -1,13 +1,29 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiBell, FiCheckCircle, FiAlertCircle, FiClock, FiInfo, FiCheck } from "react-icons/fi";
-import useAuthStore from "../../store/authStore";
-import useUIStore, { formatNotificationTime } from "../../store/uiStore";
+import { useAuthStore, useProfileStore, useUIStore } from "../../store";
+import { formatNotificationTime } from "../../store/uiStore";
+
+// Tracks if fetchProfile has been attempted during this app session to prevent infinite fetch loops on CORS/network errors
+let hasAttemptedProfileFetch = false;
 
 function DashboardHeader({ title = "Dashboard", subtitle }) {
-  const { user } = useAuthStore();
+  const { user: authUser } = useAuthStore();
+  const { user: profileUser, loading: profileLoading, fetchProfile } = useProfileStore();
   const { notifications = [], markAllAsRead, markAsRead } = useUIStore();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Only fetch once per session when there is no profile data AND we haven't already attempted.
+    // This prevents infinite re-fetch loops if the request fails (e.g. CORS or network error).
+    if (!profileUser && !profileLoading && !hasAttemptedProfileFetch) {
+      hasAttemptedProfileFetch = true;
+      fetchProfile();
+    }
+  }, [profileUser, profileLoading, fetchProfile]);
+
+  const user = profileUser || authUser;
+  const avatarSrc = user?.avatar || user?.photo || user?.profileImage || user?.imageUrl || "/images/chef-avatar.png";
   
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
@@ -20,11 +36,22 @@ function DashboardHeader({ title = "Dashboard", subtitle }) {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const safeName = typeof user?.name === 'string' ? user.name : '';
-  const safeRole = typeof user?.role === 'string' ? user.role : 'Staff';
+  const rawName = 
+    profileUser?.name || 
+    profileUser?.fullName || 
+    (profileUser?.firstName || profileUser?.lastName ? `${profileUser?.firstName || ""} ${profileUser?.lastName || ""}`.trim() : "") ||
+    authUser?.name || 
+    authUser?.fullName || 
+    (authUser?.firstName || authUser?.lastName ? `${authUser?.firstName || ""} ${authUser?.lastName || ""}`.trim() : "") ||
+    authUser?.username ||
+    authUser?.email?.split("@")[0] ||
+    "Chef Admin";
 
-  const firstName = safeName ? safeName.split(" ")[0] : "";
-  const fullName  = safeName || "Loading...";
+  const safeName = typeof rawName === 'string' && rawName.trim() ? rawName.trim() : 'Chef Admin';
+  const safeRole = typeof user?.role === 'string' && user.role ? user.role : 'Staff';
+
+  const firstName = safeName.split(" ")[0];
+  const fullName  = safeName;
   const roleName  = safeRole;
   
   const initials = safeName
@@ -67,7 +94,7 @@ function DashboardHeader({ title = "Dashboard", subtitle }) {
   };
 
   return (
-    <header className="flex flex-col md:flex-row items-start md:items-center justify-between px-6 md:px-8 py-6 bg-transparent sticky top-0 z-100   gap-4 md:gap-0">
+    <header className="flex flex-col md:flex-row items-start md:items-center justify-between px-6 md:px-8 py-6 bg-transparent sticky top-0 z-40 gap-4 md:gap-0">
       {/* Title + greeting */}
       <div>
         <h1 className="text-[28px] font-bold text-[#1a1a1a] m-0 tracking-tight">{title}</h1>
@@ -169,26 +196,16 @@ function DashboardHeader({ title = "Dashboard", subtitle }) {
               <p className="text-[13px] font-bold text-[#1a1a1a] m-0">{fullName}</p>
             </div>
             
-            {user?.avatar ? (
-              <img
-                src={user.avatar}
-                alt="Profile"
-                className="w-[42px] h-[42px] rounded-xl object-cover bg-white shadow-sm"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                  e.currentTarget.nextSibling.style.display = "flex";
-                }}
-              />
-            ) : null}
-            
-            {/* Fallback avatar */}
-            <div 
-              className={`${user?.avatar ? "hidden" : "flex"} w-[42px] h-[42px] rounded-xl bg-gray-800 items-center justify-center text-white font-bold text-[14px] shadow-sm tracking-widest`}
-            >
-              {user?.name ? initials : (
-                <div className="w-full h-full rounded-xl bg-gray-200 animate-pulse" />
-              )}
-            </div>
+            <img
+              src={avatarSrc}
+              alt="Profile"
+              className="w-[42px] h-[42px] rounded-xl object-cover bg-white shadow-sm border border-gray-100"
+              onError={(e) => {
+                if (!e.currentTarget.src.endsWith("/images/chef-avatar.png")) {
+                  e.currentTarget.src = "/images/chef-avatar.png";
+                }
+              }}
+            />
           </div>
         </div>
       </div>

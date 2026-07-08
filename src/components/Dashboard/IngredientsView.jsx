@@ -177,13 +177,14 @@ function IngredientsView() {
 
 
   const { data: ingredients, isLoading, error, refetch } = useIngredients();
-  const { mutate: uploadFile, isPending: isUploading, isSuccess: isUploaded }    = useUploadIngredients();
+  const { mutate: uploadFile, isPending: isUploading, isSuccess: isUploaded, reset: resetUpload } = useUploadIngredients();
   const { mutate: updateStock } = useUpdateIngredientStock();
 
   // ── File handlers ─────────────────────────────────────────────────────────
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    resetUpload(); // Clear previous upload success/error state when choosing a new file
     setSelectedFile(file);
     e.target.value = ""; // allow re-selecting the same file
   };
@@ -318,7 +319,7 @@ function IngredientsView() {
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={8}>
+                    <td colSpan={TABLE_HEADERS.length}>
                       <EmptyState
                         title="No ingredients found"
                         description={

@@ -9,6 +9,7 @@ import {
 } from "react-icons/md";
 import { FiShoppingBag, FiLogOut } from "react-icons/fi";
 import useAuthStore from "../../store/authStore";
+import { isKitchenOnlyUser } from "../../utils/roleUtils";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: MdDashboard, end: true },
@@ -23,8 +24,7 @@ const navItems = [
 function DashboardSidebar() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
-  const userRole = user?.role?.toLowerCase();
-  const isChief = userRole === "chief" || userRole === "chef";
+  const isChief = isKitchenOnlyUser(user);
 
   const visibleNavItems = isChief
     ? navItems.filter((item) => item.to === "/dashboard/live-kitchen" || item.to === "/dashboard/orders")

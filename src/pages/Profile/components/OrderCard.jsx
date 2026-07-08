@@ -64,7 +64,7 @@ const OrderCard = ({ order }) => {
             className="text-sm font-bold whitespace-nowrap"
             style={{ color: "#2e7d32" }}
           >
-            {order.totalPrice}$
+            {order.totalPrice} EGP
           </span>
         </div>
 

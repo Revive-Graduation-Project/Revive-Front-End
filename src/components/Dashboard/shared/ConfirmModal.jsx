@@ -1,14 +1,40 @@
 import { FiAlertTriangle } from "react-icons/fi";
 
-function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confirmLabel, confirmClassName, isLoading, isSuccess }) {
+/**
+ * ConfirmModal
+ * ─────────────────────────────────────────────────────────────────
+ * Generic destructive-action confirmation dialog.
+ *
+ * The parent is responsible for any loading / error feedback
+ * (e.g. via toast) after confirming. This modal closes immediately
+ * on confirm to match the optimistic-UX pattern used throughout
+ * the dashboard.
+ *
+ * Props
+ * ─────
+ * isOpen         boolean   - controls visibility
+ * onClose        () => void
+ * onConfirm      () => void - called synchronously on confirm click
+ * title          string    - modal heading (default "Are you sure?")
+ * message        string    - body copy
+ * confirmLabel   string    - confirm button label (default "Delete")
+ * confirmClassName string  - Tailwind classes for confirm button colour
+ */
+function ConfirmModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  message,
+  confirmLabel,
+  confirmClassName,
+}) {
   if (!isOpen) return null;
 
-  const baseLabel = confirmLabel || "Delete";
-  const buttonLabel = isLoading
-    ? `${baseLabel}...`
-    : isSuccess
-      ? "Done!"
-      : baseLabel;
+  const handleConfirm = () => {
+    onConfirm?.();
+    onClose();
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -26,24 +52,17 @@ function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confirmLabel
           <div className="mt-4 flex gap-3 w-full">
             <button
               onClick={onClose}
-              disabled={isLoading}
-              className="flex-1 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
             >
               Cancel
             </button>
             <button
-              onClick={async () => {
-                try {
-                  await onConfirm?.();
-                  if (!isLoading) onClose();
-                } catch {
-                  // Keep modal open so the user can retry or see error feedback
-                }
-              }}
-              disabled={isLoading || isSuccess}
-              className={`flex-1 py-3 rounded-xl font-bold text-white transition-colors disabled:opacity-75 disabled:cursor-not-allowed ${confirmClassName || "bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30"}`}
+              onClick={handleConfirm}
+              className={`flex-1 py-3 rounded-xl font-bold text-white transition-colors ${
+                confirmClassName || "bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30"
+              }`}
             >
-              {buttonLabel}
+              {confirmLabel || "Delete"}
             </button>
           </div>
         </div>
@@ -53,4 +72,3 @@ function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confirmLabel
 }
 
 export default ConfirmModal;
-

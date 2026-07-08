@@ -63,7 +63,7 @@ const OrderDetailsModal = ({ order, onClose }) => {
                   {item.name}
                 </span>
                 <span className="text-sm text-gray-400">
-                  {Number(item.price).toFixed(2)}$
+                  {Number(item.price).toFixed(2)} EGP
                 </span>
               </div>
 
@@ -81,11 +81,11 @@ const OrderDetailsModal = ({ order, onClose }) => {
         <div className="flex flex-col gap-2.5">
           <div className="flex justify-between text-sm text-gray-500">
             <span>Subtotal</span>
-            <span>{Number(totalPrice).toFixed(2)}$</span>
+            <span>{Number(totalPrice).toFixed(2)} EGP</span>
           </div>
           <div className="flex justify-between text-sm text-gray-500">
             <span>Delivery</span>
-            <span>{Number(DELIVERY_FEE).toFixed(2)}$</span>
+            <span>{Number(DELIVERY_FEE).toFixed(2)} EGP</span>
           </div>
         </div>
 
@@ -94,7 +94,7 @@ const OrderDetailsModal = ({ order, onClose }) => {
         {/* Total */}
         <div className="flex justify-between text-base font-bold text-gray-900">
           <span>Total</span>
-          <span>{Number(totalPrice + DELIVERY_FEE).toFixed(2)}$</span>
+          <span>{Number(totalPrice + DELIVERY_FEE).toFixed(2)} EGP</span>
         </div>
       </div>
     </div>

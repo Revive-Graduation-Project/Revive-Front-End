@@ -28,7 +28,7 @@ export const DEFAULT_COUNTRY = "Egypt";
 
 // --- Currency Configuration ---
 /** @type {string} Symbol used for price displays */
-export const CURRENCY_SYMBOL = "$";
+export const CURRENCY_SYMBOL = "EGP";
 
 /** 
  * Determines where the currency symbol is placed.

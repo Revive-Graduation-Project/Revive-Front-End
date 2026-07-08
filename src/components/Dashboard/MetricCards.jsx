@@ -13,7 +13,7 @@ const labels = {
 };
 
 function formatValue(key, value) {
-  if (key === "totalRevenue") return `$${value.toLocaleString()}`;
+  if (key === "totalRevenue") return `${value.toLocaleString()} EGP`;
   return value.toLocaleString();
 }
 

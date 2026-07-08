@@ -61,7 +61,7 @@ function TrendingMenus({ data }) {
               <div className="flex items-center gap-1">
                 <MdAttachMoney size={15} className="text-[#F97316]" />
                 <span className="text-[10px] text-[#1a1a1a] font-medium">Revenue</span>
-                <span className="text-[11px] font-bold text-[#F97316] ml-1">${(item.revenue / 1000).toFixed(3)}</span>
+                <span className="text-[11px] font-bold text-[#F97316] ml-1">{(item.revenue / 1000).toFixed(1)}k EGP</span>
               </div>
             </div>
           </div>

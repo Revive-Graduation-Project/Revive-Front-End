@@ -18,11 +18,11 @@ export default function OrderDetailsModal({ isOpen, onClose, order, showCustomer
 
   // Fallback data for customer details if missing
   const customerName = order.customer || "Guest";
-  const customerPhone = order.phone || "+1 (555) 019-8273";
-  const customerAddress = order.address || "123 Main Street, Food District, Cityville";
+  const customerPhone = order.phone || null;
+  const customerAddress = order.address || null;
 
   // Parse total price safely
-  const totalPrice = order.total !== undefined ? `$${Number(order.total).toFixed(2)}` : "Paid / N/A";
+  const totalPrice = order.total !== undefined ? `${Number(order.total).toFixed(2)} EGP` : "Paid / N/A";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -71,7 +71,9 @@ export default function OrderDetailsModal({ isOpen, onClose, order, showCustomer
                   </div>
                   <div>
                     <span className="block text-[11px] font-bold text-gray-400 uppercase tracking-wide">Phone</span>
-                    <span className="block text-[13px] font-semibold text-[#1a1a1a]">{customerPhone}</span>
+                    <span className={`block text-[13px] font-semibold ${customerPhone ? "text-[#1a1a1a]" : "text-gray-400 italic"}`}>
+                      {customerPhone || "Not provided"}
+                    </span>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -80,7 +82,9 @@ export default function OrderDetailsModal({ isOpen, onClose, order, showCustomer
                   </div>
                   <div>
                     <span className="block text-[11px] font-bold text-gray-400 uppercase tracking-wide">Delivery Address</span>
-                    <span className="block text-[13px] font-semibold text-[#1a1a1a]">{customerAddress}</span>
+                    <span className={`block text-[13px] font-semibold ${customerAddress ? "text-[#1a1a1a]" : "text-gray-400 italic"}`}>
+                      {customerAddress || "Not available"}
+                    </span>
                   </div>
                 </div>
               </div>

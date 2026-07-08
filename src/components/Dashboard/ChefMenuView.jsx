@@ -237,7 +237,6 @@ function ChefMenuView() {
                           </div>
                           <div>
                             <p className="text-[13px] font-bold text-[#1a1a1a] m-0">{item.name}</p>
-                            <p className="text-[11px] text-gray-400 m-0 group-hover:text-orange-300 transition-colors duration-200">{item.category}</p>
                             <span className="text-[10px] font-semibold text-orange-400 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-0.5 group-hover:translate-y-0 inline-block">
                               Click to view details →
                             </span>

@@ -12,8 +12,8 @@ const PopularMenuCard = ({ name, imageUrl, price }) => {
             <span className="text-sm sm:text-base font-medium text-gray-600">
               Starting
             </span>
-            <span className="text-lg sm:text-xl font-bold text-(--color-orange)">
-              {Number(price || 0).toFixed(2)}$
+            <span className="text-lg sm:text-xl font-bold text-orange">
+              {Number(price || 0).toFixed(2)} EGP
             </span>
           </div>
         </div>

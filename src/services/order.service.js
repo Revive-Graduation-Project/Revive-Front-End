@@ -1,22 +1,14 @@
 import { api } from './api';
 
-// Create order
-export const placeOrder = (data) => {
-  return api.post('/orders', data);
-};
+// 1. Create order
+export const placeOrder = (data) => api.post('/orders', data);
 
-// Get user orders
-export const getMyOrders = () => {
-  return api.get('/orders/my');
-};
+// 2. Get user orders
+export const getMyOrders = () => api.get('/orders/my');
 
-// Track order
-export const getOrderById = (id) => {
-  return api.get(`/orders/${id}`);
-};
+// 3. Track order
+export const getOrderById = (id) => api.get(`/orders/${id}`);
 
-// Cancel order
-export const cancelOrder = (id) => {
-  return api.patch(`/orders/${id}/cancel`);
-};
+// 4. Cancel order
+export const cancelOrder = (id) => api.patch(`/orders/${id}/cancel`);
 

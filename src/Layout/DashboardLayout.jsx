@@ -2,8 +2,8 @@ import { Outlet, useLocation, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import DashboardSidebar from "../components/Dashboard/DashboardSidebar";
 import { useDashboardRealtime } from "../hooks/dashboard/useDashboardRealtime";
-import { ToastContainer } from "../components/Dashboard/shared/useToast";
 import useAuthStore from "../store/authStore";
+import { isKitchenOnlyUser } from "../utils/roleUtils";
 
 /**
  * DashboardLayout
@@ -17,8 +17,7 @@ function DashboardLayout() {
   const user = useAuthStore((s) => s.user);
   const location = useLocation();
 
-  const userRole = user?.role?.toLowerCase();
-  const isChief = userRole === "chief" || userRole === "chef";
+  const isChief = isKitchenOnlyUser(user);
 
   // Restrict Chief to Live Kitchen and Orders only
   const isAllowedForChief = location.pathname.includes("/live-kitchen") || location.pathname.includes("/orders");
@@ -36,8 +35,6 @@ function DashboardLayout() {
         <Outlet />
       </main>
 
-      {/* Global toast notifications — renders on top of everything */}
-      <ToastContainer />
       <Toaster position="top-right" richColors expand={false} duration={3000} style={{ zIndex: 99999 }} />
     </div>
   );
