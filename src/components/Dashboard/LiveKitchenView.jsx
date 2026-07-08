@@ -62,7 +62,7 @@ function LiveKitchenView() {
         <DashboardHeader title="Live Kitchen" />
 
         <div className="flex flex-col gap-6 overflow-hidden mt-6">
-          <LiveIndicator isFetching={isFetching} onRefresh={refetch} />
+          <LiveIndicator isFetching={isFetching} error={error} onRefresh={refetch} />
 
           {error ? (
             <div className="py-12 bg-white rounded-3xl shadow-sm">

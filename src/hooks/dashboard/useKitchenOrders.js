@@ -22,7 +22,6 @@ import {
   updateChefStation,
   updateChefDisplayName,
 } from "../../services/dashboardService";
-import { useToast } from "../../store/toastStore";
 import useUIStore from "../../store/uiStore";
 
 const POLL_INTERVAL_MS = 30_000; // 30 s — swap for WS when ready
@@ -158,7 +157,6 @@ export function useActiveTickets() {
 /** Mutation: update a kitchen ticket's status */
 export function useUpdateTicketStatus() {
   const qc = useQueryClient();
-  const toast = useToast();
 
   return useMutation({
     mutationFn: ({ ticketId, status }) => updateTicketStatus(ticketId, status),
@@ -178,10 +176,10 @@ export function useUpdateTicketStatus() {
 
     onError: (_err, _vars, ctx) => {
       if (ctx?.prev) qc.setQueryData(kitchenKeys.tickets(), ctx.prev);
-      toast.error("Failed to update ticket status.");
+      sonnerToast.error("Failed to update ticket status.");
     },
     onSuccess: (_data, { ticketId, status }) => {
-      toast.success(`Ticket moved to ${status}.`);
+      sonnerToast.success(`Ticket moved to ${status}.`);
       const typeMap = {
         preparing: "info",
         ready: "success",
@@ -202,12 +200,11 @@ export function useUpdateTicketStatus() {
 /** Mutation: toggle chef active/inactive */
 export function useUpdateChefStatus() {
   const qc = useQueryClient();
-  const toast = useToast();
 
   return useMutation({
     mutationFn: ({ chefId, status }) => updateChefStatus(chefId, status),
-    onError: () => toast.error("Failed to update chef status."),
-    onSuccess: (_data, { status }) => toast.success(`Chef marked as ${status}.`),
+    onError: () => sonnerToast.error("Failed to update chef status."),
+    onSuccess: (_data, { status }) => sonnerToast.success(`Chef marked as ${status}.`),
     onSettled: () => qc.invalidateQueries({ queryKey: kitchenKeys.tickets() }),
   });
 }
@@ -215,12 +212,11 @@ export function useUpdateChefStatus() {
 /** Mutation: change chef station */
 export function useUpdateChefStation() {
   const qc = useQueryClient();
-  const toast = useToast();
 
   return useMutation({
     mutationFn: ({ chefId, station }) => updateChefStation(chefId, station),
-    onError: () => toast.error("Failed to update chef station."),
-    onSuccess: (_data, { station }) => toast.success(`Chef station updated to ${station}.`),
+    onError: () => sonnerToast.error("Failed to update chef station."),
+    onSuccess: (_data, { station }) => sonnerToast.success(`Chef station updated to ${station}.`),
     onSettled: () => qc.invalidateQueries({ queryKey: kitchenKeys.tickets() }),
   });
 }
@@ -228,12 +224,11 @@ export function useUpdateChefStation() {
 /** Mutation: edit chef display name */
 export function useUpdateChefDisplayName() {
   const qc = useQueryClient();
-  const toast = useToast();
 
   return useMutation({
     mutationFn: ({ chefId, displayName }) => updateChefDisplayName(chefId, displayName),
-    onError: () => toast.error("Failed to update chef display name."),
-    onSuccess: () => toast.success("Chef display name updated."),
+    onError: () => sonnerToast.error("Failed to update chef display name."),
+    onSuccess: () => sonnerToast.success("Chef display name updated."),
     onSettled: () => qc.invalidateQueries({ queryKey: kitchenKeys.tickets() }),
   });
 }

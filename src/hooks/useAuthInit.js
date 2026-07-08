@@ -10,5 +10,5 @@ export const useAuthInit = () => {
 
     useEffect(() => {
        restoreSession();
-    }, []);
+    }, [restoreSession]);
 };

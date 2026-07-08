@@ -11,6 +11,8 @@ import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 import IngredientSelector from "./shared/IngredientSelector";
 
+const CATEGORIES = ["Chicken", "Meat", "Seafood", "Vegetarian", "Desserts", "Mixed"];
+
 export default function RecipeBuilderView() {
   const { state } = useLocation();
   const editMeal = state?.editMeal ?? null;
@@ -25,9 +27,9 @@ export default function RecipeBuilderView() {
 
 
   const { data: availableIngredients = [] } = useIngredients();
-  const { mutate: createMeal, isSuccess: created, isPending: creating, isLoading: createLoading, reset: resetCreate } = useCreateMenuItem();
-  const { mutate: updateMeal, isSuccess: updated, isPending: updating, isLoading: updateLoading, reset: resetUpdate } = useUpdateMenuItem();
-  const isSaving = creating || createLoading || updating || updateLoading;
+  const { mutate: createMeal, isSuccess: created, isPending: creating, reset: resetCreate } = useCreateMenuItem();
+  const { mutate: updateMeal, isSuccess: updated, isPending: updating, reset: resetUpdate } = useUpdateMenuItem();
+  const isSaving = creating || updating;
   const saved = created || updated;
 
   // Pre-fill form when editing an existing meal
@@ -188,7 +190,7 @@ export default function RecipeBuilderView() {
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setIsCategoryOpen(false)} aria-hidden="true" tabIndex={-1}></div>
                       <div className="absolute top-[76px] left-0 w-full bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] py-2 z-50 border border-gray-100/50" role="listbox">
-                        {["Chicken", "Meat", "Seafood", "Vegetarian", "Desserts", "Mixed"].map(cat => (
+                        {CATEGORIES.map(cat => (
                             <button
                               key={cat}
                               type="button"

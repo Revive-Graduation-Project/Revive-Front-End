@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import DashboardHeader from "./DashboardHeader";
 import { useMenuUploads, useUploadMenu } from "../../hooks/dashboard/useMenuUploads";
-import { useToast } from "../../store/toastStore";
+import { toast } from "../../utils/toastUtils";
 import { FiUploadCloud, FiFileText } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
@@ -11,7 +11,6 @@ function MenuManagementView() {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
 
-  const { addToast } = useToast();
 
   // Dynamic calendar — `new Date()` is inside the memo so the snapshot
   // is taken once on mount and is never stale with respect to the closure.
@@ -47,14 +46,14 @@ function MenuManagementView() {
 
     const MAX_SIZE = 10 * 1024 * 1024; // 10MB
     if (file.size > MAX_SIZE) {
-      addToast("File size exceeds 10MB limit.", "error");
+      toast.error("File size exceeds 10MB limit.");
       return;
     }
 
     const allowedExtensions = ['csv', 'xlsx', 'xls'];
     const extension = file.name.split('.').pop().toLowerCase();
     if (!allowedExtensions.includes(extension)) {
-      addToast("Invalid file type. Only CSV and Excel files are allowed.", "error");
+      toast.error("Invalid file type. Only CSV and Excel files are allowed.");
       return;
     }
 

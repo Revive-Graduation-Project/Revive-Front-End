@@ -4,17 +4,23 @@ import { FiBell, FiCheckCircle, FiAlertCircle, FiClock, FiInfo, FiCheck } from "
 import { useAuthStore, useProfileStore, useUIStore } from "../../store";
 import { formatNotificationTime } from "../../store/uiStore";
 
+// Tracks if fetchProfile has been attempted during this app session to prevent infinite fetch loops on CORS/network errors
+let hasAttemptedProfileFetch = false;
+
 function DashboardHeader({ title = "Dashboard", subtitle }) {
   const { user: authUser } = useAuthStore();
-  const { user: profileUser, fetchProfile } = useProfileStore();
+  const { user: profileUser, loading: profileLoading, fetchProfile } = useProfileStore();
   const { notifications = [], markAllAsRead, markAsRead } = useUIStore();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!profileUser) {
+    // Only fetch once per session when there is no profile data AND we haven't already attempted.
+    // This prevents infinite re-fetch loops if the request fails (e.g. CORS or network error).
+    if (!profileUser && !profileLoading && !hasAttemptedProfileFetch) {
+      hasAttemptedProfileFetch = true;
       fetchProfile();
     }
-  }, [profileUser, fetchProfile]);
+  }, [profileUser, profileLoading, fetchProfile]);
 
   const user = profileUser || authUser;
   const avatarSrc = user?.avatar || user?.photo || user?.profileImage || user?.imageUrl || "/images/chef-avatar.png";
@@ -88,7 +94,7 @@ function DashboardHeader({ title = "Dashboard", subtitle }) {
   };
 
   return (
-    <header className="flex flex-col md:flex-row items-start md:items-center justify-between px-6 md:px-8 py-6 bg-transparent sticky top-0 z-100   gap-4 md:gap-0">
+    <header className="flex flex-col md:flex-row items-start md:items-center justify-between px-6 md:px-8 py-6 bg-transparent sticky top-0 z-40 gap-4 md:gap-0">
       {/* Title + greeting */}
       <div>
         <h1 className="text-[28px] font-bold text-[#1a1a1a] m-0 tracking-tight">{title}</h1>
