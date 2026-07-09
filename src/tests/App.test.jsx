@@ -42,6 +42,7 @@ vi.mock('../pages', () => ({
   LiveKitchen: () => <div>LiveKitchen</div>,
   MenuManagement: () => <div>MenuManagement</div>,
   Ingredients: () => <div>Ingredients</div>,
+  Notifications: () => <div>Notifications</div>,
 }));
 
 vi.mock('../pages/Menu/Menu', () => ({
