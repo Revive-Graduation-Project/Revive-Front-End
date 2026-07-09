@@ -1,25 +1,23 @@
-// components/customize/SectionsList.jsx
-
 import SectionWrapper from "./SectionWrapper";
 import ItemsRow from "./ItemsRow";
 import { useCustomizeStore } from "../../../store/useCustomizeStore";
 
-const IngredientsSection = () => {
-  const { selectedMeal, selectedSections, toggleItem } = useCustomizeStore();
+const IngredientsSection = ({ buildOptions }) => {
+  const { primaryItem, selectedSections, toggleItem } = useCustomizeStore();
 
-  if (!selectedMeal) return null;
+  if (!primaryItem || !buildOptions || !buildOptions.slots) return null;
 
   return (
     <SectionWrapper title="Customize Your Meal">
-      {selectedMeal.sections.map((section) => {
-        const selectedItems = selectedSections[section.type] || [];
+      {buildOptions.slots.map((section) => {
+        const selectedItems = selectedSections[section.slotName] || [];
 
         return (
-          <div key={section.type} className="mb-8">
+          <div key={section.slotName} className="mb-8">
             <div className="flex items-center mb-1">
               <h4 className="text-sm font-medium mr-2">
-                {section.title}
-                {section.required && (
+                {section.slotName}
+                {section.isRequired && (
                   <span className="text-red-500 ml-1">*</span>
                 )}
               </h4>
@@ -32,7 +30,8 @@ const IngredientsSection = () => {
             </div>
 
             <ItemsRow
-              items={section.items}
+              section={section}
+              items={section.ingredients}
               selectedItems={selectedItems}
               onToggle={(item) => toggleItem(section, item)}
             />

@@ -1,104 +1,38 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import CustomizeHero from "./Sections/CustomizeHero";
 import BaseSelector from "./Sections/BaseSelector";
 import IngredientsSection from "./Sections/IngredientsSection";
 import CommentBox from "./Sections/CommentBox";
 import SummaryBox from "./Sections/SummaryBox";
 import { api } from "../../services/api";
-
-const mapCategoryToSection = (categoryStr) => {
-  if (!categoryStr) return "extras";
-  const cat = categoryStr.toLowerCase();
-  if (cat.includes("protein") || cat.includes("meat") || cat.includes("poultry") || cat.includes("finfish")) return "protein";
-  if (cat.includes("vegetable")) return "veggies";
-  if (cat.includes("dairy") || cat.includes("cheese")) return "cheese";
-  if (cat.includes("fat") || cat.includes("oil") || cat.includes("sauce")) return "sauces";
-  return "extras";
-};
-
-const sectionTitles = {
-  protein: "Protein",
-  veggies: "Veggies",
-  cheese: "Cheese",
-  sauces: "Sauces",
-  extras: "Extras"
-};
+import { useCustomizeStore } from "../../store/useCustomizeStore";
 
 const Customize = () => {
-  const [customizeData, setCustomizeData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { primaryItem, setPrimaryItem } = useCustomizeStore();
 
-  useEffect(() => {
-    const fetchMeals = async () => {
-      try {
-        const response = await api.get('/menu');
-        const rawMeals = response.data;
+  const { data: primaryItems = [], isLoading } = useQuery({
+    queryKey: ["customization", "primaryItems"],
+    queryFn: async () => {
+      const response = await api.get('/api/ingredients');
+      const allIngredients = response.data || [];
+      return allIngredients.filter(ing => {
+        const cat = (ing.category || "").toLowerCase();
+        return cat.includes("chicken") || cat.includes("beef") || cat.includes("protein") || cat.includes("fish");
+      });
+    },
+    staleTime: 1000 * 60 * 5 // Cache for 5 minutes
+  });
 
-        const mappedMeals = rawMeals.map(meal => {
-          // Group ingredients by mapped category
-          const sectionsMap = {
-            protein: [],
-            veggies: [],
-            cheese: [],
-            sauces: [],
-            extras: []
-          };
-
-          meal.mealIngredients?.forEach(mi => {
-            const ing = mi.ingredient;
-            const secType = mapCategoryToSection(ing.category);
-            
-            // Extract some basic nutrients
-            let calories = 0, protein = 0, carbs = 0, fat = 0;
-            ing.nutrients?.forEach(n => {
-              const name = (n.nutrientName || "").toLowerCase();
-              if (name.includes("energy")) calories = n.value;
-              else if (name.includes("protein")) protein = n.value;
-              else if (name.includes("carbohydrate")) carbs = n.value;
-              else if (name.includes("lipid") || name.includes("fat")) fat = n.value;
-            });
-
-            sectionsMap[secType].push({
-              id: ing.id,
-              name: ing.name,
-              price: 0, // Ingredients don't have individual prices in backend yet
-              calories,
-              protein,
-              carbs,
-              fat
-            });
-          });
-
-          // Convert map to array of sections
-          const sections = Object.keys(sectionsMap)
-            .filter(key => sectionsMap[key].length > 0)
-            .map(key => ({
-              title: sectionTitles[key],
-              type: key,
-              maxSelect: key === "protein" ? 1 : null,
-              required: key === "protein" || key === "veggies",
-              items: sectionsMap[key]
-            }));
-
-          return {
-            id: meal.id,
-            name: meal.name,
-            image: meal.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
-            bases: [{ id: `base-${meal.id}`, name: "Regular", basePrice: meal.price }],
-            sections
-          };
-        });
-
-        setCustomizeData(mappedMeals);
-      } catch (err) {
-        console.error("Failed to fetch meals:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMeals();
-  }, []);
+  const { data: buildOptions, isLoading: optionsLoading } = useQuery({
+    queryKey: ["customization", "buildOptions", primaryItem?.category],
+    queryFn: async () => {
+      const response = await api.get(`/api/customizations/build-options?primaryCategory=${primaryItem.category}`);
+      return response.data;
+    },
+    enabled: !!primaryItem,
+    staleTime: 1000 * 60 * 5 // Cache for 5 minutes
+  });
 
   return (
     <div className="bg-white min-h-screen px-20">
@@ -113,12 +47,16 @@ const Customize = () => {
         <div className="lg:col-span-2">
           <h2 className="text-2xl font-bold mb-6">🍳 Let's Start Cooking..</h2>
 
-          {loading ? (
-             <p>Loading menu...</p>
+          {isLoading ? (
+             <p>Loading bases...</p>
           ) : (
              <>
-               <BaseSelector meals={customizeData} />
-               <IngredientsSection />
+               <BaseSelector primaryItems={primaryItems} />
+               {optionsLoading ? (
+                 <p className="mt-4">Loading options for your base...</p>
+               ) : (
+                 buildOptions && <IngredientsSection buildOptions={buildOptions} />
+               )}
              </>
           )}
           <CommentBox />
