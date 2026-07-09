@@ -19,6 +19,9 @@ export const STATUS_FLOW = {
   Queue:     { next: "Preparing", label: "Start Preparing" },
   Preparing: { next: "Ready",     label: "Mark Ready" },
   Ready:     { next: "Done",      label: "Mark Done"  },
+  QUEUED:    { next: "Preparing", label: "Start Preparing" },
+  PREPARING: { next: "Ready",     label: "Mark Ready" },
+  READY:     { next: "Done",      label: "Mark Done"  },
 };
 
 // ── Pure helpers ──────────────────────────────────────────────────

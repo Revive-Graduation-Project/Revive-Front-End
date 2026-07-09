@@ -244,8 +244,21 @@ export const getOrdersMetrics = async () => {
 export const getOrders = (params = {}) =>
   api.get("/api/orders/admin/all", { params: { size: 500, ...params } }).then(r => Mappers.mapOrders(r.data));
 
-export const updateOrderStatus = (orderId, status) =>
-  api.patch(`/api/orders/admin/${encodeURIComponent(orderId)}/status`, { status }).then(r => r.data);
+const ADMIN_ORDER_STATUS_MAP = {
+  queue: "PENDING",
+  pending: "PENDING",
+  preparing: "PREPARING",
+  ready: "READY",
+  done: "DONE",
+  completed: "DONE",
+  cancelled: "CANCELED",
+  canceled: "CANCELED",
+};
+
+export const updateOrderStatus = (orderId, status) => {
+  const mapped = ADMIN_ORDER_STATUS_MAP[status?.toLowerCase()] || status?.toUpperCase() || status;
+  return api.patch(`/api/orders/admin/${encodeURIComponent(orderId)}/status`, { status: mapped }).then(r => r.data);
+};
 
 // ── Kitchen ───────────────────────────────────────────────────────
 export const getKitchenOrders = async () => {

@@ -183,10 +183,10 @@ function LiveKitchenView() {
         isOpen={!!orderToRevert}
         onClose={() => setOrderToRevert(null)}
         onConfirm={confirmRevert}
-        title="Not Done?"
-        message="Are you sure this order is not Done and should be moved back to the Ready list?"
-        confirmLabel="Not Done"
-        confirmClassName="bg-[#16A34A] hover:bg-green-700 shadow-lg shadow-green-500/30"
+        title="Move back to Ready?"
+        message="Are you sure this order should be moved back from Done to the Ready column?"
+        confirmLabel="< Ready"
+        confirmClassName="bg-[#F97316] hover:bg-orange-600 shadow-lg shadow-orange-500/30"
       />
 
       {/* ── Ticket status confirm modal ── */}
@@ -203,7 +203,9 @@ function LiveKitchenView() {
         message={`Are you sure you want to move ticket #${ticketConfirm?.ticketId} to ${ticketConfirm?.status}?`}
         confirmLabel={ticketConfirm?.label || "Confirm"}
         confirmClassName={
-          ticketConfirm?.status?.toUpperCase() === "READY" || ticketConfirm?.status?.toUpperCase() === "PREPARING"
+          ticketConfirm?.status?.toUpperCase() === "CANCELLED" || ticketConfirm?.status?.toUpperCase() === "CANCELED"
+            ? "bg-rose-600 hover:bg-rose-700 shadow-lg shadow-rose-500/30"
+            : ticketConfirm?.status?.toUpperCase() === "READY" || ticketConfirm?.status?.toUpperCase() === "PREPARING"
             ? "bg-[#F97316] hover:bg-orange-600 shadow-lg shadow-orange-500/30"
             : "bg-[#16A34A] hover:bg-green-700 shadow-lg shadow-green-500/30"
         }

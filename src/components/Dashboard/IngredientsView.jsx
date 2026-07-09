@@ -380,7 +380,7 @@ function IngredientsView() {
                         <td className="px-4 py-4 text-center w-[90px]">
                           <span
                             className={`text-[13px] font-extrabold ${
-                              isOut ? "text-red-500" : isLow ? "text-amber-500" : "text-[#1a1a1a]"
+                              isOut ? "text-red-500" : isLow ? "text-amber-500" : "text-green-600"
                             }`}
                           >
                             {stockText}

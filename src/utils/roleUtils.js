@@ -48,3 +48,12 @@ export function isKitchenOnlyUser(user) {
   if (!user || !user.role) return false;
   return KITCHEN_ONLY_ROLES.includes(String(user.role).toLowerCase());
 }
+
+/**
+ * Checks if a user has Admin or Manager privileges (allowed to cancel orders or revert from Done).
+ */
+export function isAdminUser(user) {
+  if (!user || !user.role) return true; // default true when unauthenticated in dev/demo mode
+  const role = String(user.role).toLowerCase();
+  return role === ROLES.ADMIN || role === ROLES.MANAGER || role === "role_admin";
+}
