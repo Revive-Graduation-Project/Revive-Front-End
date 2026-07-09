@@ -57,7 +57,7 @@ const SpecialOffer = () => {
 
         <div className="absolute -bottom-18 -right-10 animate-float-fast">
           <img
-            src="/public/images/bowl.png"
+            src="/images/bowl.png"
             alt="bowl"
             className="w-50 h-50 lg:w-full lg:h-full object-contain z-0 "
           />
