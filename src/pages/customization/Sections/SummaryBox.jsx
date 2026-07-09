@@ -19,8 +19,7 @@ const NutritionItem = ({ icon: Icon, label, value, unit }) => (
 
 const SummaryBox = () => {
   const {
-    selectedMeal,
-    selectedBase,
+    primaryItem,
     selectedSections,
     getTotalPrice,
     getNutrition,
@@ -31,27 +30,31 @@ const SummaryBox = () => {
 
   const { openCartDrawer, addItem } = useOrderStore();
 
-  if (!selectedMeal) return null;
+  if (!primaryItem) return null;
 
   const totalPrice = getTotalPrice();
   const nutrition = getNutrition();
   const isValid = isValidSelection();
 
   const handleAddToCart = () => {
-    if (!isValid || !selectedBase) return;
+    if (!isValid || !primaryItem) return;
 
-    const ingredientIds = Object.values(selectedSections)
-      .flat()
-      .map((item) => item.id);
+    const customizations = {};
+    // Primary item (Assume 100g or 1 quantity for the base logic)
+    customizations[primaryItem.id] = 100;
+
+    const additions = Object.values(selectedSections).flat();
+    additions.forEach(item => {
+      customizations[item.id] = parseInt(item.grams) || 50;
+    });
 
     const cartItem = {
-      id: `${selectedMeal.id}-${selectedBase.id}-${Date.now()}`,
-      name: `${selectedMeal.name} (${selectedBase.name})`,
+      id: `custom-${primaryItem.id}-${Date.now()}`,
+      name: `Custom ${primaryItem.name} Bowl`,
       price: totalPrice,
-      image: selectedMeal.image,
-      mealId: selectedMeal.id,
-      baseId: selectedBase.id,
-      ingredientIds,
+      image: primaryItem.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
+      mealId: null,
+      customizations,
       comment,
     };
 
@@ -63,15 +66,15 @@ const SummaryBox = () => {
   return (
     <div className="bg-white rounded-3xl shadow-xl p-6 sticky top-6 w-full max-h-[90vh] overflow-y-auto border border-gray-100">
       <h3 className="text-xl font-semibold mb-1">Your Meal Summary</h3>
-      <p className="text-sm text-gray-400 mb-4">{selectedMeal.name}</p>
+      <p className="text-sm text-gray-400 mb-4">Custom {primaryItem.name} Bowl</p>
 
       {/* Selected Base */}
-      {selectedBase && (
+      {primaryItem && (
         <div className="mb-3 px-3 py-2 bg-gray-50 rounded-xl text-sm">
-          <span className="text-gray-400">Base: </span>
-          <span className="font-medium">{selectedBase.name}</span>
+          <span className="text-gray-400">Main Ingredient: </span>
+          <span className="font-medium">{primaryItem.name}</span>
           <span className="text-orange-500 ml-1">
-            +{selectedBase.basePrice} EGP
+            +{primaryItem.price ? primaryItem.price : 0} EGP
           </span>
         </div>
       )}
@@ -81,19 +84,19 @@ const SummaryBox = () => {
         {Object.entries(selectedSections).map(
           ([sectionType, items]) =>
             items.length > 0 && (
-              <div key={sectionType}>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">
-                  {sectionType}
-                </p>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  {items.map((item) => (
-                    <li key={item.id} className="flex justify-between">
-                      <span>{item.name}</span>
-                      <span className="text-orange-500">+{item.price} EGP</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+               <div key={sectionType}>
+                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">
+                   {sectionType}
+                 </p>
+                 <ul className="text-sm text-gray-600 space-y-1">
+                   {items.map((item) => (
+                     <li key={item.id} className="flex justify-between">
+                       <span>{item.name} <span className="text-xs text-gray-400">({item.grams || 50}g)</span></span>
+                       <span className="text-orange-500">+{(item.price * (item.grams || 50)).toFixed(2)} EGP</span>
+                     </li>
+                   ))}
+                 </ul>
+               </div>
             ),
         )}
       </div>
@@ -156,9 +159,9 @@ const SummaryBox = () => {
       {/* Validation Message */}
       {!isValid && (
         <p className="text-xs text-red-400 mt-2 text-center">
-          {!selectedBase
-            ? "Please choose a base first"
-            : "Please complete all required selections"}
+          {!primaryItem
+            ? "Please choose a main ingredient first"
+            : "Please choose at least 2 additions"}
         </p>
       )}
     </div>
