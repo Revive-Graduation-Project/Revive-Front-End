@@ -17,9 +17,18 @@ export function KitchenTicketsTable({ tickets, isLoading, error, isFetching, onR
   if (isLoading) return <DashboardPageSkeleton />;
 
   const allTickets = Array.isArray(tickets) ? tickets : [];
-  const tabFiltered = activeTab === "All" ? [...allTickets] : allTickets.filter((t) => t.status === activeTab);
+  const tabFiltered = activeTab === "All"
+    ? [...allTickets]
+    : allTickets.filter((t) => {
+        if (activeTab === "Cancelled") return t.status === "Cancelled" || t.status === "CANCELED" || t.status === "CANCELLED";
+        return t.status === activeTab;
+      });
   const totalCount = allTickets.length;
-  const countsByStatus = allTickets.reduce((acc, t) => { acc[t.status] = (acc[t.status] || 0) + 1; return acc; }, {});
+  const countsByStatus = allTickets.reduce((acc, t) => {
+    const key = (t.status === "CANCELED" || t.status === "CANCELLED") ? "Cancelled" : t.status;
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
 
   return (
     <div className="flex flex-col gap-4 mt-10">
@@ -102,6 +111,18 @@ export function KitchenTicketsTable({ tickets, isLoading, error, isFetching, onR
                             </button>
                           ) : (
                             <span className="text-[12px] font-semibold text-gray-400 italic">Completed</span>
+                          )
+                        ) : (ticket.status === "Cancelled" || ticket.status === "CANCELED" || ticket.status === "CANCELLED") ? (
+                          isAdmin ? (
+                            <button
+                              type="button"
+                              onClick={() => onAction(ticket.id, "Queue", "Restore to Queue")}
+                              className="px-3 py-1.5 rounded-xl text-[12px] font-bold transition-all shadow-sm cursor-pointer border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center gap-1"
+                            >
+                              <span className="font-extrabold">&lt;</span> Queue
+                            </button>
+                          ) : (
+                            <span className="text-[12px] font-semibold text-rose-500 italic">Cancelled</span>
                           )
                         ) : (
                           <span className="text-[12px] font-semibold text-gray-400 italic">{ticket.status}</span>

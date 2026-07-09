@@ -11,7 +11,7 @@ export const COLUMNS = [
 ];
 
 // ── Kitchen ticket constants ───────────────────────────────────────
-export const TICKET_TABS = ["All", "Queue", "Preparing", "Ready", "Done"];
+export const TICKET_TABS = ["All", "Queue", "Preparing", "Ready", "Done", "Cancelled"];
 export const TICKET_HEADERS = ["Ticket ID", "Order ID", "Status", "Assigned Chef", "Time Elapsed", "Actions"];
 export const STATIONS = ["UNASSIGNED", "GRILL", "PREP", "FRY", "PASTRY", "SALADS"];
 
