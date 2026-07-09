@@ -10,7 +10,7 @@ const CustomizeHero = () => {
     >
       {/* Background Image */}
       <img
-        src="/public/images/customize/customize-hero.png"
+        src="/images/customize/customize-hero.png"
         alt="Customize Meal"
         className="absolute inset-0 w-full h-full object-cover"
       />
