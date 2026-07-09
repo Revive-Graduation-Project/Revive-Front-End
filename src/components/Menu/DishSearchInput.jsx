@@ -1,24 +1,14 @@
-import { useRef, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRef, useEffect } from "react";
 import { CiSearch } from "react-icons/ci";
 import { IoClose } from "react-icons/io5";
 import { FaUtensils } from "react-icons/fa";
-import { useMenuItems, isMenuItemActive } from "../../hooks/dashboard/useMenuItems";
 import { useDishSearch } from "../../search/useDishSearch";
 
-export default function SearchBar() {
+export default function DishSearchInput({ meals = [], onSelectDish }) {
   const containerRef = useRef(null);
-  const navigate = useNavigate();
-  const { data: rawMeals = [] } = useMenuItems({});
-  const meals = useMemo(() => rawMeals.filter(isMenuItemActive), [rawMeals]);
-
-  const handleSelectDish = (dish) => {
-    if (!dish) return;
-    navigate(`/menu?dishId=${dish.id}`);
-  };
-
   const {
     query,
+    setQuery,
     results,
     isOpen,
     selectedIndex,
@@ -28,7 +18,7 @@ export default function SearchBar() {
     handleKeyDown,
     clearQuery,
     setIsOpen,
-  } = useDishSearch(meals, { onSelectDish: handleSelectDish });
+  } = useDishSearch(meals, { onSelectDish });
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -44,47 +34,42 @@ export default function SearchBar() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (results.length > 0) {
-      const targetDish = results[selectedIndex] || results[0];
-      handleSelect(targetDish);
-    } else if (query.trim()) {
-      navigate(`/menu?search=${encodeURIComponent(query.trim())}`);
-      setIsOpen(false);
+    if (isOpen && results[selectedIndex]) {
+      handleSelect(results[selectedIndex]);
     }
   };
 
   return (
-    <div ref={containerRef} className="relative grow-2 order-3 md:order-2">
-      <form onSubmit={handleSubmit} className="w-full relative">
+    <div ref={containerRef} className="relative w-full max-w-xl mx-auto my-4">
+      <form onSubmit={handleSubmit} className="relative flex items-center">
+        <CiSearch className="absolute left-4 text-2xl text-green pointer-events-none" />
         <input
           type="text"
-          name="search"
           value={query}
           onChange={handleQueryChange}
           onKeyDown={handleKeyDown}
           onFocus={() => {
             if (query.trim().length > 0) setIsOpen(true);
           }}
-          placeholder="Search menu dishes..."
+          placeholder="Search dishes (e.g. Lava Cake, Grilled Chicken...)"
+          className="w-full bg-white border-2 border-green/30 focus:border-green text-gray-800 rounded-full pl-12 pr-10 py-2.5 text-sm md:text-base outline-none shadow-sm transition-all duration-200"
           autoComplete="off"
-          className="border px-10 py-1 rounded-3xl border-green w-full outline-none focus:ring text-sm md:text-base"
         />
-        <CiSearch className="text-2xl text-green ml-2 absolute top-1/2 transform -translate-y-1/2 left-1 pointer-events-none" />
         {query && (
           <button
             type="button"
             onClick={clearQuery}
             aria-label="Clear search"
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer p-1"
+            className="absolute right-3.5 text-gray-400 hover:text-gray-600 cursor-pointer p-1"
           >
-            <IoClose className="text-lg" />
+            <IoClose className="text-xl" />
           </button>
         )}
       </form>
 
-      {/* Dish Search Results Dropdown */}
+      {/* Results Dropdown */}
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 max-h-80 overflow-y-auto">
+        <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 max-h-80 overflow-y-auto">
           {results.length === 0 ? (
             <div className="p-4 text-center text-sm text-gray-500">
               No menu dishes found matching "{query}"
@@ -114,11 +99,11 @@ export default function SearchBar() {
                         <img
                           src={dish.imageUrl}
                           alt={dish.name}
-                          className="w-9 h-9 rounded-full object-cover border border-gray-200 flex-shrink-0"
+                          className="w-10 h-10 rounded-full object-cover border border-gray-200 flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center text-orange flex-shrink-0">
-                          <FaUtensils className="text-sm" />
+                        <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange flex-shrink-0">
+                          <FaUtensils />
                         </div>
                       )}
                       <div className="flex flex-col min-w-0 flex-1">
