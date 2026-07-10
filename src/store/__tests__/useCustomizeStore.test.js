@@ -8,102 +8,123 @@ describe('useCustomizeStore', () => {
     useCustomizeStore.setState(initialStoreState, true);
   });
 
-  const mockMeal = {
+  const mockPrimaryItem = {
     id: 1,
-    name: 'Burger',
-    sections: [
-      { type: 'base', required: true, maxSelect: 1 },
-      { type: 'ingredients', required: false },
+    name: 'Grilled Chicken Bowl',
+    price: 150,
+    category: 'chicken',
+    nutrients: [
+      { name: 'Calories', amount: 350 },
+      { name: 'Protein', amount: 40 },
+      { name: 'Carbs', amount: 10 },
+      { name: 'Fat', amount: 12 },
     ],
   };
 
-  const mockBase = { id: 10, name: 'Beef Base', price: 50, calories: 300 };
-  const mockIngredient1 = { id: 11, name: 'Cheese', price: 10, calories: 50 };
-  const mockIngredient2 = { id: 12, name: 'Bacon', price: 15, calories: 100 };
+  const mockBaseSection = {
+    slotName: 'Base',
+    isRequired: true,
+    maxSelect: 1,
+  };
 
-  it('TC-CUST-001: Select Base Meal', () => {
+  const mockVegSection = {
+    slotName: 'Vegetables',
+    isRequired: false,
+  };
+
+  const mockBaseItem = {
+    id: 10,
+    name: 'Brown Rice',
+    price: 0.5,
+    nutrients: [
+      { name: 'Calories', amount: 130 },
+      { name: 'Protein', amount: 3 },
+      { name: 'Carbs', amount: 28 },
+      { name: 'Fat', amount: 1 },
+    ],
+  };
+
+  const mockVegItem1 = {
+    id: 11,
+    name: 'Broccoli',
+    price: 0.2,
+    nutrients: [
+      { name: 'Calories', amount: 30 },
+      { name: 'Protein', amount: 2 },
+      { name: 'Carbs', amount: 6 },
+      { name: 'Fat', amount: 0 },
+    ],
+  };
+
+  it('TC-CUST-001: Select Primary Item and Calculate Price/Nutrition', () => {
     const store = useCustomizeStore.getState();
-    
-    // Set meal
-    store.setMeal(mockMeal);
-    expect(useCustomizeStore.getState().selectedMeal).toEqual(mockMeal);
-    
-    // Set base
-    useCustomizeStore.getState().setBase(mockBase);
-    const updatedStore = useCustomizeStore.getState();
-    expect(updatedStore.selectedBase).toEqual(mockBase);
-    
-    // Check price and nutrition
-    expect(updatedStore.getTotalPrice()).toBe(50);
-    const nutrition = updatedStore.getNutrition();
-    expect(nutrition.calories).toBe(300);
+
+    store.setPrimaryItem(mockPrimaryItem);
+    const updated = useCustomizeStore.getState();
+
+    expect(updated.primaryItem).toEqual(mockPrimaryItem);
+    expect(updated.getTotalPrice()).toBe(150);
+
+    const nutrition = updated.getNutrition();
+    expect(nutrition.calories).toBe(350);
+    expect(nutrition.protein).toBe(40);
   });
 
-  it('TC-CUST-002: Toggle Optional Ingredients', () => {
+  it('TC-CUST-002: Toggle Optional Ingredients and Update Grams', () => {
     const store = useCustomizeStore.getState();
-    store.setMeal(mockMeal);
-    store.setBase(mockBase);
+    store.setPrimaryItem(mockPrimaryItem);
 
-    // Toggle ingredient 1 on
-    useCustomizeStore.getState().toggleItem({ type: 'ingredients' }, mockIngredient1);
-    
-    let updatedStore = useCustomizeStore.getState();
-    expect(updatedStore.selectedSections['ingredients']).toContainEqual(mockIngredient1);
-    expect(updatedStore.getTotalPrice()).toBe(60); // 50 + 10
-    expect(updatedStore.getNutrition().calories).toBe(350); // 300 + 50
+    store.toggleItem(mockVegSection, mockVegItem1);
 
-    // Toggle ingredient 2 on
-    updatedStore.toggleItem({ type: 'ingredients' }, mockIngredient2);
-    updatedStore = useCustomizeStore.getState();
-    expect(updatedStore.selectedSections['ingredients']).toContainEqual(mockIngredient2);
-    expect(updatedStore.getTotalPrice()).toBe(75); // 60 + 15
+    let updated = useCustomizeStore.getState();
+    expect(updated.selectedSections['Vegetables']).toHaveLength(1);
+    expect(updated.selectedSections['Vegetables'][0].id).toBe(mockVegItem1.id);
+    expect(updated.selectedSections['Vegetables'][0].grams).toBe(50);
 
-    // Toggle ingredient 1 off
-    updatedStore.toggleItem({ type: 'ingredients' }, mockIngredient1);
-    updatedStore = useCustomizeStore.getState();
-    expect(updatedStore.selectedSections['ingredients']).not.toContainEqual(mockIngredient1);
-    expect(updatedStore.getTotalPrice()).toBe(65); // 50 + 15
+    expect(updated.getTotalPrice()).toBe(160);
+
+    updated.updateItemGrams('Vegetables', mockVegItem1.id, 100);
+    updated = useCustomizeStore.getState();
+    expect(updated.selectedSections['Vegetables'][0].grams).toBe(100);
+    expect(updated.getTotalPrice()).toBe(170);
+
+    updated.toggleItem(mockVegSection, mockVegItem1);
+    updated = useCustomizeStore.getState();
+    expect(updated.selectedSections['Vegetables']).toHaveLength(0);
+    expect(updated.getTotalPrice()).toBe(150);
   });
 
   it('TC-CUST-003: Add Custom Comment', () => {
-    useCustomizeStore.getState().setComment('No onions please');
-    expect(useCustomizeStore.getState().comment).toBe('No onions please');
+    useCustomizeStore.getState().setComment('No dressing please');
+    expect(useCustomizeStore.getState().comment).toBe('No dressing please');
   });
 
-  it('TC-CUST-004: Validate Selection (Required Sections)', () => {
+  it('TC-CUST-004: Validate Selection (Requires Primary Item + At least 2 additions)', () => {
     const store = useCustomizeStore.getState();
-    store.setMeal(mockMeal);
-    
-    // Missing base, should be invalid
+
     expect(store.isValidSelection()).toBe(false);
 
-    // Add base (which fulfills the required 'base' section in our mock setup)
-    // Wait, our mock base section expects it to be in `selectedSections['base']` based on `isValidSelection` logic!
-    // Let's check `isValidSelection` logic:
-    // for (const section of selectedMeal.sections) {
-    //   if (section.required) {
-    //     const selected = selectedSections[section.type] || [];
-    //     if (selected.length === 0) return false;
-    //   }
-    // }
-    
-    store.setBase(mockBase);
-    useCustomizeStore.getState().toggleItem({ type: 'base' }, mockBase);
-    
-    expect(useCustomizeStore.getState().isValidSelection()).toBe(true);
+    store.setPrimaryItem(mockPrimaryItem);
+    expect(store.isValidSelection()).toBe(false);
+
+    store.toggleItem(mockBaseSection, mockBaseItem);
+    expect(store.isValidSelection()).toBe(false);
+
+    store.toggleItem(mockVegSection, mockVegItem1);
+    expect(store.isValidSelection()).toBe(true);
   });
 
   it('TC-CUST-005: Reset Customization', () => {
     const store = useCustomizeStore.getState();
-    store.setMeal(mockMeal);
-    store.setBase(mockBase);
+    store.setPrimaryItem(mockPrimaryItem);
+    store.toggleItem(mockBaseSection, mockBaseItem);
     store.setComment('Test comment');
-    
+
     store.resetCustomize();
-    
+
     const resetStore = useCustomizeStore.getState();
-    expect(resetStore.selectedMeal).toBeNull();
-    expect(resetStore.selectedBase).toBeNull();
+    expect(resetStore.primaryItem).toBeNull();
+    expect(resetStore.selectedSections).toEqual({});
     expect(resetStore.comment).toBe('');
     expect(resetStore.getTotalPrice()).toBe(0);
   });
