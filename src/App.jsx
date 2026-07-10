@@ -15,7 +15,6 @@ import {
   Payment,
   Thanks,
   Favorites,
-  StoreDebug,
   Profile,
   Dashboard,
   Orders,
@@ -83,9 +82,7 @@ export default function App() {
         </Route>
 
         <Route path="/reset-password" element={<ResetPassword />} />
-
-        {/* Debug Route — remove before production */}
-        <Route path="/debug" element={<StoreDebug />} />
+        
 
         {/* Catch-all: redirect unknown URLs to Home */}
         <Route path="*" element={<Navigate to="/" replace />} />

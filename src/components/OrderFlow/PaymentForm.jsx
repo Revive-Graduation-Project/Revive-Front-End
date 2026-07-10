@@ -8,17 +8,9 @@ import PaymentMethodSelector from "./Payment/PaymentMethodSelector";
 
 /**
  * PaymentForm Component
- * 
- * The final step of the checkout flow where the user selects a payment method 
- * and confirms the order.
- * 
- * Logic & Orchestration:
- * - Method Switching: Supports 'cash' and 'credit_card'.
- * - Stripe Integration: Uses Stripe Elements for secure card input.
- * - Payment Flow:
- *   1. For cash: submitOrder directly, polls for status
- *   2. For credit card: submitOrder returns clientSecret, then confirm with Stripe
- * - Navigation: Redirects to the "/thanks" success page upon transaction completion.
+ * * Maps state data to match the explicit backend JSON structures:
+ * Request Payload matches: { items: [...], points: X, paymentMethod: STR }
+ * Response Payload matches: { status: "PENDING", stripeClientSecret: "...", ... }
  */
 export default function PaymentForm() {
   const navigate = useNavigate();
@@ -35,49 +27,74 @@ export default function PaymentForm() {
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
   const [stripeError, setStripeError] = useState(null);
   const [cardElement, setCardElement] = useState(null);
-
-  const handleCardComplete = () => {
-    setPaymentMethod("credit_card");
-    setStripeError(null);
-  };
+  const [currentClientSecret, setCurrentClientSecret] = useState(null);
 
   const handleElementReady = (element) => {
     setCardElement(element);
+  };
+
+  // Triggered when user enters valid card data and hits "Pay" inside the StripeCardElement
+  const handleCardComplete = async () => {
+    if (!stripe || !cardElement || !currentClientSecret) {
+      setStripeError("Payment credentials or card elements are missing.");
+      return;
+    }
+
+    try {
+      // Pass the extracted stripeClientSecret directly to Stripe's SDK action
+      const success = await confirmStripePayment(stripe, cardElement, currentClientSecret);
+      if (success) {
+        setIsAddCardOpen(false);
+        navigate("/thanks");
+      }
+    } catch (err) {
+      setStripeError(err.message || "Card validation failed. Please try again.");
+    }
+  };
+
+  const handleModalClose = () => {
+    setIsAddCardOpen(false);
+    setCardElement(null); 
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStripeError(null);
 
-    // For cash orders, submit directly
-    if (paymentMethod === "cash") {
-      const success = await submitOrder();
-      if (success) navigate("/thanks");
+    if (!paymentMethod) {
+      setStripeError("Please select a payment method before submitting.");
       return;
     }
 
-    // For credit card, need card element
-    if (paymentMethod === "credit_card") {
+    // 1. Submit the order structure to the backend API via the store
+    // Ensure your store maps cart state to match: { items: [{ mealId, quantity }], points, paymentMethod }
+    const orderResponse = await submitOrder();
+
+    if (!orderResponse) {
+      setStripeError(error || "Failed to process order creation request.");
+      return;
+    }
+
+    // 2. Route based on the chosen payment method and order status
+    if (paymentMethod === "CASH") {
+      if (orderResponse.status === "PENDING" || orderResponse.status === "CONFIRMED") {
+        navigate("/thanks");
+      }
+      return;
+    }
+
+    if (paymentMethod === "CREDIT_CARD") {
       if (!stripe) {
-        setStripeError("Stripe not loaded. Please refresh the page.");
+        setStripeError("Stripe SDK is unavailable. Please check your connection.");
         return;
       }
 
-      if (!cardElement) {
+      // Check for your exact response property key
+      if (orderResponse.status === "PENDING" && orderResponse.stripeClientSecret) {
+        setCurrentClientSecret(orderResponse.stripeClientSecret);
         setIsAddCardOpen(true);
-        return;
-      }
-
-      // Step 1: Submit order to get clientSecret
-      const orderResult = await submitOrder();
-      
-      if (orderResult?.requiresPayment) {
-        // Step 2: Confirm payment with Stripe
-        const success = await confirmStripePayment(stripe, cardElement);
-        if (success) {
-          setIsAddCardOpen(false);
-          navigate("/thanks");
-        }
+      } else {
+        setStripeError("Order initiated but no transaction token was provided by server.");
       }
     }
   };
@@ -86,38 +103,33 @@ export default function PaymentForm() {
     <div className="space-y-6">
       <form onSubmit={handleSubmit}>
         
-        {/* Payment Options Container */}
         <PaymentMethodSelector 
             paymentMethod={paymentMethod}
             setPaymentMethod={setPaymentMethod}
-            onAddCard={() => setIsAddCardOpen(true)}
         />
 
-        {/* Error Message */}
         {(error || stripeError) && (
-            <div className="mb-6 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+            <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-700 rounded-xl text-xs font-medium animate-fadeIn">
                 {stripeError || error}
             </div>
         )}
 
-        {/* Action Button */}
         <button
           type="submit"
-          disabled={loading}
-          className={`w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg py-4 rounded-full transition-colors shadow-lg shadow-orange-500/20 transform active:scale-[0.99] ${
-            loading ? "opacity-70 cursor-not-allowed" : "cursor-pointer"
+          disabled={loading || !paymentMethod}
+          className={`w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm tracking-wide uppercase py-4 rounded-full transition-all duration-200 shadow-md shadow-orange-500/10 active:scale-[0.98] ${
+            loading || !paymentMethod ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
           }`}
         >
-          {loading ? "Processing..." : "Confirm payment"}
+          {loading ? "Processing..." : paymentMethod === "CREDIT_CARD" ? "Continue to Payment" : "Place Order"}
         </button>
 
       </form>
       
-      {/* Add Card Modal with Stripe Elements */}
       <Modal 
         isOpen={isAddCardOpen} 
-        onClose={() => setIsAddCardOpen(false)}
-        title="Add card"
+        onClose={handleModalClose}
+        title="Enter Card Details"
       >
          <StripeCardElement 
            onCardComplete={handleCardComplete}

@@ -5,6 +5,7 @@ import {
   registerService,
   restoreSessionService,
 } from "../services/auth.service";
+import useProfileStore from "./profileStore";
 
 /**
  * ==============================
@@ -143,8 +144,21 @@ const useAuthStore = create(
       /**
        * Logout User
        */
-      logout: async () => {
+      logout: () => {
         set({ error: null, loading: true });
+
+        // Clear profile data from profileStore
+        useProfileStore.getState().clearProfile();
+
+        // Clear all localStorage entries created by Zustand persist middleware
+        localStorage.removeItem('revive-auth-store');
+        localStorage.removeItem('revive-profile-store');
+        localStorage.removeItem('revive-loyalty-store');
+        localStorage.removeItem('revive-favorites-store');
+        localStorage.removeItem('revive-order-store');
+        localStorage.removeItem('revive-payment-store');
+        localStorage.removeItem('revive-recommendation-store');
+        // Optional: keep theme preferences by not removing 'revive-ui-store'
 
         // Backend logout endpoint doesn't exist, so we only handle frontend state
         // Clear all authentication state

@@ -35,9 +35,8 @@ export default function InfoGrid({ user = {} }) {
     : "-";
 
   const conditions =
-    Array.isArray(user.healthConditions) &&
-    user.healthConditions.length > 0
-      ? user.healthConditions
+    Array.isArray(user.healthConditions)
+      ? user.healthConditions.filter((c) => c !== "NONE")
       : [];
 
   const phone = user.phoneNumber || "-";

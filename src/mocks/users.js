@@ -38,7 +38,7 @@ export const mockUsers = [
     healthConditions: ["NONE"],
     phoneNumber: "+201012345678",
     profilePictureUrl: null,
-    loyaltyPoints: 420,
+    loyaltyPoints: 1000,
   },
   {
     // Identity

@@ -13,10 +13,11 @@ import { formatCurrency } from "../../utils/formatters";
  * - Collapsible Details: Optionally shows an expandable list of cart items.
  * - Dynamic Action: The primary button disables automatically if the cart is empty.
  */
-export default function OrderSummary({ 
-  items, 
-  subtotal, 
-  total, 
+export default function OrderSummary({
+  items,
+  subtotal,
+  total,
+  discount = 0,
   buttonText = "Checkout",
   buttonLink = "/checkout",
   showItems = false,
@@ -84,6 +85,18 @@ export default function OrderSummary({
 
       {/* Price Breakdown */}
       <div className="space-y-3 mb-6">
+        <div className="border-t border-gray-200 pt-3 flex justify-between text-sm text-gray-600">
+          <span>Subtotal</span>
+          <span>{formatCurrency(subtotal)}</span>
+        </div>
+
+        {discount > 0 && (
+          <div className="flex justify-between text-sm text-green-700">
+            <span>Discount ({discount}%)</span>
+            <span>-{formatCurrency((subtotal * discount) / 100)}</span>
+          </div>
+        )}
+
         <div className="border-t border-gray-200 pt-3 flex justify-between text-lg font-bold">
           <span className="text-green-600">Total</span>
           <span className="text-orange-500">{formatCurrency(total)}</span>

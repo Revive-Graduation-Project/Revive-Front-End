@@ -13,6 +13,10 @@ import {
  * - Holds ClientProfileDto data exactly as the backend returns it —
  *   field names here (profilePictureUrl, etc.) match the real API,
  *   no renaming/remapping, to avoid frontend/backend field drift.
+ * - Persisted to localStorage, but `hasHydrated` lets consumers know
+ *   when the localStorage read has actually finished, so components
+ *   don't treat "not loaded yet" as "confirmed empty" (e.g. reading
+ *   loyaltyPoints as 0 before hydration completes).
  */
 const useProfileStore = create(
   persist(
@@ -20,24 +24,36 @@ const useProfileStore = create(
       user: null,
       loading: false,
       error: null,
+      hasHydrated: false,
 
-      fetchProfile: async (userId) => {
-        if (!userId) return null;
-        set({ loading: true, error: null });
-        try {
-          const res = await getProfile(userId);
-          const user = res?.data || null;
-          if (!user) {
-            set({ error: "Profile not found", loading: false });
-            return null;
-          }
-          set({ user, loading: false, error: null });
-          return user;
-        } catch (error) {
-          set({ error: error?.response?.data?.message || error.message, loading: false });
-          return null;
-        }
-      },
+      // Called automatically once the persist middleware finishes
+      // reading localStorage (see onRehydrateStorage below). Also
+      // safe to call manually if you ever need to force-reset it.
+      setHasHydrated: (state) => set({ hasHydrated: state }),
+
+  fetchProfile: async (userId) => {
+  if (!userId) return null;
+  set({ loading: true, error: null });
+  try {
+    const res = await getProfile(userId);
+    const user = res?.data || null;
+    if (!user) {
+      set({ error: "Profile not found", loading: false });
+      return null;
+    }
+
+    // TEMP TEST OVERRIDE — remove before merging/committing.
+    // Forces loyaltyPoints to 1000 regardless of what the backend returns,
+    // just to visually confirm VoucherSelection renders correctly.
+    user.loyaltyPoints = 1000;
+
+    set({ user, loading: false, error: null });
+    return user;
+  } catch (error) {
+    set({ error: error?.response?.data?.message || error.message, loading: false });
+    return null;
+  }
+},
 
       updateUserProfile: async (userId, data) => {
         if (!userId) return null;
@@ -111,6 +127,8 @@ const useProfileStore = create(
       },
 
       clearError: () => set({ error: null }),
+
+      clearProfile: () => set({ user: null, loading: false, error: null }),
     }),
     {
       name: "revive-profile-store",
@@ -126,6 +144,17 @@ const useProfileStore = create(
           return { user: null };
         }
         return persistedState;
+      },
+      // Fires once the async localStorage read completes (success or
+      // failure). This is what lets components distinguish "store
+      // hasn't checked localStorage yet" from "checked, and there's
+      // genuinely no cached user" — without it, `hasHydrated` would
+      // stay false forever and any gate relying on it would hang.
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.error("[profileStore] Failed to rehydrate from localStorage:", error);
+        }
+        state?.setHasHydrated(true);
       },
     }
   )

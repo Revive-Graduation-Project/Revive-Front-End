@@ -33,7 +33,7 @@ export default function Cart() {
               subtotal={totalAmount}
               total={totalAmount}
               buttonText="Checkout"
-              buttonLink="/payment"
+              buttonLink="/checkout"
               showItems={false}
             />
           </div>

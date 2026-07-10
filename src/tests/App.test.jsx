@@ -33,7 +33,6 @@ vi.mock('../pages', () => ({
   Payment: () => <div>Payment</div>,
   Thanks: () => <div>Thanks</div>,
   Favorites: () => <div>Favorites</div>,
-  StoreDebug: () => <div>StoreDebug</div>,
   Profile: () => <div>Profile</div>,
   Dashboard: () => <div>Dashboard</div>,
   Orders: () => <div>Orders</div>,
