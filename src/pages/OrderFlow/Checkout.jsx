@@ -48,14 +48,14 @@ export default function Checkout() {
   return (
     <div className="checkout-page bg-gray-50 min-h-screen pt-24 md:pt-32">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className={`grid gap-8 ${isEligibleForVoucher ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1 lg:grid-cols-2 lg:max-w-4xl lg:mx-auto'}`}>
           {/* Left: Cart items always shown, voucher shown underneath only if eligible */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className={`${isEligibleForVoucher ? 'lg:col-span-2' : 'lg:col-span-1'} space-y-6`}>
             {isEligibleForVoucher && <VoucherSelection />}
           </div>
 
           {/* Right: Order summary, always visible, button always proceeds to payment */}
-          <div>
+          <div className={isEligibleForVoucher ? '' : 'lg:col-span-1'}>
             <OrderSummary
               items={items}
               subtotal={totalAmount}

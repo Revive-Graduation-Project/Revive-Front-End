@@ -42,11 +42,6 @@ const useProfileStore = create(
       return null;
     }
 
-    // TEMP TEST OVERRIDE — remove before merging/committing.
-    // Forces loyaltyPoints to 1000 regardless of what the backend returns,
-    // just to visually confirm VoucherSelection renders correctly.
-    user.loyaltyPoints = 1000;
-
     set({ user, loading: false, error: null });
     return user;
   } catch (error) {

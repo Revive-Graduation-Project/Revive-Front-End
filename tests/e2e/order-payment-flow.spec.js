@@ -166,7 +166,7 @@ test.describe('Order and Payment Flow - End-to-End Tests', () => {
       if (orderRequests.length > 0) {
         expect(orderRequests[0].method).toBe('POST');
       } else {
-        console.log('No API requests detected - backend may be unavailable, but flow logic is correct');
+        expect.fail('No API requests detected - backend is required for this test');
       }
     });
 
@@ -256,7 +256,7 @@ test.describe('Order and Payment Flow - End-to-End Tests', () => {
           expect(orderResponses[0].body.stripeClientSecret).toBeTruthy();
         }
       } else {
-        console.log('No API responses detected - backend may be unavailable, but flow logic is correct');
+        expect.fail('No API responses detected - backend is required for this test');
       }
     });
 
@@ -547,7 +547,7 @@ test.describe('Order and Payment Flow - End-to-End Tests', () => {
         const orderText = await firstOrder.textContent();
         expect(orderText).toBeTruthy();
       } else {
-        console.log('No orders to display - backend may be unavailable, but flow logic is correct');
+        expect.fail('No orders to display - backend is required for this test');
       }
     });
   });
@@ -598,7 +598,7 @@ test.describe('Order and Payment Flow - End-to-End Tests', () => {
         // Should contain status information
         expect(orderText).toBeTruthy();
       } else {
-        console.log('No orders to track - backend may be unavailable, but flow logic is correct');
+        expect.fail('No orders to track - backend is required for this test');
       }
     });
   });
@@ -682,7 +682,7 @@ test.describe('Order and Payment Flow - End-to-End Tests', () => {
           }
         }
       } else {
-        console.log('No orders to check - backend may be unavailable, but flow logic is correct');
+        expect.fail('No orders to check - backend is required for this test');
       }
     });
   });

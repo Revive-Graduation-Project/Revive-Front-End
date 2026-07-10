@@ -279,10 +279,22 @@ const useOrderStore = create(
 
           // Exact payload expected by your backend specifications
           const orderPayload = {
-            items: state.items.map((item) => ({
-              mealId: item.id,
-              quantity: item.quantity,
-            })),
+            items: state.items.map((item) => {
+              // Handle custom meals (from customization page)
+              if (item.customizations) {
+                return {
+                  mealId: null, // Custom meals don't have a predefined mealId
+                  customizations: item.customizations,
+                  comment: item.comment || "",
+                  quantity: item.quantity,
+                };
+              }
+              // Handle regular menu items
+              return {
+                mealId: item.id,
+                quantity: item.quantity,
+              };
+            }),
             points: state.pointsToRedeem || 0,
             paymentMethod: state.paymentMethod,
           };
@@ -380,7 +392,7 @@ const useOrderStore = create(
 
           useUIStore.getState().addNotification({
             title: `New Order #${newOrder.id}`,
-            message: `Order received from ${state.customerDetails?.name || "Customer"} totaling ${totalWithDelivery.toFixed(2)} $. ${state.items.length} item(s) to prepare.`,
+            message: `Order received from ${state.customerDetails?.firstName || "Customer"} totaling ${totalWithDelivery.toFixed(2)} $. ${state.items.length} item(s) to prepare.`,
             type: "warning", // Orange warning badge for new incoming orders
             category: "Orders",
           });
@@ -494,8 +506,8 @@ const useOrderStore = create(
         customerDetails: state.customerDetails,
         paymentMethod: state.paymentMethod,
         lastOrder: state.lastOrder,
-        selectedDiscount: state.selectedDiscount,
-        pointsToRedeem: state.pointsToRedeem,
+        // Don't persist selectedDiscount and pointsToRedeem to avoid stale discounts
+        // when user's loyalty points change
       }),
       merge: (persistedState, currentState) => {
         const items = persistedState?.items || [];

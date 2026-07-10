@@ -51,10 +51,19 @@ export const mergeOrdersWithLastOrder = (apiOrders = [], lastOrder) => {
     mergedList.unshift(normalizeOrderForList(lastOrder));
   }
 
-  // Sort newest-first by actual timestamp, regardless of API/mock order
-  return mergedList.sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-  );
+  // Helper to safely parse dates with fallback for invalid timestamps
+  const safeParseDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return isNaN(date.getTime()) ? 0 : date.getTime();
+  };
+
+  // Sort newest-first by actual timestamp, with fallback for invalid dates
+  // Invalid dates (timestamp 0) will be sorted last
+  return mergedList.sort((a, b) => {
+    const timeA = safeParseDate(a.createdAt);
+    const timeB = safeParseDate(b.createdAt);
+    return timeB - timeA;
+  });
 };
 export const groupOrdersByDate = (orders = []) =>
   orders.reduce((acc, order) => {

@@ -177,7 +177,7 @@ The order and payment flow has been implemented with complete expected flow logi
 ### Test File: `tests/e2e/order-payment-flow.spec.js`
 
 **Total Test Cases:** 18  
-**Test Suites:** 6
+**Test Suites:** 7
 
 #### Test Suite: Cash on Delivery Flow (3 tests)
 - ✅ TC-CASH-001: Add items to cart and place order with Cash on Delivery
@@ -436,7 +436,7 @@ PENDING → CONFIRMED → PREPARING → READY → DELIVERED
 1. Cash on Delivery flow (TC-CASH-001)
 2. Credit Card flow (TC-STRIPE-001, TC-STRIPE-002)
 3. Voucher system (TC-VOUCHER-002, TC-VOUCHER-003)
-4. Error handling (TC-ERROR-003, TC-ERROR-004)
+4. Error handling (TC-ERROR-003, TC-ERROR-001)
 
 **Medium Priority:**
 5. Order history (TC-HISTORY-001, TC-HISTORY-002)

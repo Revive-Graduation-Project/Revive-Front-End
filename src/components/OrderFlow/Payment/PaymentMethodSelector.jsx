@@ -25,7 +25,7 @@ const PaymentMethodSelector = ({ paymentMethod, setPaymentMethod }) => {
         </div>
         {paymentMethod === "CASH" && (
           <div className="ml-auto text-orange-500 bg-orange-100/50 p-1 rounded-full">
-            <FiCheck className="w-4 h-4 stroke-[3]" />
+            <FiCheck className="w-4 h-4 stroke-3" />
           </div>
         )}
       </button>
@@ -53,7 +53,7 @@ const PaymentMethodSelector = ({ paymentMethod, setPaymentMethod }) => {
 
          {paymentMethod === "CREDIT_CARD" && (
           <div className="ml-auto text-orange-500 bg-orange-100/50 p-1 rounded-full">
-            <FiCheck className="w-4 h-4 stroke-[3]" />
+            <FiCheck className="w-4 h-4 stroke-3" />
           </div>
         )}
       </button>

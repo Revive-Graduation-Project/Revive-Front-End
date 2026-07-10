@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { FiFileText } from "react-icons/fi";
 import { useShallow } from "zustand/react/shallow";
-import { useOrderStore, useFavoritesStore } from "../../store";
+import { useOrderStore, useFavoritesStore, useProfileStore } from "../../store";
 import CartSection from "../../components/OrderFlow/CartSection";
 
 import OrderSummary from "../../components/OrderFlow/OrderSummary";
@@ -16,6 +16,11 @@ export default function Cart() {
   );
 
   const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
+  const points = useProfileStore((state) => state.user?.loyaltyPoints ?? 0);
+
+  // Skip checkout page if user doesn't have enough points for vouchers
+  const isEligibleForVoucher = points >= 100;
+  const checkoutButtonLink = isEligibleForVoucher ? "/checkout" : "/payment";
 
   return (
     <div className="cart-page bg-gray-50 min-h-screen pt-24 md:pt-32">
@@ -33,7 +38,7 @@ export default function Cart() {
               subtotal={totalAmount}
               total={totalAmount}
               buttonText="Checkout"
-              buttonLink="/checkout"
+              buttonLink={checkoutButtonLink}
               showItems={false}
             />
           </div>

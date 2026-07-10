@@ -46,6 +46,8 @@ export default function PaymentForm() {
       if (success) {
         setIsAddCardOpen(false);
         navigate("/thanks");
+      } else {
+        setStripeError("Payment failed. Please try again or use a different card.");
       }
     } catch (err) {
       setStripeError(err.message || "Card validation failed. Please try again.");
@@ -66,36 +68,40 @@ export default function PaymentForm() {
       return;
     }
 
-    // 1. Submit the order structure to the backend API via the store
-    // Ensure your store maps cart state to match: { items: [{ mealId, quantity }], points, paymentMethod }
-    const orderResponse = await submitOrder();
+    try {
+      // 1. Submit the order structure to the backend API via the store
+      // Ensure your store maps cart state to match: { items: [{ mealId, quantity }], points, paymentMethod }
+      const orderResponse = await submitOrder();
 
-    if (!orderResponse) {
-      setStripeError(error || "Failed to process order creation request.");
-      return;
-    }
-
-    // 2. Route based on the chosen payment method and order status
-    if (paymentMethod === "CASH") {
-      if (orderResponse.status === "PENDING" || orderResponse.status === "CONFIRMED") {
-        navigate("/thanks");
-      }
-      return;
-    }
-
-    if (paymentMethod === "CREDIT_CARD") {
-      if (!stripe) {
-        setStripeError("Stripe SDK is unavailable. Please check your connection.");
+      if (!orderResponse) {
+        setStripeError(error || "Failed to process order creation request.");
         return;
       }
 
-      // Check for your exact response property key
-      if (orderResponse.status === "PENDING" && orderResponse.stripeClientSecret) {
-        setCurrentClientSecret(orderResponse.stripeClientSecret);
-        setIsAddCardOpen(true);
-      } else {
-        setStripeError("Order initiated but no transaction token was provided by server.");
+      // 2. Route based on the chosen payment method and order status
+      if (paymentMethod === "CASH") {
+        if (orderResponse.status === "PENDING" || orderResponse.status === "CONFIRMED") {
+          navigate("/thanks");
+        }
+        return;
       }
+
+      if (paymentMethod === "CREDIT_CARD") {
+        if (!stripe) {
+          setStripeError("Stripe SDK is unavailable. Please check your connection.");
+          return;
+        }
+
+        // Check for your exact response property key
+        if (orderResponse.status === "PENDING" && orderResponse.stripeClientSecret) {
+          setCurrentClientSecret(orderResponse.stripeClientSecret);
+          setIsAddCardOpen(true);
+        } else {
+          setStripeError("Order initiated but no transaction token was provided by server.");
+        }
+      }
+    } catch (err) {
+      setStripeError(err.message || "Failed to process order creation request.");
     }
   };
 
