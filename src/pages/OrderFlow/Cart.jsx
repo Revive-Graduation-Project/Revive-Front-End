@@ -17,9 +17,11 @@ export default function Cart() {
 
   const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
   const points = useProfileStore((state) => state.user?.loyaltyPoints ?? 0);
+  const hasHydrated = useProfileStore((state) => state.hasHydrated);
 
   // Skip checkout page if user doesn't have enough points for vouchers
-  const isEligibleForVoucher = points >= 100;
+  // Wait for hydration to complete before deciding eligibility
+  const isEligibleForVoucher = hasHydrated && points >= 100;
   const checkoutButtonLink = isEligibleForVoucher ? "/checkout" : "/payment";
 
   return (
