@@ -1,4 +1,5 @@
 import { FiX, FiInfo, FiPackage, FiActivity } from "react-icons/fi";
+import { inferIngredientUnit } from "../../../utils/stockUtils";
 
 export default function IngredientNutrientsModal({ isOpen, onClose, ingredient }) {
   if (!isOpen || !ingredient) return null;
@@ -60,7 +61,7 @@ export default function IngredientNutrientsModal({ isOpen, onClose, ingredient }
               <span className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Stock</span>
               <span className="inline-flex items-center gap-1.5 text-[16px] font-black text-[#1a1a1a]">
                 <FiPackage className="text-orange-500" />
-                {ingredient.stock} {ingredient.unit || "g"}
+                {ingredient.stock} {inferIngredientUnit(ingredient.name, ingredient.unit)}
               </span>
             </div>
           </div>

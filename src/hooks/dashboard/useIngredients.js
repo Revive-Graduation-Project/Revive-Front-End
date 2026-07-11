@@ -7,7 +7,7 @@ import {
   uploadIngredientsFile,
 } from "../../services/dashboardService";
 import useUIStore from "../../store/uiStore";
-import { evaluateStock } from "../../utils/stockUtils";
+import { evaluateStock, inferIngredientUnit } from "../../utils/stockUtils";
 
 // ── Query keys ────────────────────────────────────────────────────────────────
 export const ingredientKeys = {
@@ -26,8 +26,8 @@ export function useIngredients(filters = {}) {
 
   useEffect(() => {
     if (Array.isArray(query.data)) {
-      const outOfStockItems = query.data.filter((i) => evaluateStock(i.stock, i.unit).isOutOfStock);
-      const lowStockItems = query.data.filter((i) => evaluateStock(i.stock, i.unit).isLowStock);
+      const outOfStockItems = query.data.filter((i) => evaluateStock(i.stock, i.unit, i.name).isOutOfStock);
+      const lowStockItems = query.data.filter((i) => evaluateStock(i.stock, i.unit, i.name).isLowStock);
 
       // 1. Out of stock alert scanner
       if (outOfStockItems.length > 0) {
@@ -46,7 +46,7 @@ export function useIngredients(filters = {}) {
 
       // 2. Low stock alert scanner
       if (lowStockItems.length > 0) {
-        const names = lowStockItems.map((i) => `${i.name} (${i.stock} ${i.unit || "g"})`).slice(0, 3).join(", ");
+        const names = lowStockItems.map((i) => `${i.name} (${i.stock} ${inferIngredientUnit(i.name, i.unit)})`).slice(0, 3).join(", ");
         const more = lowStockItems.length > 3 ? ` and ${lowStockItems.length - 3} others` : "";
         useUIStore.getState().addUniqueNotification({
           id: "inv-scanner-low-stock",
