@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useOrderStore } from "../../store";
 import { useStripe } from "@stripe/react-stripe-js";
-import Modal from "../UI/Modal";
 import StripeCardElement from "./Payment/StripeCardElement";
 import PaymentMethodSelector from "./Payment/PaymentMethodSelector";
+import Modal from '../ui/Modal';
 
 /**
  * PaymentForm Component
@@ -132,7 +132,7 @@ export default function PaymentForm() {
 
       </form>
       
-      <Modal 
+      <Modal
         isOpen={isAddCardOpen} 
         onClose={handleModalClose}
         title="Enter Card Details"
