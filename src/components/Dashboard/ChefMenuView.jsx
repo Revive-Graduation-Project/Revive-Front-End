@@ -28,10 +28,10 @@ const MENU_SORT_COLS = [
   { key: "calories", label: "Calories" },
   { key: "protein", label: "Protein" },
   { key: "sugar", label: "Sugar" },
-  { key: "price", label: "Price" },
+  { key: "price", label: "Price (EGP)" },
 ];
 
-const TABLE_HEADERS = ["Meal", "Category", "Fat", "Cal", "Pro", "Sug", "Price", "Actions"];
+const TABLE_HEADERS = ["Meal", "Category", "Fat", "Cal", "Pro", "Sug", "Price (EGP)", "Actions"];
 
 function ChefMenuView() {
   const [activeTab, setActiveTab] = useState("All Menu");
@@ -248,7 +248,7 @@ function ChefMenuView() {
                       <td className="px-5 py-3.5 text-[12px] text-green-600 font-semibold">{item.calories ?? "-"}</td>
                       <td className="px-5 py-3.5 text-[12px] text-green-600 font-semibold">{item.protein ?? "-"}</td>
                       <td className="px-5 py-3.5 text-[12px] text-green-600 font-semibold">{item.sugar ?? "-"}</td>
-                      <td className="px-5 py-3.5 text-[13px] font-bold text-orange-500">${item.price}</td>
+                      <td className="px-5 py-3.5 text-[13px] font-bold text-orange-500">{item.price} EGP</td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2">
                           <button
