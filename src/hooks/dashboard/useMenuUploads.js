@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "../../utils/toastUtils";
-import { getMenuUploads, uploadMenuFile } from "../../services/dashboardService";
+import { getMenuUploads, uploadMenuFile, validateMenuFile } from "../../services/dashboardService";
 import useUIStore from "../../store/uiStore";
 
 export const menuUploadKeys = {
@@ -56,6 +56,28 @@ export function useUploadMenu() {
       qc.invalidateQueries({ queryKey: menuUploadKeys.all });
       qc.invalidateQueries({ queryKey: ["menu"], refetchType: "all" });
       qc.invalidateQueries({ queryKey: ["ingredients"], refetchType: "all" });
+    },
+  });
+}
+
+/** Mutation: validate menu file (CSV) */
+export function useValidateMenu() {
+  return useMutation({
+    mutationFn: async ({ file, existingMealNames = [] }) => {
+      const result = await validateMenuFile(file);
+      const existingSet = new Set(existingMealNames.map(n => n.toLowerCase()));
+      
+      const dbDuplicates = result.validMeals
+        .filter(m => existingSet.has(m.mealName.toLowerCase()))
+        .map(m => ({ mealName: m.mealName, reason: "Already exists in system" }));
+        
+      const trueValid = result.validMeals
+        .filter(m => !existingSet.has(m.mealName.toLowerCase()));
+        
+      return {
+        validMeals: trueValid,
+        invalidMeals: [...result.invalidMeals, ...dbDuplicates],
+      };
     },
   });
 }

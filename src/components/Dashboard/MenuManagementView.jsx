@@ -7,11 +7,16 @@ import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 import EmptyState from "./shared/EmptyState";
 import CsvInstructionsModal from "./CsvInstructionsModal";
+import CsvValidationModal from "./CsvValidationModal";
+import { useValidateMenu } from "../../hooks/dashboard/useMenuUploads";
+import { useMenuItems } from "../../hooks/dashboard/useMenuItems";
 
 function MenuManagementView() {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isInstructionsModalOpen, setIsInstructionsModalOpen] = useState(false);
+  const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
+  const [validationResult, setValidationResult] = useState(null);
 
 
   // Dynamic calendar — `new Date()` is inside the memo so the snapshot
@@ -33,8 +38,10 @@ function MenuManagementView() {
     };
   }, []);
 
-  const { data: uploads, isLoading, error, refetch } = useMenuUploads();
+  const { data: uploads, isLoading: isUploadsLoading, error, refetch } = useMenuUploads();
+  const { data: menuItems } = useMenuItems();
   const { mutate: uploadFile, isPending: isUploading, isSuccess: isUploaded } = useUploadMenu();
+  const { mutate: validateMenu, isPending: isValidating } = useValidateMenu();
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -81,11 +88,28 @@ function MenuManagementView() {
   const handleUpload = () => {
     if (!selectedFile) return;
     const fileToUpload = selectedFile;
-    setSelectedFile(null); // Clear immediately for non-blocking background upload UX
-    uploadFile(fileToUpload);
+    
+    setIsValidationModalOpen(true);
+    setValidationResult(null); // Reset previous
+    
+    validateMenu(
+      { 
+        file: fileToUpload, 
+        existingMealNames: menuItems?.map(m => m.name) || [] 
+      },
+      {
+        onSuccess: (res) => {
+          setValidationResult(res);
+        },
+        onError: (err) => {
+          setIsValidationModalOpen(false);
+          toast.error("Step 1 Failed: " + (err?.response?.data?.message || err.message));
+        }
+      }
+    );
   };
 
-  if (isLoading) {
+  if (isUploadsLoading) {
     return (
       <div>
         <DashboardHeader title="Menu Management" />
@@ -164,10 +188,10 @@ function MenuManagementView() {
             <button
               type="button"
               onClick={handleUpload}
-              disabled={isUploading || isUploaded}
+              disabled={isUploading || isUploaded || isValidating}
               className="mt-6 w-full py-3.5 rounded-2xl bg-[#F97316] text-white border-none font-bold text-[15px] cursor-pointer shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 transition-all disabled:opacity-75 disabled:cursor-not-allowed"
             >
-              {isUploading ? "Uploading..." : isUploaded ? "Imported! ✓" : "Process Import"}
+              {isValidating ? "Validating..." : isUploading ? "Uploading..." : isUploaded ? "Imported! ✓" : "Validate & Preview"}
             </button>
           )}
         </div>
@@ -235,6 +259,13 @@ function MenuManagementView() {
       <CsvInstructionsModal 
         isOpen={isInstructionsModalOpen}
         onClose={() => setIsInstructionsModalOpen(false)}
+      />
+
+      <CsvValidationModal
+        isOpen={isValidationModalOpen}
+        onClose={() => setIsValidationModalOpen(false)}
+        validationResult={validationResult}
+        isValidating={isValidating}
       />
     </div>
   );
