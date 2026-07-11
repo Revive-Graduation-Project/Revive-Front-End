@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiBell, FiCheckCircle, FiAlertCircle, FiClock, FiInfo, FiCheck } from "react-icons/fi";
+import { FiBell, FiCheckCircle, FiAlertCircle, FiClock, FiInfo, FiCheck, FiMenu } from "react-icons/fi";
 import { useAuthStore, useProfileStore, useUIStore } from "../../store";
 import { formatNotificationTime } from "../../store/uiStore";
 
@@ -94,11 +94,21 @@ function DashboardHeader({ title = "Dashboard", subtitle }) {
   };
 
   return (
-    <header className="flex flex-col md:flex-row items-start md:items-center justify-between px-6 md:px-8 py-6 bg-transparent sticky top-0 z-40 gap-4 md:gap-0">
-      {/* Title + greeting */}
-      <div>
-        <h1 className="text-[28px] font-bold text-[#1a1a1a] m-0 tracking-tight">{title}</h1>
-        <p className="text-[13px] text-gray-500 mt-1 font-medium">{displaySubtitle}</p>
+    <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 md:px-8 py-5 md:py-6 bg-transparent sticky top-0 z-40 gap-4 sm:gap-0">
+      {/* Title + greeting + mobile/tablet sidebar toggle */}
+      <div className="flex items-center gap-4">
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new CustomEvent("toggle-dashboard-sidebar"))}
+          className="lg:hidden w-[42px] h-[42px] rounded-xl bg-white flex items-center justify-center cursor-pointer shadow-xs border border-gray-100 hover:bg-orange-50 transition-colors shrink-0"
+          aria-label="Toggle Sidebar"
+        >
+          <FiMenu size={20} className="text-[#1a1a1a]" />
+        </button>
+        <div>
+          <h1 className="text-[24px] md:text-[28px] font-bold text-[#1a1a1a] m-0 tracking-tight">{title}</h1>
+          <p className="text-[13px] text-gray-500 mt-1 font-medium">{displaySubtitle}</p>
+        </div>
       </div>
 
       {/* Right: bell + profile */}

@@ -195,7 +195,7 @@ function ChefMenuView() {
 
             {/* Table */}
             <div className="overflow-x-auto relative">
-              <table className="w-full border-collapse">
+              <table className="w-full border-collapse min-w-[700px]">
                 <thead>
                   <tr className="border-b border-gray-100">
                     {TABLE_HEADERS.map((h) => (

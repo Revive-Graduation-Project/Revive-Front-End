@@ -71,7 +71,7 @@ function LiveKitchenView() {
           ) : (
             <>
               {/* 3-column kanban */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                 {COLUMNS.map((col) => {
                   const cards = boards[col.key] || [];
                   return (

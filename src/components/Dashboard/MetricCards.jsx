@@ -19,7 +19,7 @@ function formatValue(key, value) {
 
 function MetricCards({ metrics }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
       {Object.entries(metrics).map(([key, { value, change, trend }]) => {
         const Icon = icons[key];
         const isUp = trend === "up";
