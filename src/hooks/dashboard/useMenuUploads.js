@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import { toast } from "../../utils/toastUtils";
 import {
   getMenuUploads,
@@ -133,8 +134,13 @@ export function useImportMenu() {
  */
 export function useImportJobStatus(jobId) {
   const qc = useQueryClient();
+  const processedRef = useRef(false);
 
-  return useQuery({
+  useEffect(() => {
+    processedRef.current = false;
+  }, [jobId]);
+
+  const query = useQuery({
     queryKey: menuUploadKeys.jobStatus(jobId),
     queryFn: () => getImportStatus(jobId),
     enabled: !!jobId,
@@ -143,36 +149,44 @@ export function useImportJobStatus(jobId) {
       const state = query.state?.data?.state;
       return state === "DONE" || state === "FAILED" ? false : 3000;
     },
-    onSuccess: (data) => {
-      if (data.state === "DONE") {
-        toast.success("Import complete!", {
-          description: "All meals have been processed and added to the menu.",
-          duration: 6000,
-        });
-        useUIStore.getState().addNotification({
-          title: "Menu Import Complete ✅",
-          message: "All meals have been processed and added to the menu.",
-          type: "success",
-          category: "Performance",
-        });
-        _updateUploadEntryStatus(jobId, "success", null);
-        qc.invalidateQueries({ queryKey: ["menu"], refetchType: "all" });
-        qc.invalidateQueries({ queryKey: ["ingredients"], refetchType: "all" });
-      } else if (data.state === "FAILED") {
-        toast.error("Import failed.", {
-          description: data.errorMessage || "An error occurred during processing.",
-          duration: 10000,
-        });
-        useUIStore.getState().addNotification({
-          title: "Menu Import Failed ❌",
-          message: data.errorMessage || "An error occurred during processing.",
-          type: "error",
-          category: "Performance",
-        });
-        _updateUploadEntryStatus(jobId, "failed", data.errorMessage);
-      }
-    },
   });
+
+  useEffect(() => {
+    if (!query.data || processedRef.current) return;
+    const data = query.data;
+
+    if (data.state === "DONE") {
+      processedRef.current = true;
+      toast.success("Import complete!", {
+        description: "All meals have been processed and added to the menu.",
+        duration: 6000,
+      });
+      useUIStore.getState().addNotification({
+        title: "Menu Import Complete ✅",
+        message: "All meals have been processed and added to the menu.",
+        type: "success",
+        category: "Performance",
+      });
+      _updateUploadEntryStatus(jobId, "success", null);
+      qc.invalidateQueries({ queryKey: ["menu"], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["ingredients"], refetchType: "all" });
+    } else if (data.state === "FAILED") {
+      processedRef.current = true;
+      toast.error("Import failed.", {
+        description: data.errorMessage || "An error occurred during processing.",
+        duration: 10000,
+      });
+      useUIStore.getState().addNotification({
+        title: "Menu Import Failed ❌",
+        message: data.errorMessage || "An error occurred during processing.",
+        type: "error",
+        category: "Performance",
+      });
+      _updateUploadEntryStatus(jobId, "failed", data.errorMessage);
+    }
+  }, [query.data, jobId, qc]);
+
+  return query;
 }
 
 /** Updates the importStatus field of the localStorage upload entry matching jobId. */
