@@ -225,12 +225,14 @@ function MenuManagementView() {
           <div className="border border-[#A8B89E] rounded-4xl p-6 sm:p-10 flex flex-col lg:flex-row gap-10 lg:gap-16 items-center lg:items-start" style={{ backgroundColor: 'transparent' }}>
 
             {/* Table Area */}
-            <div className="flex-1 w-full">
-              <div className="grid grid-cols-[2fr_1fr_1fr] border-b border-[#D5D5D5] pb-3 mb-4">
-                <span className="text-[15px] font-medium text-gray-500 pl-4">File name</span>
-                <span className="text-[15px] font-medium text-gray-500 text-center">Date</span>
-                <span className="text-[15px] font-medium text-gray-500 text-center">Time</span>
-              </div>
+            <div className="flex-1 w-full overflow-x-auto">
+              <div className="min-w-[450px]">
+                <div className="grid grid-cols-[2fr_1fr_1fr_auto] border-b border-[#D5D5D5] pb-3 mb-4">
+                  <span className="text-[15px] font-medium text-gray-500 pl-4">File name</span>
+                  <span className="text-[15px] font-medium text-gray-500 text-center">Date</span>
+                  <span className="text-[15px] font-medium text-gray-500 text-center">Time</span>
+                  <span className="w-6" />
+                </div>
 
               <div className="flex flex-col gap-4">
                 {!uploads || uploads.length === 0 ? (
@@ -242,6 +244,7 @@ function MenuManagementView() {
                 )}
               </div>
             </div>
+          </div>
 
             {/* Calendar Widget */}
             <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 w-[140px] shrink-0">

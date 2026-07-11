@@ -59,7 +59,7 @@ export function KitchenTicketsTable({ tickets, isLoading, error, isFetching, onR
 
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
+          <table className="w-full border-collapse min-w-[700px]">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/50">
                 {TICKET_HEADERS.map((h) => (

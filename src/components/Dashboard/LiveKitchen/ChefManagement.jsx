@@ -65,7 +65,7 @@ export function ChefManagement({ tickets, isLoading, error, onUpdateStatus, onUp
             description="Chef data will appear here once tickets with assigned chefs are loaded." />
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {chefs.map((chef) => (
             <div key={chef.id} className="bg-white rounded-3xl p-5 shadow-sm border border-gray-50 flex flex-col gap-4 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between gap-2">

@@ -54,7 +54,7 @@ function DashboardView() {
           {/* Left Column */}
           <div className="flex-1 flex flex-col gap-6 w-full">
             {loadingMetrics ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <MetricCardSkeleton />
                 <MetricCardSkeleton />
                 <MetricCardSkeleton />

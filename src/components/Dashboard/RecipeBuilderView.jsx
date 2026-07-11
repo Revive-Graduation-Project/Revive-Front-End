@@ -154,7 +154,7 @@ export default function RecipeBuilderView() {
         </p>
       </div>
 
-      <div className="px-4 md:px-12 max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-x-12 gap-y-10 items-start">
+      <div className="px-4 md:px-8 max-w-[1200px] mx-auto grid grid-cols-1 xl:grid-cols-[1.1fr_1fr] gap-x-12 gap-y-10 items-start">
         {/* ── Left Column ── */}
         <div className="flex flex-col gap-8">
 

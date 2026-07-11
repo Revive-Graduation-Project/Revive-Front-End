@@ -26,12 +26,12 @@ function DashboardLayout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f5ecdc]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="flex min-h-screen bg-[#fff6d3]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       {/* Fixed left sidebar */}
       <DashboardSidebar />
 
       {/* Scrollable main content */}
-      <main className="flex-1 overflow-y-auto" style={{ marginLeft: "240px" }}>
+      <main className="flex-1 overflow-y-auto pl-0 md:pl-[76px] lg:pl-[240px] transition-all duration-300">
         <Outlet />
       </main>
 
