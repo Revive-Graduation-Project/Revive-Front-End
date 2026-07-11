@@ -4,7 +4,7 @@ import DashboardHeader from "./DashboardHeader";
 import { useCreateMenuItem, useUpdateMenuItem } from "../../hooks/dashboard/useMenuItems";
 import { useIngredients } from "../../hooks/dashboard/useIngredients";
 import {
-  FiPlus, FiTrash2, FiCamera, FiBookOpen, FiDollarSign,
+  FiPlus, FiTrash2, FiCamera, FiBookOpen,
   FiAlignLeft, FiChevronDown, FiGrid, FiUploadCloud, FiSearch, FiX
 } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
@@ -261,9 +261,9 @@ export default function RecipeBuilderView() {
               </div>
 
               <div>
-                <p className="text-[14px] font-medium text-[#1a1a1a] mb-2">Price</p>
+                <p className="text-[14px] font-medium text-[#1a1a1a] mb-2">Price (EGP)</p>
                 <div className="bg-white rounded-full px-5 py-3.5 flex items-center gap-3 shadow-sm">
-                  <FiDollarSign className="text-gray-400 shrink-0" size={16} />
+                  <span className="text-[12px] font-bold text-orange-500 shrink-0">EGP</span>
                   <input placeholder="Enter meal price..." className="bg-transparent border-none outline-none w-full text-[13px] font-medium text-gray-600" value={form.price} onChange={handlePriceInput} />
                 </div>
               </div>
