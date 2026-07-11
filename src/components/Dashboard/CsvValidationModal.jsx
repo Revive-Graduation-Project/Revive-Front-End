@@ -29,8 +29,8 @@ const CsvValidationModal = ({
 
   const handleConfirmImport = () => {
     importMenu(validMeals, {
-      onSuccess: () => {
-        if (onImportSuccess) onImportSuccess(validMeals.length);
+      onSuccess: (data) => {
+        if (onImportSuccess) onImportSuccess(validMeals.length, data.jobId);
       },
       onSettled: () => {
         onClose();
@@ -80,7 +80,7 @@ const CsvValidationModal = ({
                 />
               ) : isImporting ? (
                 <LoadingState 
-                  title={`Processing ${validMeals.length} meals — this may take a minute...`} 
+                  title={`Processing ${validMeals.length} meals — this may take a minute…`} 
                 />
               ) : (
                 <div className="space-y-8">

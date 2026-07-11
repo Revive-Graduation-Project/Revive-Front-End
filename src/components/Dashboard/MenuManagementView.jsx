@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
 import DashboardHeader from "./DashboardHeader";
-import { useMenuUploads, useUploadMenu } from "../../hooks/dashboard/useMenuUploads";
+import { useMenuUploads, useUploadMenu, useImportJobStatus } from "../../hooks/dashboard/useMenuUploads";
 import { toast } from "../../utils/toastUtils";
-import { FiUploadCloud, FiFileText, FiInfo } from "react-icons/fi";
+import { FiUploadCloud, FiFileText, FiInfo, FiCheckCircle, FiXCircle, FiLoader } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 import EmptyState from "./shared/EmptyState";
@@ -109,7 +109,7 @@ function MenuManagementView() {
     );
   };
 
-  const handleImportSuccess = (validMealsCount) => {
+  const handleImportSuccess = (validMealsCount, jobId) => {
     // Record the upload in localStorage to show in Recent Uploads
     if (selectedFile) {
       const uploads = JSON.parse(localStorage.getItem('menuUploads') || '[]');
@@ -120,6 +120,8 @@ function MenuManagementView() {
         date: now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
         time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
         status: "Success",
+        importStatus: jobId ? "processing" : "success",
+        jobId: jobId || null,
         added: validMealsCount || 0, 
         updated: 0
       };
@@ -163,9 +165,9 @@ function MenuManagementView() {
           </p>
           <button 
             onClick={() => setIsInstructionsModalOpen(true)}
-            className="mt-3 text-[13px] font-bold text-[#F97316] hover:text-[#ea580c] flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="mt-4 px-5 py-2.5 bg-orange-50 text-[#F97316] hover:bg-[#F97316] hover:text-white rounded-full text-[13px] font-bold flex items-center gap-2 transition-all shadow-sm border border-orange-100 cursor-pointer group"
           >
-            {"\uD83D\uDCCB"} CSV Format Guide
+            📋 How to format your CSV
           </button>
         </div>
 
@@ -235,11 +237,7 @@ function MenuManagementView() {
                   <p className="text-[13px] text-gray-400 text-center py-6">No uploads yet — drop a file above!</p>
                 ) : (
                   uploads.map((upload) => (
-                    <div key={upload.id} className="grid grid-cols-[2fr_1fr_1fr] items-center py-1">
-                      <span className="text-[13px] font-medium text-gray-500 pl-4 truncate">{upload.filename}</span>
-                      <span className="text-[13px] font-medium text-gray-500 text-center">{upload.date}</span>
-                      <span className="text-[13px] font-medium text-gray-500 text-center">{upload.time}</span>
-                    </div>
+                    <UploadRow key={upload.id} upload={upload} />
                   ))
                 )}
               </div>
@@ -289,6 +287,48 @@ function MenuManagementView() {
         onImportSuccess={handleImportSuccess}
         filename={selectedFile?.name}
       />
+    </div>
+  );
+}
+
+/**
+ * A single row in the Recent Uploads table.
+ * If the upload has a jobId and importStatus is "processing", it mounts
+ * useImportJobStatus which polls every 3s and updates localStorage when done.
+ */
+function UploadRow({ upload }) {
+  const isPolling = upload.jobId && upload.importStatus === "processing";
+  useImportJobStatus(isPolling ? upload.jobId : null);
+
+  const statusBadge = () => {
+    if (upload.importStatus === "processing") {
+      return (
+        <span className="flex items-center justify-center gap-1 text-[11px] text-orange-500 font-medium">
+          <FiLoader size={12} className="animate-spin" /> Processing…
+        </span>
+      );
+    }
+    if (upload.importStatus === "success") {
+      return <FiCheckCircle size={15} className="text-green-500 mx-auto" title="Import complete" />;
+    }
+    if (upload.importStatus === "failed") {
+      return (
+        <FiXCircle
+          size={15}
+          className="text-red-500 mx-auto cursor-help"
+          title={upload.errorMessage || "Import failed"}
+        />
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div className="grid grid-cols-[2fr_1fr_1fr_auto] items-center py-1 gap-2">
+      <span className="text-[13px] font-medium text-gray-500 pl-4 truncate">{upload.filename}</span>
+      <span className="text-[13px] font-medium text-gray-500 text-center">{upload.date}</span>
+      <span className="text-[13px] font-medium text-gray-500 text-center">{upload.time}</span>
+      <span className="w-[80px] text-center">{statusBadge()}</span>
     </div>
   );
 }

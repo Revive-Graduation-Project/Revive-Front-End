@@ -1,0 +1,186 @@
+﻿diff --git a/src/components/Dashboard/CsvValidationModal.jsx b/src/components/Dashboard/CsvValidationModal.jsx
+index dccd91e..ae73c8c 100644
+--- a/src/components/Dashboard/CsvValidationModal.jsx
++++ b/src/components/Dashboard/CsvValidationModal.jsx
+@@ -1,12 +1,15 @@
+ import React from 'react';
+ import { motion, AnimatePresence } from 'framer-motion';
+-import { FiX, FiCheckCircle, FiAlertTriangle, FiLoader } from 'react-icons/fi';
++import { FiX, FiCheckCircle, FiAlertTriangle, FiLoader, FiUploadCloud } from 'react-icons/fi';
++import { useImportMenu } from '../../hooks/dashboard/useMenuUploads';
+ 
+ const CsvValidationModal = ({ 
+   isOpen, 
+   onClose, 
+   validationResult, 
+-  isValidating
++  isValidating,
++  onImportSuccess,
++  filename
+ }) => {
+   if (!isOpen) return null;
+ 
+@@ -15,6 +18,19 @@ const CsvValidationModal = ({
+   const hasValidMeals = validMeals.length > 0;
+   const hasInvalidMeals = invalidMeals.length > 0;
+ 
++  const { mutate: importMenu, isPending: isImporting } = useImportMenu();
++
++  const handleConfirmImport = () => {
++    importMenu({ validMeals, filename }, {
++      onSuccess: () => {
++        if (onImportSuccess) onImportSuccess();
++      },
++      onSettled: () => {
++        onClose();
++      }
++    });
++  };
++
+   return (
+     <AnimatePresence>
+       {isOpen && (
+@@ -56,6 +72,11 @@ const CsvValidationModal = ({
+                   <p className="text-gray-600 font-medium">Analyzing CSV file...</p>
+                   <p className="text-sm text-gray-400 mt-2">Checking for duplicates and missing data</p>
+                 </div>
++              ) : isImporting ? (
++                <div className="flex flex-col items-center justify-center py-20">
++                  <FiLoader size={48} className="animate-spin text-blue-500 mb-4" />
++                  <p className="text-gray-600 font-medium">Processing {validMeals.length} meals ΓÇö this may take a minute...</p>
++                </div>
+               ) : (
+                 <div className="space-y-8">
+                   {/* Ready to Import Section */}
+@@ -141,11 +162,19 @@ const CsvValidationModal = ({
+             <div className="p-6 border-t border-gray-100 bg-white flex items-center justify-end gap-3">
+               <button
+                 onClick={onClose}
+-                disabled={isValidating}
+-                className="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
++                disabled={isValidating || isImporting}
++                className="px-6 py-2.5 rounded-xl text-gray-600 font-semibold text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
+               >
+                 Close
+               </button>
++              <button
++                onClick={handleConfirmImport}
++                disabled={!hasValidMeals || isValidating || isImporting}
++                className="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
++              >
++                <FiUploadCloud size={18} />
++                Confirm Import
++              </button>
+             </div>
+           </motion.div>
+         </div>
+diff --git a/src/components/Dashboard/MenuManagementView.jsx b/src/components/Dashboard/MenuManagementView.jsx
+index 4a3d17d..b8b939e 100644
+--- a/src/components/Dashboard/MenuManagementView.jsx
++++ b/src/components/Dashboard/MenuManagementView.jsx
+@@ -109,6 +109,11 @@ function MenuManagementView() {
+     );
+   };
+ 
++  const handleImportSuccess = () => {
++    setSelectedFile(null); // Reset selection
++    refetch(); // Refetch the uploads query
++  };
++
+   if (isUploadsLoading) {
+     return (
+       <div>
+@@ -266,6 +271,8 @@ function MenuManagementView() {
+         onClose={() => setIsValidationModalOpen(false)}
+         validationResult={validationResult}
+         isValidating={isValidating}
++        onImportSuccess={handleImportSuccess}
++        filename={selectedFile?.name}
+       />
+     </div>
+   );
+diff --git a/src/hooks/dashboard/useMenuUploads.js b/src/hooks/dashboard/useMenuUploads.js
+index 429f654..2c340ff 100644
+--- a/src/hooks/dashboard/useMenuUploads.js
++++ b/src/hooks/dashboard/useMenuUploads.js
+@@ -1,6 +1,6 @@
+ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+ import { toast } from "../../utils/toastUtils";
+-import { getMenuUploads, uploadMenuFile, validateMenuFile } from "../../services/dashboardService";
++import { getMenuUploads, uploadMenuFile, validateMenuFile, importMenuJson } from "../../services/dashboardService";
+ import useUIStore from "../../store/uiStore";
+ 
+ export const menuUploadKeys = {
+@@ -81,3 +81,34 @@ export function useValidateMenu() {
+     },
+   });
+ }
++
++/** Mutation: import menu json */
++export function useImportMenu() {
++  const qc = useQueryClient();
++  return useMutation({
++    mutationFn: (payload) => importMenuJson(payload),
++    onSuccess: (data) => {
++      toast.success("Import started!", {
++        description: data.message || "Your menu will update shortly.",
++        duration: 6000,
++      });
++      useUIStore.getState().addNotification({
++        title: "Menu CSV Imported",
++        message: data.message || "Menu items are being processed.",
++        type: "success",
++        category: "Performance",
++      });
++    },
++    onError: (err) => {
++      toast.error("Import failed.", {
++        description: err?.response?.data?.message || err.message || "Please try again.",
++        duration: 8000,
++      });
++    },
++    onSettled: () => {
++      qc.invalidateQueries({ queryKey: ["menu"], refetchType: "all" });
++      qc.invalidateQueries({ queryKey: ["ingredients"], refetchType: "all" });
++      qc.invalidateQueries({ queryKey: menuUploadKeys.all });
++    },
++  });
++}
+diff --git a/src/services/dashboardService.js b/src/services/dashboardService.js
+index d37f5f1..9ed64e2 100644
+--- a/src/services/dashboardService.js
++++ b/src/services/dashboardService.js
+@@ -384,6 +384,33 @@ export const validateMenuFile = async (payload) => {
+   return api.post("/api/inventory/validate", formData, { headers }).then(r => r.data);
+ };
+ 
++export const importMenuJson = async (payload) => {
++  const { validMeals, filename } = payload;
++  const headers = {};
++  const user = useAuthStore.getState().user;
++  if (user?.role) headers["X-User-Role"] = user.role;
++  
++  const result = await api.post("/api/inventory/import-json", validMeals, { headers }).then(r => r.data);
++  
++  // Store in localStorage so it appears in the Recent Uploads table
++  if (filename) {
++    const uploads = JSON.parse(localStorage.getItem('menuUploads') || '[]');
++    const now = new Date();
++    const newUpload = {
++      id: `UPL-${Date.now()}`,
++      filename: filename,
++      date: now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
++      time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
++      status: "Success",
++      added: result.mealCount || validMeals.length || 0,
++      updated: 0
++    };
++    localStorage.setItem('menuUploads', JSON.stringify([newUpload, ...uploads]));
++  }
++  
++  return result;
++};
++
+ // ΓöÇΓöÇ Ingredients ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+ export const getIngredientsMetrics = async () => {
+   const ingredients = await getIngredients().catch(() => []);
