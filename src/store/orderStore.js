@@ -388,6 +388,7 @@ const useOrderStore = create(
 
           queryClient.invalidateQueries({ queryKey: ["orders"] });
           queryClient.invalidateQueries({ queryKey: ["ingredients"] });
+          queryClient.invalidateQueries({ queryKey: ["kitchen"] });
 
           useUIStore.getState().addNotification({
             title: `New Order #${newOrder.id}`,
@@ -485,6 +486,7 @@ const useOrderStore = create(
 
           queryClient.invalidateQueries({ queryKey: ["kitchen"] });
           queryClient.invalidateQueries({ queryKey: ["orders"] });
+          queryClient.invalidateQueries({ queryKey: ["ingredients"] });
 
           return isSuccess;
         } catch (err) {
