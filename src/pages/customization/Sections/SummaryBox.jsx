@@ -1,4 +1,4 @@
-import { useCustomizeStore } from "../../../store/useCustomizeStore";
+import { useCustomizeStore } from "../../../store";
 import { useOrderStore } from "../../../store";
 import { ShoppingCart, Flame, Beef, Wheat, Droplet } from "lucide-react";
 

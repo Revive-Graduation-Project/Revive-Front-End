@@ -8,7 +8,7 @@ import {
   MdOutlineSetMeal,
 } from "react-icons/md";
 import { FiShoppingBag, FiLogOut } from "react-icons/fi";
-import useAuthStore from "../../store/authStore";
+import { useAuthStore } from "../../store";
 import { isKitchenOnlyUser } from "../../utils/roleUtils";
 
 const navItems = [

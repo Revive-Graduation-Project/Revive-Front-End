@@ -2,7 +2,7 @@
 
 import SectionWrapper from "./SectionWrapper";
 import ItemsRow from "./ItemsRow";
-import { useCustomizeStore } from "../../../store/useCustomizeStore";
+import { useCustomizeStore } from "../../../store";
 
 const SaucesSection = () => {
   const { selectedMeal, selectedSauces, toggleSauce } = useCustomizeStore();

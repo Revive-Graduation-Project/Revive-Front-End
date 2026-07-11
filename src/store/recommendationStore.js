@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { getSuggestedMeals } from "../services/recommendation.service";
-import useAuthStore from "./authStore";
+import { useAuthStore } from "./index";
 
 /**
  * Recommendation Store (Production Ready)

@@ -1,6 +1,6 @@
 import SectionWrapper from "./SectionWrapper";
 import ItemsRow from "./ItemsRow";
-import { useCustomizeStore } from "../../../store/useCustomizeStore";
+import { useCustomizeStore } from "../../../store";
 
 const IngredientsSection = ({ buildOptions }) => {
   const { primaryItem, selectedSections, toggleItem } = useCustomizeStore();

@@ -5,7 +5,7 @@ import {
   registerService,
   restoreSessionService,
 } from "../services/auth.service";
-import useProfileStore from "./profileStore";
+import { useProfileStore } from "./index";
 
 /**
  * ==============================

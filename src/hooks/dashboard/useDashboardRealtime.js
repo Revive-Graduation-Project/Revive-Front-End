@@ -15,7 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { orderKeys } from "./useOrders";
 import { kitchenKeys } from "./useKitchenOrders";
 import { dashboardKeys } from "./useDashboard";
-import useUIStore from "../../store/uiStore";
+import { useUIStore } from "../../store";
 
 // Fake MockSocket for architecture prep
 class MockSocket {

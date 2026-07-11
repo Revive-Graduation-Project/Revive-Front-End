@@ -6,7 +6,7 @@ import {
   updateIngredientStock,
   uploadIngredientsFile,
 } from "../../services/dashboardService";
-import useUIStore from "../../store/uiStore";
+import { useUIStore } from "../../store";
 import { evaluateStock } from "../../utils/stockUtils";
 
 // ── Query keys ────────────────────────────────────────────────────────────────

@@ -6,7 +6,7 @@ import IngredientsSection from "./Sections/IngredientsSection";
 import CommentBox from "./Sections/CommentBox";
 import SummaryBox from "./Sections/SummaryBox";
 import { api } from "../../services/api";
-import { useCustomizeStore } from "../../store/useCustomizeStore";
+import { useCustomizeStore } from "../../store";
 
 const Customize = () => {
   const { primaryItem, setPrimaryItem } = useCustomizeStore();

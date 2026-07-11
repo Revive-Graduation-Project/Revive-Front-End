@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import AxiosMockAdapter from "axios-mock-adapter";
 import { api } from "../../services/api";
-import useAuthStore from "../../store/authStore";
+import { useAuthStore } from "../../store";
 
 // Test Suite for Session Restoration & Security
 describe("Session Logic & Security Tests", () => {

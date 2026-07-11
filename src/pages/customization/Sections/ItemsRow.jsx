@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
-import { useCustomizeStore } from "../../../store/useCustomizeStore";
+import { useCustomizeStore } from "../../../store";
 
 const ItemsRow = ({ section, items = [], selectedItems = [], onToggle }) => {
   const scrollRef = useRef(null);

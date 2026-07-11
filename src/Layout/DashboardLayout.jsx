@@ -2,7 +2,7 @@ import { Outlet, useLocation, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import DashboardSidebar from "../components/Dashboard/DashboardSidebar";
 import { useDashboardRealtime } from "../hooks/dashboard/useDashboardRealtime";
-import useAuthStore from "../store/authStore";
+import { useAuthStore } from "../store";
 import { isKitchenOnlyUser } from "../utils/roleUtils";
 
 /**

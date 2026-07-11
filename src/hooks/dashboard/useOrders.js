@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "../../utils/toastUtils";
 import { getOrdersMetrics, getOrders, updateOrderStatus, getTrendingMenus } from "../../services/dashboardService";
 import { pushActivity } from "../../utils/activityLog";
-import useUIStore from "../../store/uiStore";
+import { useUIStore } from "../../store";
 
 export const orderKeys = {
   all:     ["orders"],

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useCustomizeStore } from '../useCustomizeStore';
+import { useCustomizeStore } from '../index';
 
 describe('useCustomizeStore', () => {
   const initialStoreState = useCustomizeStore.getState();

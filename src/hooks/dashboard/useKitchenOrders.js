@@ -22,7 +22,7 @@ import {
   updateChefStation,
   updateChefDisplayName,
 } from "../../services/dashboardService";
-import useUIStore from "../../store/uiStore";
+import { useUIStore } from "../../store";
 
 const POLL_INTERVAL_MS = 30_000; // 30 s — swap for WS when ready
 

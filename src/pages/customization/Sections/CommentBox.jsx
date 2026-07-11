@@ -1,6 +1,6 @@
 // components/customize/CommentBox.jsx
 
-import { useCustomizeStore } from "../../../store/useCustomizeStore";
+import { useCustomizeStore } from "../../../store";
 
 const CommentBox = () => {
   const { comment, setComment } = useCustomizeStore();

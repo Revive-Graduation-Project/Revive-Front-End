@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import usePaymentStore from "./paymentStore";
+import { usePaymentStore, useUIStore } from "./index";
 import {
   cancelOrder,
   getMyOrders,
@@ -15,7 +15,6 @@ import {
 import { MAX_QUANTITY, DELIVERY_FEE, SUBMIT_DELAY } from "../constants";
 import { placeOrder } from "../services/order.service";
 import queryClient from "../lib/queryClient";
-import useUIStore from "./uiStore";
 
 const isValidItem = (item) =>
   item &&

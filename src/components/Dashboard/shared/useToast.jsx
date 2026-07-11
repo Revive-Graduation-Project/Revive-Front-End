@@ -4,7 +4,7 @@
  * Mounts the toast UI. Place once in DashboardLayout.
  *
  * The hook and styles live in toastStore.js:
- *   import { useToast } from "../../store/toastStore";
+ *   import { useToast } from "../../store";
  *   const toast = useToast();
  *
  *   // Option A — named methods (preferred)
@@ -18,7 +18,7 @@
  */
 
 import { FiX } from "react-icons/fi";
-import { useToastStore, TOAST_STYLES } from "../../../store/toastStore";
+import { useToastStore, TOAST_STYLES } from "../../store";
 
 // ── Container (mounted once in DashboardLayout) ───────────────────
 export function ToastContainer() {

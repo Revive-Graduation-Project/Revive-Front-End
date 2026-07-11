@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { FiBell, FiCheckCircle, FiAlertCircle, FiClock, FiInfo, FiCheck, FiTrash2, FiFilter } from "react-icons/fi";
 import DashboardHeader from "./DashboardHeader";
-import useUIStore, { formatNotificationTime, getNotificationGroup } from "../../store/uiStore";
+import { useUIStore, formatNotificationTime, getNotificationGroup } from "../../store";
 
 function NotificationsView() {
   const { notifications = [], markAllAsRead, markAsRead, removeNotification, clearNotifications } = useUIStore();

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useMenuStore } from "../../../store/menuStore";
+import { useMenuStore } from "../../../store";
 import { useMenuItems, useMenuCategories, isMenuItemActive } from "../../../hooks/dashboard/useMenuItems";
 
 const MenuFilter = () => {

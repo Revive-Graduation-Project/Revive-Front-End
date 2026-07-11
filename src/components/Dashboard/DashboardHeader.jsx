@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiBell, FiCheckCircle, FiAlertCircle, FiClock, FiInfo, FiCheck } from "react-icons/fi";
-import { useAuthStore, useProfileStore, useUIStore } from "../../store";
-import { formatNotificationTime } from "../../store/uiStore";
+import { useAuthStore, useProfileStore, useUIStore, formatNotificationTime } from "../../store";
 
 // Tracks if fetchProfile has been attempted during this app session to prevent infinite fetch loops on CORS/network errors
 let hasAttemptedProfileFetch = false;

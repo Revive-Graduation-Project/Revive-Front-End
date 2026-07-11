@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "../../utils/toastUtils";
 import { getMenuCategories, getMenuItems, deleteMenuItem, updateMenuItem, createMenuItem, saveRecipe, getRecipeIngredients, uploadMealImage } from "../../services/dashboardService";
-import useUIStore from "../../store/uiStore";
+import { useUIStore } from "../../store";
 
 export const menuKeys = {
   all:         ["menu"],

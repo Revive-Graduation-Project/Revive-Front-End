@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "../../utils/toastUtils";
 import { getMenuUploads, uploadMenuFile } from "../../services/dashboardService";
-import useUIStore from "../../store/uiStore";
+import { useUIStore } from "../../store";
 
 export const menuUploadKeys = {
   all: ["menu-uploads"],

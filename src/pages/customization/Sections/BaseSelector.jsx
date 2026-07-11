@@ -1,5 +1,5 @@
 // components/customize/BaseSelector.jsx
-import { useCustomizeStore } from "../../../store/useCustomizeStore";
+import { useCustomizeStore } from "../../../store";
 import SectionWrapper from "./SectionWrapper";
 
 const BaseSelector = ({ primaryItems }) => {
