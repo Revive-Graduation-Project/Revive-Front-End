@@ -163,9 +163,10 @@ function MenuManagementView() {
           </p>
           <button 
             onClick={() => setIsInstructionsModalOpen(true)}
-            className="mt-3 text-[13px] font-bold text-[#F97316] hover:text-[#ea580c] flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="mt-4 px-5 py-2.5 bg-orange-50 text-[#F97316] hover:bg-[#F97316] hover:text-white rounded-full text-[13px] font-bold flex items-center gap-2 transition-all shadow-sm border border-orange-100 cursor-pointer group"
           >
-            {"\uD83D\uDCCB"} CSV Format Guide
+            <FiInfo size={16} className="group-hover:scale-110 transition-transform" /> 
+            View CSV Format Guide
           </button>
         </div>
 
