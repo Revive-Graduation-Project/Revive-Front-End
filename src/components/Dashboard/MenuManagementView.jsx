@@ -1,15 +1,22 @@
 import { useState, useMemo } from "react";
 import DashboardHeader from "./DashboardHeader";
-import { useMenuUploads, useUploadMenu } from "../../hooks/dashboard/useMenuUploads";
+import { useMenuUploads, useUploadMenu, useImportJobStatus } from "../../hooks/dashboard/useMenuUploads";
 import { toast } from "../../utils/toastUtils";
-import { FiUploadCloud, FiFileText } from "react-icons/fi";
+import { FiUploadCloud, FiFileText, FiInfo, FiCheckCircle, FiXCircle, FiLoader } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 import EmptyState from "./shared/EmptyState";
+import CsvInstructionsModal from "./CsvInstructionsModal";
+import CsvValidationModal from "./CsvValidationModal";
+import { useValidateMenu } from "../../hooks/dashboard/useMenuUploads";
+import { useMenuItems } from "../../hooks/dashboard/useMenuItems";
 
 function MenuManagementView() {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [isInstructionsModalOpen, setIsInstructionsModalOpen] = useState(false);
+  const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
+  const [validationResult, setValidationResult] = useState(null);
 
 
   // Dynamic calendar — `new Date()` is inside the memo so the snapshot
@@ -31,8 +38,10 @@ function MenuManagementView() {
     };
   }, []);
 
-  const { data: uploads, isLoading, error, refetch } = useMenuUploads();
+  const { data: uploads, isLoading: isUploadsLoading, error, refetch } = useMenuUploads();
+  const { data: menuItems } = useMenuItems();
   const { mutate: uploadFile, isPending: isUploading, isSuccess: isUploaded } = useUploadMenu();
+  const { mutate: validateMenu, isPending: isValidating } = useValidateMenu();
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -79,11 +88,50 @@ function MenuManagementView() {
   const handleUpload = () => {
     if (!selectedFile) return;
     const fileToUpload = selectedFile;
-    setSelectedFile(null); // Clear immediately for non-blocking background upload UX
-    uploadFile(fileToUpload);
+    
+    setIsValidationModalOpen(true);
+    setValidationResult(null); // Reset previous
+    
+    validateMenu(
+      { 
+        file: fileToUpload, 
+        existingMealNames: menuItems?.map(m => m.name) || [] 
+      },
+      {
+        onSuccess: (res) => {
+          setValidationResult(res);
+        },
+        onError: (err) => {
+          setIsValidationModalOpen(false);
+          toast.error("Step 1 Failed: " + (err?.response?.data?.message || err.message));
+        }
+      }
+    );
   };
 
-  if (isLoading) {
+  const handleImportSuccess = (validMealsCount, jobId) => {
+    // Record the upload in localStorage to show in Recent Uploads
+    if (selectedFile) {
+      const uploads = JSON.parse(localStorage.getItem('menuUploads') || '[]');
+      const now = new Date();
+      const newUpload = {
+        id: `UPL-${Date.now()}`,
+        filename: selectedFile.name,
+        date: now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+        status: "Success",
+        importStatus: jobId ? "processing" : "success",
+        jobId: jobId || null,
+        added: validMealsCount || 0, 
+        updated: 0
+      };
+      localStorage.setItem('menuUploads', JSON.stringify([newUpload, ...uploads]));
+    }
+    setSelectedFile(null); // Reset selection
+    refetch(); // Refetch the uploads query
+  };
+
+  if (isUploadsLoading) {
     return (
       <div>
         <DashboardHeader title="Menu Management" />
@@ -115,6 +163,12 @@ function MenuManagementView() {
           <p className="text-[13px] text-gray-500 max-w-[500px] leading-relaxed">
             Update your live menu instantly by uploading your latest menu spreadsheet. Our system automatically parses item names, descriptions, pricing, and dietary tags to keep your storefront fresh.
           </p>
+          <button 
+            onClick={() => setIsInstructionsModalOpen(true)}
+            className="mt-4 px-5 py-2.5 bg-orange-50 text-[#F97316] hover:bg-[#F97316] hover:text-white rounded-full text-[13px] font-bold flex items-center gap-2 transition-all shadow-sm border border-orange-100 cursor-pointer group"
+          >
+            📋 How to format your CSV
+          </button>
         </div>
 
         {/* Drop Zone Area */}
@@ -156,10 +210,10 @@ function MenuManagementView() {
             <button
               type="button"
               onClick={handleUpload}
-              disabled={isUploading || isUploaded}
+              disabled={isUploading || isUploaded || isValidating}
               className="mt-6 w-full py-3.5 rounded-2xl bg-[#F97316] text-white border-none font-bold text-[15px] cursor-pointer shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 transition-all disabled:opacity-75 disabled:cursor-not-allowed"
             >
-              {isUploading ? "Uploading..." : isUploaded ? "Imported! ✓" : "Process Import"}
+              {isValidating ? "Validating..." : isUploading ? "Uploading..." : isUploaded ? "Imported! ✓" : "Validate & Preview"}
             </button>
           )}
         </div>
@@ -183,11 +237,7 @@ function MenuManagementView() {
                   <p className="text-[13px] text-gray-400 text-center py-6">No uploads yet — drop a file above!</p>
                 ) : (
                   uploads.map((upload) => (
-                    <div key={upload.id} className="grid grid-cols-[2fr_1fr_1fr] items-center py-1">
-                      <span className="text-[13px] font-medium text-gray-500 pl-4 truncate">{upload.filename}</span>
-                      <span className="text-[13px] font-medium text-gray-500 text-center">{upload.date}</span>
-                      <span className="text-[13px] font-medium text-gray-500 text-center">{upload.time}</span>
-                    </div>
+                    <UploadRow key={upload.id} upload={upload} />
                   ))
                 )}
               </div>
@@ -223,6 +273,62 @@ function MenuManagementView() {
         </div>
 
       </div>
+
+      <CsvInstructionsModal 
+        isOpen={isInstructionsModalOpen}
+        onClose={() => setIsInstructionsModalOpen(false)}
+      />
+
+      <CsvValidationModal
+        isOpen={isValidationModalOpen}
+        onClose={() => setIsValidationModalOpen(false)}
+        validationResult={validationResult}
+        isValidating={isValidating}
+        onImportSuccess={handleImportSuccess}
+        filename={selectedFile?.name}
+      />
+    </div>
+  );
+}
+
+/**
+ * A single row in the Recent Uploads table.
+ * If the upload has a jobId and importStatus is "processing", it mounts
+ * useImportJobStatus which polls every 3s and updates localStorage when done.
+ */
+function UploadRow({ upload }) {
+  const isPolling = upload.jobId && upload.importStatus === "processing";
+  useImportJobStatus(isPolling ? upload.jobId : null);
+
+  const statusBadge = () => {
+    if (upload.importStatus === "processing") {
+      return (
+        <span className="flex items-center justify-center gap-1 text-[11px] text-orange-500 font-medium">
+          <FiLoader size={12} className="animate-spin" /> Processing…
+        </span>
+      );
+    }
+    if (upload.importStatus === "success") {
+      return <FiCheckCircle size={15} className="text-green-500 mx-auto" title="Import complete" />;
+    }
+    if (upload.importStatus === "failed") {
+      return (
+        <FiXCircle
+          size={15}
+          className="text-red-500 mx-auto cursor-help"
+          title={upload.errorMessage || "Import failed"}
+        />
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div className="grid grid-cols-[2fr_1fr_1fr_auto] items-center py-1 gap-2">
+      <span className="text-[13px] font-medium text-gray-500 pl-4 truncate">{upload.filename}</span>
+      <span className="text-[13px] font-medium text-gray-500 text-center">{upload.date}</span>
+      <span className="text-[13px] font-medium text-gray-500 text-center">{upload.time}</span>
+      <span className="w-[80px] text-center">{statusBadge()}</span>
     </div>
   );
 }
