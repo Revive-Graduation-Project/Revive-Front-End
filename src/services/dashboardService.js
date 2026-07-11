@@ -13,7 +13,7 @@
 import { api } from "./api";
 import * as Mappers from "./mappers/dashboardMappers";
 import { useAuthStore } from "../store";
-import { evaluateStock } from "../utils/stockUtils";
+import { evaluateStock, inferIngredientUnit } from "../utils/stockUtils";
 import { formatTimeAgo } from "../utils/activityLog";
 import axios from "axios";
 
@@ -147,16 +147,19 @@ export const getInventoryAlerts = async () => {
   
   const lowStock = ingredients
     .filter(i => {
-      const { isOutOfStock, isLowStock } = evaluateStock(i.stock, i.unit);
+      const { isOutOfStock, isLowStock } = evaluateStock(i.stock, i.unit, i.name);
       return isOutOfStock || isLowStock;
     })
-    .map(i => ({
-      id: i.id,
-      name: i.name,
-      stock: `${i.stock} ${i.unit || "g"}`,
-      unit: i.unit || "g",
-      image: i.image || ""
-    }));
+    .map(i => {
+      const u = inferIngredientUnit(i.name, i.unit);
+      return {
+        id: i.id,
+        name: i.name,
+        stock: `${i.stock} ${u}`,
+        unit: u,
+        image: i.image || ""
+      };
+    });
 
   return {
     lowStock
@@ -414,8 +417,8 @@ export const getImportStatus = (jobId) =>
 export const getIngredientsMetrics = async () => {
   const ingredients = await getIngredients().catch(() => []);
   const total = ingredients.length;
-  const outOfStock = ingredients.filter(i => evaluateStock(i.stock, i.unit).isOutOfStock).length;
-  const lowStock = ingredients.filter(i => evaluateStock(i.stock, i.unit).isLowStock).length;
+  const outOfStock = ingredients.filter(i => evaluateStock(i.stock, i.unit, i.name).isOutOfStock).length;
+  const lowStock = ingredients.filter(i => evaluateStock(i.stock, i.unit, i.name).isLowStock).length;
   return Mappers.mapIngredientsMetrics({
     total, totalChange: 0,
     lowStock, lowStockChange: 0,
