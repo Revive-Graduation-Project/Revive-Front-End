@@ -16,7 +16,7 @@ import CartItem from "./CartItem";
  *    only synced to the global store on "Save", preventing global re-renders on every keystroke.
  * 4. Error Handling: Displays validation messages (e.g., quantity limits) from the store.
  */
-export default function CartSection() {
+export default function CartSection({ voucherCTA }) {
   const { items, updateQuantity, removeItem, note, setNote, error, clearError } = useOrderStore(
     useShallow((state) => ({
       items: state.items,
@@ -44,7 +44,10 @@ export default function CartSection() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">My Cart</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold text-gray-800">My Cart</h1>
+        {voucherCTA}
+      </div>
 
       {error && (
         <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-lg flex justify-between items-center border border-red-100">
