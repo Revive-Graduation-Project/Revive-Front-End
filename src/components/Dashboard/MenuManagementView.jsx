@@ -109,7 +109,7 @@ function MenuManagementView() {
     );
   };
 
-  const handleImportSuccess = (validMealsCount) => {
+  const handleImportSuccess = (validMealsCount, jobId) => {
     // Record the upload in localStorage to show in Recent Uploads
     if (selectedFile) {
       const uploads = JSON.parse(localStorage.getItem('menuUploads') || '[]');
@@ -120,6 +120,8 @@ function MenuManagementView() {
         date: now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
         time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
         status: "Success",
+        importStatus: jobId ? "processing" : "success",
+        jobId: jobId || null,
         added: validMealsCount || 0, 
         updated: 0
       };

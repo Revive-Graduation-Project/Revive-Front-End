@@ -113,17 +113,6 @@ export function useImportMenu() {
         type: "info",
         category: "Performance",
       });
-
-      // Persist the jobId in the upload's localStorage entry so the table can poll
-      if (data.jobId) {
-        const uploads = JSON.parse(localStorage.getItem("menuUploads") || "[]");
-        // Tag the most-recent entry (the one just submitted) with the jobId
-        const [latest, ...rest] = uploads;
-        if (latest) {
-          const updated = { ...latest, jobId: data.jobId, importStatus: "processing" };
-          localStorage.setItem("menuUploads", JSON.stringify([updated, ...rest]));
-        }
-      }
     },
     onError: (err) => {
       toast.error("Import failed.", {
