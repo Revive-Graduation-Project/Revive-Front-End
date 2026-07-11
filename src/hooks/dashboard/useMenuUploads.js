@@ -160,6 +160,12 @@ export function useImportJobStatus(jobId) {
           description: "All meals have been processed and added to the menu.",
           duration: 6000,
         });
+        useUIStore.getState().addNotification({
+          title: "Menu Import Complete ✅",
+          message: "All meals have been processed and added to the menu.",
+          type: "success",
+          category: "Performance",
+        });
         _updateUploadEntryStatus(jobId, "success", null);
         qc.invalidateQueries({ queryKey: ["menu"], refetchType: "all" });
         qc.invalidateQueries({ queryKey: ["ingredients"], refetchType: "all" });
@@ -167,6 +173,12 @@ export function useImportJobStatus(jobId) {
         toast.error("Import failed.", {
           description: data.errorMessage || "An error occurred during processing.",
           duration: 10000,
+        });
+        useUIStore.getState().addNotification({
+          title: "Menu Import Failed ❌",
+          message: data.errorMessage || "An error occurred during processing.",
+          type: "error",
+          category: "Performance",
         });
         _updateUploadEntryStatus(jobId, "failed", data.errorMessage);
       }
