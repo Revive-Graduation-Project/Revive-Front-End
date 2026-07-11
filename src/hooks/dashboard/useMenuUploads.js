@@ -7,6 +7,7 @@ import {
   validateMenuFile,
   importMenuJson,
   getImportStatus,
+  cancelImportJob,
 } from "../../services/dashboardService";
 import useUIStore from "../../store/uiStore";
 
@@ -187,6 +188,36 @@ export function useImportJobStatus(jobId) {
   }, [query.data, jobId, qc]);
 
   return query;
+}
+
+/**
+ * Mutation: cancel a running import job.
+ */
+export function useCancelImportJob() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: cancelImportJob,
+    onSuccess: (_, jobId) => {
+      toast.success("Import cancelled", {
+        description: "The background job was cancelled successfully.",
+        duration: 4000,
+      });
+      useUIStore.getState().addNotification({
+        title: "Import Cancelled",
+        message: "The background job was cancelled successfully.",
+        type: "info",
+        category: "Performance",
+      });
+      _updateUploadEntryStatus(jobId, "failed", "Import cancelled by user");
+      qc.invalidateQueries({ queryKey: menuUploadKeys.jobStatus(jobId) });
+    },
+    onError: (err) => {
+      toast.error("Failed to cancel import", {
+        description: err?.response?.data || err.message || "Please try again.",
+        duration: 5000,
+      });
+    },
+  });
 }
 
 /** Updates the importStatus field of the localStorage upload entry matching jobId. */

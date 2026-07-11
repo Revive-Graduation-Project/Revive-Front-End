@@ -371,5 +371,8 @@ export const mapMenuUploads = (data) => {
     added: upload.added || 0,
     updated: upload.updated || 0,
     status: upload.status || "Unknown",
+    importStatus: upload.importStatus || null,
+    jobId: upload.jobId || null,
+    errorMessage: upload.errorMessage || null,
   }));
 };

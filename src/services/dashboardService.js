@@ -399,6 +399,10 @@ export const validateMenuFile = async (payload) => {
   return api.post("/api/inventory/validate", formData, { headers }).then(r => r.data);
 };
 
+export const cancelImportJob = async (jobId) => {
+  return api.delete(`/api/inventory/import-status/${jobId}`).then(r => r.data);
+};
+
 export const importMenuJson = async (validMeals) => {
   return api.post("/api/inventory/import-json", validMeals, { headers: buildAuthHeaders() }).then(r => r.data);
 };

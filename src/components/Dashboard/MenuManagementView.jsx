@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
 import DashboardHeader from "./DashboardHeader";
-import { useMenuUploads, useUploadMenu, useImportJobStatus } from "../../hooks/dashboard/useMenuUploads";
+import { useMenuUploads, useUploadMenu, useImportJobStatus, useCancelImportJob } from "../../hooks/dashboard/useMenuUploads";
 import { toast } from "../../utils/toastUtils";
-import { FiUploadCloud, FiFileText, FiInfo, FiCheckCircle, FiXCircle, FiLoader } from "react-icons/fi";
+import { FiUploadCloud, FiFileText, FiInfo, FiCheckCircle, FiXCircle, FiLoader, FiTrash2 } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 import EmptyState from "./shared/EmptyState";
@@ -231,7 +231,7 @@ function MenuManagementView() {
                   <span className="text-[15px] font-medium text-gray-500 pl-4">File name</span>
                   <span className="text-[15px] font-medium text-gray-500 text-center">Date</span>
                   <span className="text-[15px] font-medium text-gray-500 text-center">Time</span>
-                  <span className="w-6" />
+                  <span className="w-[80px] text-[15px] font-medium text-gray-500 text-center">Status</span>
                 </div>
 
               <div className="flex flex-col gap-4">
@@ -302,12 +302,21 @@ function MenuManagementView() {
 function UploadRow({ upload }) {
   const isPolling = upload.jobId && upload.importStatus === "processing";
   useImportJobStatus(isPolling ? upload.jobId : null);
+  const { mutate: cancelJob } = useCancelImportJob();
 
   const statusBadge = () => {
     if (upload.importStatus === "processing") {
       return (
-        <span className="flex items-center justify-center gap-1 text-[11px] text-orange-500 font-medium">
+        <span className="flex items-center justify-center gap-2 text-[11px] text-orange-500 font-medium">
           <FiLoader size={12} className="animate-spin" /> Processing…
+          <button 
+            type="button" 
+            onClick={() => cancelJob(upload.jobId)}
+            className="text-red-500 hover:text-red-700 transition-colors ml-1"
+            title="Cancel import"
+          >
+            <FiTrash2 size={13} />
+          </button>
         </span>
       );
     }
