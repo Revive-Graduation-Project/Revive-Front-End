@@ -387,6 +387,23 @@ export const uploadMenuFile = async (payload) => {
   return result;
 };
 
+export const validateMenuFile = async (payload) => {
+  const file = payload?.file || payload;
+  const formData = new FormData();
+  formData.append("file", file);
+  const headers = { "Content-Type": "multipart/form-data" };
+  const user = useAuthStore.getState().user;
+  if (user?.role) headers["X-User-Role"] = user.role;
+  return api.post("/api/inventory/validate", formData, { headers }).then(r => r.data);
+};
+
+export const importMenuJson = async (validMeals) => {
+  const headers = {};
+  const user = useAuthStore.getState().user;
+  if (user?.role) headers["X-User-Role"] = user.role;
+  return api.post("/api/inventory/import-json", validMeals, { headers }).then(r => r.data);
+};
+
 // ── Ingredients ───────────────────────────────────────────────────────────────────
 export const getIngredientsMetrics = async () => {
   const ingredients = await getIngredients().catch(() => []);
