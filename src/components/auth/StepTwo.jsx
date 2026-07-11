@@ -1,4 +1,6 @@
-function StepTwo({ formData, onChange, onNext, onBack, error }) {
+import { GOAL_OPTIONS } from "../../constants";
+
+function StepTwo({ formData, onChange, onNext, onBack, errors }) {
   return (
     <>
       <h2 className="text-center text-2xl font-semibold mb-6 text-gray-800">
@@ -13,8 +15,11 @@ function StepTwo({ formData, onChange, onNext, onBack, error }) {
             placeholder="Enter your weight"
             value={formData.weight}
             onChange={onChange}
-            className="w-full border border-orange rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-400"
+            className={`w-full border rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 ${
+              errors?.weight ? 'border-red-500 focus:ring-red-400' : 'border-orange focus:ring-orange-400'
+            }`}
           />
+          {errors?.weight && <p className="text-red-500 text-xs">{errors.weight}</p>}
         </div>
 
         <div className="flex flex-col space-y-1">
@@ -25,8 +30,11 @@ function StepTwo({ formData, onChange, onNext, onBack, error }) {
             placeholder="Enter your height"
             value={formData.height}
             onChange={onChange}
-            className="w-full border border-orange rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-400"
+            className={`w-full border rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 ${
+              errors?.height ? 'border-red-500 focus:ring-red-400' : 'border-orange focus:ring-orange-400'
+            }`}
           />
+          {errors?.height && <p className="text-red-500 text-xs">{errors.height}</p>}
         </div>
 
         <div className="flex flex-col space-y-1">
@@ -37,8 +45,11 @@ function StepTwo({ formData, onChange, onNext, onBack, error }) {
             placeholder="Enter your age"
             value={formData.age}
             onChange={onChange}
-            className="w-full border border-orange rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-400"
+            className={`w-full border rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 ${
+              errors?.age ? 'border-red-500 focus:ring-red-400' : 'border-orange focus:ring-orange-400'
+            }`}
           />
+          {errors?.age && <p className="text-red-500 text-xs">{errors.age}</p>}
         </div>
 
         <div>
@@ -48,8 +59,8 @@ function StepTwo({ formData, onChange, onNext, onBack, error }) {
               <input
                 type="radio"
                 name="gender"
-                value="male"
-                checked={formData.gender === "male"}
+                value="MALE"
+                checked={formData.gender === "MALE"}
                 onChange={onChange}
               />{" "}
               Male
@@ -58,11 +69,21 @@ function StepTwo({ formData, onChange, onNext, onBack, error }) {
               <input
                 type="radio"
                 name="gender"
-                value="female"
-                checked={formData.gender === "female"}
+                value="FEMALE"
+                checked={formData.gender === "FEMALE"}
                 onChange={onChange}
               />{" "}
               Female
+            </label>
+            <label className="flex items-center gap-1">
+              <input
+                type="radio"
+                name="gender"
+                value="OTHER"
+                checked={formData.gender === "OTHER"}
+                onChange={onChange}
+              />{" "}
+              Other
             </label>
           </div>
         </div>
@@ -100,26 +121,20 @@ function StepTwo({ formData, onChange, onNext, onBack, error }) {
             What is your current goal?
           </label>
           <div className="flex flex-col gap-1 text-sm">
-            {[
-              "Lose Weight",
-              "Gain Weight",
-              "Build Muscle",
-              "Maintain Current Shape",
-            ].map((g) => (
-              <label key={g} className="flex items-center gap-1">
+            {GOAL_OPTIONS.map(({label , value}) => (
+              <label key={value} className="flex items-center gap-1">
                 <input
                   type="radio"
                   name="goal"
-                  value={g}
-                  checked={formData.goal === g}
+                  value={value}
+                  checked={formData.goal === value}
                   onChange={onChange}
                 />{" "}
-                {g}
+                {label}
               </label>
             ))}
           </div>
         </div>
-        {error && <p className="text-red-500 text-xs text-center">{error}</p>}
         <div className="flex justify-between">
           <button
             type="button"
@@ -131,7 +146,7 @@ function StepTwo({ formData, onChange, onNext, onBack, error }) {
           <button
             type="button"
             onClick={onNext}
-            className="cursor-pointer bg-(--color-orange) text-white px-6 py-2 rounded-full text-sm font-semibold"
+            className="cursor-pointer bg-orange text-white px-6 py-2 rounded-full text-sm font-semibold"
           >
             Continue
           </button>

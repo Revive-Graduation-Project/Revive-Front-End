@@ -11,11 +11,9 @@ import {
   ForgotPassword,
   ResetPassword,
   Cart,
-  Checkout,
   Payment,
   Thanks,
   Favorites,
-  StoreDebug,
   Profile,
   Dashboard,
   Orders,
@@ -64,7 +62,7 @@ export default function App() {
           <Route path="customize" element={<ProtectedRoute><Customization /></ProtectedRoute>} />
           <Route path="favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
           <Route path="cart"      element={<Cart />} />
-          <Route path="checkout"  element={<Checkout />} />
+          <Route path="checkout"  element={<Navigate to="/cart" replace />} />
           <Route path="payment"   element={<Payment />} />
           <Route path="thanks"    element={<Thanks />} />
           
@@ -83,9 +81,7 @@ export default function App() {
         </Route>
 
         <Route path="/reset-password" element={<ResetPassword />} />
-
-        {/* Debug Route — remove before production */}
-        <Route path="/debug" element={<StoreDebug />} />
+        
 
         {/* Catch-all: redirect unknown URLs to Home */}
         <Route path="*" element={<Navigate to="/" replace />} />

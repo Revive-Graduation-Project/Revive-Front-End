@@ -1,11 +1,22 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { getProfile, updateProfile, updateHealthProfile } from "../services/user.service";
+import {
+  getProfile,
+  updateProfile,
+  deleteProfile,
+  uploadProfilePicture,
+  deleteProfilePicture,
+} from "../services/user.service";
 
 /**
  * Profile Store
- * - Holds user profile/meta and health sub-object
- * - Contains actions that call services so components stay dumb
+ * - Holds ClientProfileDto data exactly as the backend returns it —
+ *   field names here (profilePictureUrl, etc.) match the real API,
+ *   no renaming/remapping, to avoid frontend/backend field drift.
+ * - Persisted to localStorage, but `hasHydrated` lets consumers know
+ *   when the localStorage read has actually finished, so components
+ *   don't treat "not loaded yet" as "confirmed empty" (e.g. reading
+ *   loyaltyPoints as 0 before hydration completes).
  */
 const useProfileStore = create(
   persist(
@@ -13,104 +24,133 @@ const useProfileStore = create(
       user: null,
       loading: false,
       error: null,
+      hasHydrated: false,
 
-      fetchProfile: async () => {
+      // Called automatically once the persist middleware finishes
+      // reading localStorage (see onRehydrateStorage below). Also
+      // safe to call manually if you ever need to force-reset it.
+      setHasHydrated: (state) => set({ hasHydrated: state }),
+
+  fetchProfile: async (userId) => {
+  if (!userId) return null;
+  set({ loading: true, error: null });
+  try {
+    const res = await getProfile(userId);
+    const user = res?.data || null;
+    if (!user) {
+      set({ error: "Profile not found", loading: false });
+      return null;
+    }
+
+    set({ user, loading: false, error: null });
+    return user;
+  } catch (error) {
+    set({ error: error?.response?.data?.message || error.message, loading: false });
+    return null;
+  }
+},
+
+      updateUserProfile: async (userId, data) => {
+        if (!userId) return null;
         set({ loading: true, error: null });
         try {
-          const res = await getProfile();
+          const res = await updateProfile(userId, data);
           const user = res?.data || null;
-          if (!user) {
-            set({ error: "Profile not found", loading: false });
-            return null;
+          if (user) {
+            set({ user, loading: false, error: null });
+          } else {
+            set({ loading: false });
           }
-          set({ user, loading: false, error: null });
           return user;
         } catch (error) {
-          set({ error: error.message, loading: false });
+          set({ error: error?.response?.data?.message || error.message, loading: false });
           return null;
         }
       },
 
-      updateUser: async (data) => {
+      // Upload Profile Picture
+      uploadPicture: async (userId, file) => {
+        if (!userId || !file) return null;
         set({ loading: true, error: null });
         try {
-          const res = await updateProfile(data);
-          const user = res?.data || null;
-          if (user) set({ user, loading: false, error: null });
-          else set({ loading: false });
-          return user;
+          const res = await uploadProfilePicture(userId, file);
+          // Backend returns only { profilePictureUrl } — merge it into the
+          // existing user, keeping the SAME field name as the real DTO
+          // (no renaming to `profilePicture` — that mismatch was the bug).
+          const profilePictureUrl = res?.data?.profilePictureUrl;
+          const currentUser = get().user;
+          const updatedUser = currentUser
+            ? { ...currentUser, profilePictureUrl }
+            : { profilePictureUrl };
+          set({ user: updatedUser, loading: false, error: null });
+          return updatedUser;
         } catch (error) {
-          set({ error: error.message, loading: false });
+          set({ error: error?.response?.data?.message || error.message, loading: false });
           return null;
         }
       },
 
-      updateHealth: async (data) => {
+      // Delete Profile Picture
+      deletePicture: async (userId) => {
+        if (!userId) return null;
         set({ loading: true, error: null });
         try {
-          const res = await updateHealthProfile(data);
-          const user = res?.data || null;
-          if (user) set({ user, loading: false, error: null });
-          return user;
+          await deleteProfilePicture(userId);
+          const currentUser = get().user;
+          const updatedUser = currentUser
+            ? { ...currentUser, profilePictureUrl: null }
+            : null;
+          set({ user: updatedUser, loading: false, error: null });
+          return true;
         } catch (error) {
-          set({ error: error.message, loading: false });
-          return null;
-        } finally {
-          set({ loading: false });
+          set({ error: error?.response?.data?.message || error.message, loading: false });
+          return false;
         }
       },
 
-      addAllergy: (allergy) => {
-        if (!allergy || typeof allergy !== "string") {
-          set({ error: "Allergy cannot be empty" });
-          return;
+      deleteUserProfile: async (userId) => {
+        if (!userId) return false;
+        set({ loading: true, error: null });
+        try {
+          await deleteProfile(userId);
+          set({ user: null, loading: false, error: null });
+          return true;
+        } catch (error) {
+          set({ error: error?.response?.data?.message || error.message, loading: false });
+          return false;
         }
-
-        const normalized = allergy.trim().toLowerCase();
-        const user = get().user;
-        const current = user?.profile?.allergies || [];
-        if (current.includes(normalized)) {
-          set({ error: "Allergy already added" });
-          return;
-        }
-
-        const updatedUser = {
-          ...user,
-          profile: {
-            ...user?.profile,
-            allergies: [...current, normalized],
-          },
-        };
-
-        set({ user: updatedUser, error: null });
-      },
-
-      removeAllergy: (allergy) => {
-        if (!allergy) return;
-        const normalized = allergy.trim().toLowerCase();
-        const user = get().user;
-        const current = user?.profile?.allergies || [];
-        if (!current.includes(normalized)) {
-          set({ error: "Allergy not found" });
-          return;
-        }
-
-        const updatedUser = {
-          ...user,
-          profile: {
-            ...user?.profile,
-            allergies: current.filter((a) => a !== normalized),
-          },
-        };
-
-        set({ user: updatedUser, error: null });
       },
 
       clearError: () => set({ error: null }),
+
+      clearProfile: () => set({ user: null, loading: false, error: null }),
     }),
     {
       name: "revive-profile-store",
       partialize: (state) => ({ user: state.user }),
+      // Bump this any time the `user` shape changes, so stale
+      // localStorage from an old shape gets discarded instead of
+      // silently accumulating leftover fields (e.g. old `avatar` /
+      // `profilePicture` keys sitting alongside the current
+      // `profilePictureUrl` field).
+      version: 1,
+      migrate: (persistedState, version) => {
+        if (version < 1) {
+          return { user: null };
+        }
+        return persistedState;
+      },
+      // Fires once the async localStorage read completes (success or
+      // failure). This is what lets components distinguish "store
+      // hasn't checked localStorage yet" from "checked, and there's
+      // genuinely no cached user" — without it, `hasHydrated` would
+      // stay false forever and any gate relying on it would hang.
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.error("[profileStore] Failed to rehydrate from localStorage:", error);
+        }
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

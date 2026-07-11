@@ -1,50 +1,35 @@
 import { useOrderStore } from "../../store";
 import { useNavigate } from "react-router";
-import { useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { DELIVERY_FEE } from "../../constants";
 import OrderSummary from "../../components/OrderFlow/OrderSummary";
 import PaymentForm from "../../components/OrderFlow/PaymentForm";
-import CustomerDeliveryDetails from "../../components/OrderFlow/CustomerDeliveryDetails";
 
 export default function Payment() {
   const navigate = useNavigate();
-  
-  const { items, totalAmount, customerDetails } = useOrderStore(
+
+  const { items, totalAmount, selectedDiscount } = useOrderStore(
     useShallow((state) => ({
       items: state.items,
       totalAmount: state.totalAmount,
-      customerDetails: state.customerDetails,
+      selectedDiscount: state.selectedDiscount,
     }))
   );
 
-  const deliveryFee = useMemo(() => (items.length > 0 ? DELIVERY_FEE : 0), [items.length]);
-  const totalWithDelivery = useMemo(() => totalAmount + deliveryFee, [totalAmount, deliveryFee]);
+  const discountAmount = (totalAmount * selectedDiscount) / 100;
+  const finalTotal = totalAmount - discountAmount;
 
   return (
     <div className="payment-page bg-gray-50 min-h-screen pt-24 md:pt-32">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        
-        {/* If desktop, we keep the side-by-side layout, but update the content to match the design style. 
-            The design shows a clean white card for "Customer & Delivery details" and "Payment".
-        */}
-        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
+
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            
-            <CustomerDeliveryDetails 
-              customerDetails={customerDetails} 
-              onEdit={() => navigate("/checkout")} 
-            />
-
-            {/* Payment Method Section */}
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-4 px-1">Payment</h2>
-              <PaymentForm />
-            </div>
-
+            <h2 className="text-xl font-bold text-gray-900 mb-4 px-1">Payment</h2>
+            {/* PaymentForm handles BOTH cash and credit card internally,
+                including the "Confirm payment" button, loading state,
+                and error display. No need to branch on paymentMethod here. */}
+            <PaymentForm />
           </div>
 
           {/* Order Summary */}
@@ -52,9 +37,8 @@ export default function Payment() {
             <OrderSummary
               items={items}
               subtotal={totalAmount}
-              delivery={deliveryFee}
-              total={totalWithDelivery}
-              buttonText="Confirm payment" // This text will likely be managed by PaymentForm now effectively, or hidden
+              total={finalTotal}
+              discount={selectedDiscount}
               buttonLink={null}
               showItems={true}
               onEdit={() => navigate("/cart")}

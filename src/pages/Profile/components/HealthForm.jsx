@@ -6,8 +6,7 @@ import {
   WEIGHT_UNITS,
   GOAL_OPTIONS,
 } from "../../../constants";
-
-const egyptianPhoneRegex = /^(\+20|0020|0)?1[0125]\d{8}$/;
+import { validatePhoneNumber } from "../../../utils/authValidation";
 
 export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
   const [form, setForm] = useState({
@@ -28,16 +27,19 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
   const update = (field) => (e) => {
     const value =
       e.target.type === "checkbox" ? e.target.checked : e.target.value;
-    setForm((s) => ({ ...s, [field]: value }));
+
+    setForm((s) => ({
+      ...s,
+      [field]: value,
+    }));
   };
 
   const submit = () => {
-    if (form.phoneNumber && !egyptianPhoneRegex.test(form.phoneNumber.trim())) {
-      setPhoneError(
-        "Please enter a valid Egyptian phone number (e.g. 01012345678)",
-      );
+    if (form.phoneNumber && !validatePhoneNumber(form.phoneNumber.trim())) {
+      setPhoneError("Please enter a valid phone number");
       return;
     }
+
     setPhoneError("");
 
     const payload = {
@@ -49,7 +51,9 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
       weight: form.weight === "" ? null : Number(form.weight),
       weightUnit: form.weightUnit || null,
       goal: form.goal || null,
-      healthConditions: form.healthConditions || [],
+      healthConditions: form.healthConditions?.length
+        ? form.healthConditions
+        : ["NONE"],
       phoneNumber: form.phoneNumber?.trim() || null,
     };
 
@@ -80,9 +84,9 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
             <option value="" disabled hidden>
               Select
             </option>
-            {GENDER_OPTIONS.map((g) => (
-              <option key={g} value={g}>
-                {g[0] + g.slice(1).toLowerCase()}
+            {GENDER_OPTIONS.map(({ value, label }) => (
+              <option key={value} value={value}>
+                {label}
               </option>
             ))}
           </select>
@@ -168,12 +172,9 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
             <option value="" disabled hidden>
               Select
             </option>
-            {GOAL_OPTIONS.map((g) => (
-              <option key={g} value={g}>
-                {g
-                  .replace("_", " ")
-                  .toLowerCase()
-                  .replace(/(^|\s)\S/g, (l) => l.toUpperCase())}
+            {GOAL_OPTIONS.map(({ value, label }) => (
+              <option key={value} value={value}>
+                {label}
               </option>
             ))}
           </select>
@@ -181,25 +182,50 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
 
         <div className="sm:col-span-2">
           <label className="text-sm text-gray-500">Health Conditions</label>
+
           <div className="border border-orange-200 rounded-2xl p-4 mt-1 bg-orange-50">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {HEALTH_CONDITIONS.map((option, index) => {
-                const checked = form.healthConditions.includes(option);
+              {HEALTH_CONDITIONS.map(({ value, label }) => {
+                const checked = form.healthConditions.includes(value);
+
                 return (
                   <label
-                    key={option}
+                    key={value}
                     className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-white transition-colors"
                   >
                     <button
                       type="button"
                       onClick={(e) => {
                         e.preventDefault();
+
                         const current = form.healthConditions || [];
-                        const exists = current.includes(option);
-                        const next = exists
-                          ? current.filter((c) => c !== option)
-                          : [...current, option];
-                        setForm((s) => ({ ...s, healthConditions: next }));
+                        const exists = current.includes(value);
+
+                        let next;
+
+                        if (exists) {
+                          // Removing a condition
+                          next = current.filter((c) => c !== value);
+                          // If array is empty after removing, default back to "NONE"
+                          if (next.length === 0) next = ["NONE"];
+                        } else {
+                          // Adding a condition
+                          if (value === "NONE") {
+                            // If they select "NONE", clear everything else
+                            next = ["NONE"];
+                          } else {
+                            // If they select a real condition, remove "NONE" from the array
+                            next = [
+                              ...current.filter((c) => c !== "NONE"),
+                              value,
+                            ];
+                          }
+                        }
+
+                        setForm((s) => ({
+                          ...s,
+                          healthConditions: next,
+                        }));
                       }}
                       aria-pressed={checked}
                       className={`relative inline-flex h-6 w-11 items-center cursor-pointer rounded-full transition-colors ${
@@ -212,7 +238,8 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
                         }`}
                       />
                     </button>
-                    <span className="text-sm text-gray-700">{option}</span>
+
+                    <span className="text-sm text-gray-700">{label}</span>
                   </label>
                 );
               })}
@@ -240,6 +267,7 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
               }`}
             />
           </button>
+
           <label
             className="text-sm text-gray-500 cursor-pointer"
             onClick={() =>
@@ -261,6 +289,7 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
         >
           Cancel
         </button>
+
         <button
           onClick={submit}
           disabled={saving}

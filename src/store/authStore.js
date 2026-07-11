@@ -2,9 +2,10 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
   loginService,
-  logoutService,
+  registerService,
   restoreSessionService,
 } from "../services/auth.service";
+import useProfileStore from "./profileStore";
 
 /**
  * ==============================
@@ -41,6 +42,31 @@ const useAuthStore = create(
       /* =====================
          ACTIONS
       ====================== */
+
+      /**
+       * Register User
+       */
+      register: async (credentials) => {
+        if (get().loading) return null;
+
+        set({ loading: true, error: null });
+
+        try {
+          const response = await registerService(credentials);
+          return response.data;
+        } catch (error) {
+          set({
+            error:
+              error.response?.data?.message ??
+              error.message ??
+              "Registration failed",
+          });
+
+          return null;
+        } finally {
+          set({ loading: false });
+        }
+      },
 
       /**
        * Login User
@@ -118,17 +144,24 @@ const useAuthStore = create(
       /**
        * Logout User
        */
-      logout: async (manualLogout = false) => {
+      logout: () => {
         set({ error: null, loading: true });
 
-        if (manualLogout) {
-          try {
-            await logoutService();
-          } catch (error) {
-            set({ error });
-          }
-        }
+        // Clear profile data from profileStore
+        useProfileStore.getState().clearProfile();
 
+        // Clear all localStorage entries created by Zustand persist middleware
+        localStorage.removeItem('revive-auth-store');
+        localStorage.removeItem('revive-profile-store');
+        localStorage.removeItem('revive-loyalty-store');
+        localStorage.removeItem('revive-favorites-store');
+        localStorage.removeItem('revive-order-store');
+        localStorage.removeItem('revive-payment-store');
+        localStorage.removeItem('revive-recommendation-store');
+        // Optional: keep theme preferences by not removing 'revive-ui-store'
+
+        // Backend logout endpoint doesn't exist, so we only handle frontend state
+        // Clear all authentication state
         set({
           user: null,
           token: null,
@@ -164,7 +197,7 @@ const useAuthStore = create(
               token: data.token,
               user: rawUser.id != null && rawUser.email ? rawUser : get().user,
               isAuthenticated: true,
-              expiresAt: data.expiresAt,
+              expiresAt: data.expiresAt ?? Date.now() + TOKEN_LIFETIME,
               loading: false,
             });
 

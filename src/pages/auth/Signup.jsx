@@ -3,13 +3,20 @@ import { useNavigate } from "react-router-dom";
 import StepOne from "../../components/auth/StepOne";
 import StepTwo from "../../components/auth/StepTwo";
 import StepThree from "../../components/auth/StepThree";
-import { register } from "../../services/auth.service";
+import { useAuthStore } from "../../store";
+import {
+  validateEmail,
+  validatePassword,
+  validatePhoneNumber,
+} from "../../utils/authValidation";
 
 function Signup() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [errors, setErrors] = useState({}); // Stores field-specific frontend errors
+  const [submitError, setSubmitError] = useState(null); // Stores backend API errors
   const navigate = useNavigate();
+  const register = useAuthStore((state) => state.register);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -32,6 +39,10 @@ function Signup() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear the error for this field as the user types
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: null }));
+    }
   };
 
   const handleHealthChange = (conditions) => {
@@ -39,55 +50,89 @@ function Signup() {
   };
 
   const nextStep = () => {
+    const newErrors = {};
+
+    // --- STEP 1 VALIDATION ---
     if (step === 1) {
-      if (!formData.email || !formData.password || !formData.phoneNumber) {
-        setError("Please fill in all fields");
-        return;
+      if (!formData.firstName) newErrors.firstName = "First name is required";
+      if (!formData.lastName) newErrors.lastName = "Last name is required";
+
+      if (!formData.phoneNumber) {
+        newErrors.phoneNumber = "Phone number is required";
+      } else if (!validatePhoneNumber(formData.phoneNumber)) {
+        newErrors.phoneNumber = "Invalid phone number format";
       }
-      if (formData.password !== formData.confirmPassword) {
-        setError("Passwords do not match");
-        return;
+
+      if (!formData.email) {
+        newErrors.email = "Email is required";
+      } else if (!validateEmail(formData.email)) {
+        newErrors.email = "Invalid email address";
       }
-      if (formData.password.length < 6) {
-        setError("Password must be at least 6 characters");
-        return;
+
+      if (!formData.password) {
+        newErrors.password = "Password is required";
+      } else if (!validatePassword(formData.password)) {
+        newErrors.password =
+          "Password must be at least 8 characters, contain uppercase, lowercase, number, and special character";
+      }
+
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = "Confirm password is required";
+      } else if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match";
       }
     }
 
+    // --- STEP 2 VALIDATION ---
     if (step === 2) {
-      if (!formData.age || !formData.height || !formData.weight) {
-        setError("Please fill in all fields");
-        return;
+      if (!formData.age) newErrors.age = "Age is required";
+      if (!formData.height) newErrors.height = "Height is required";
+      if (!formData.weight) newErrors.weight = "Weight is required";
+
+      if (
+        formData.age &&
+        (isNaN(Number(formData.age)) || Number(formData.age) <= 0)
+      ) {
+        newErrors.age = "Age must be a valid number greater than 0";
       }
       if (
-        isNaN(Number(formData.age)) ||
-        isNaN(Number(formData.height)) ||
-        isNaN(Number(formData.weight))
+        formData.height &&
+        (isNaN(Number(formData.height)) || Number(formData.height) <= 0)
       ) {
-        setError("Age, height, and weight must be valid numbers");
-        return;
+        newErrors.height = "Height must be a valid number greater than 0";
       }
       if (
-        Number(formData.age) <= 0 ||
-        Number(formData.height) <= 0 ||
-        Number(formData.weight) <= 0
+        formData.weight &&
+        (isNaN(Number(formData.weight)) || Number(formData.weight) <= 0)
       ) {
-        setError("Age, height, and weight must be greater than 0");
-        return;
+        newErrors.weight = "Weight must be a valid number greater than 0";
       }
     }
 
-    setError(null);
+    // If there are any errors in the current step, halt transition
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    // Clear errors and proceed to the next step
+    setErrors({});
+    setSubmitError(null);
     setStep((prev) => prev + 1);
   };
-  const prevStep = () => setStep((prev) => prev - 1);
+
+  const prevStep = () => {
+    setErrors({});
+    setSubmitError(null);
+    setStep((prev) => prev - 1);
+  };
 
   const handleSubmit = async () => {
     setLoading(true);
-    setError(null);
+    setSubmitError(null);
 
     try {
-      await register({
+      const result = await register({
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
@@ -101,12 +146,16 @@ function Signup() {
         weight: Number(formData.weight),
         weightUnit: formData.weightUnit,
         goal: formData.goal,
-        healthConditions: formData.healthConditions,
+        healthConditions: formData.healthConditions.length ? formData.healthConditions : ["NONE"],
       });
 
-      navigate("/auth/login");
+      if (result) {
+        navigate("/auth/login");
+      } else {
+        setSubmitError("Signup failed, please try again");
+      }
     } catch (err) {
-      setError(
+      setSubmitError(
         err.response?.data?.message ?? "Signup failed, please try again",
       );
     } finally {
@@ -128,7 +177,7 @@ function Signup() {
                 formData={formData}
                 onChange={handleChange}
                 onNext={nextStep}
-                error={error}
+                errors={errors} // Pass the complete errors object down
               />
             )}
             {step === 2 && (
@@ -137,7 +186,7 @@ function Signup() {
                 onChange={handleChange}
                 onNext={nextStep}
                 onBack={prevStep}
-                error={error}
+                errors={errors}
               />
             )}
             {step === 3 && (
@@ -147,7 +196,7 @@ function Signup() {
                 onBack={prevStep}
                 onSubmit={handleSubmit}
                 loading={loading}
-                error={error}
+                error={submitError} // Pass backend submission error here
               />
             )}
           </div>

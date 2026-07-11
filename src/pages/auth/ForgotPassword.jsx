@@ -28,7 +28,8 @@ function ForgotPassword() {
 
   return (
     <div className="flex w-full min-h-screen bg-gray-100">
-      <div className="flex flex-col justify-center w-full relative">
+      {/* Left Side */}
+      <div className="flex flex-col justify-center w-full md:w-1/2 relative">
         <div className="absolute top-8 left-8">
           <Link to="/">
             <img
@@ -95,6 +96,12 @@ function ForgotPassword() {
           </div>
         </div>
       </div>
+
+      {/* Right Side */}
+      <div
+        className="hidden md:flex w-1/2 bg-cover bg-center"
+        style={{ backgroundImage: "url('/Auth_image.jpg')" }}
+      />
     </div>
   );
 }

@@ -13,7 +13,7 @@ const PopularMenuCard = ({ name, imageUrl, price }) => {
               Starting
             </span>
             <span className="text-lg sm:text-xl font-bold text-orange">
-              {Number(price || 0).toFixed(2)} EGP
+              {Number(price || 0).toFixed(2)}$
             </span>
           </div>
         </div>
@@ -21,7 +21,7 @@ const PopularMenuCard = ({ name, imageUrl, price }) => {
         <div className="relative -mr-4 sm:-mr-6 md:-mr-8 -mt-4 sm:-mt-6 md:-mt-8 shrink-0">
           <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-34 md:h-32 rounded-full overflow-hidden shadow-lg">
             <img
-              src={imageUrl}
+              src={imageUrl || "/images/bowl.png"}
               alt={name}
               className="w-full h-full object-cover"
               loading="lazy"

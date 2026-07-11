@@ -47,6 +47,6 @@ export function useToast() {
 
 export const TOAST_STYLES = {
   success: { icon: FiCheckCircle, cls: "bg-green-50 border-green-200 text-green-700", iconCls: "text-green-500" },
-  error: { icon: FiAlertCircle, cls: "bg-red-50   border-red-200   text-red-700", iconCls: "text-red-500" },
-  info: { icon: FiInfo, cls: "bg-sky-50   border-sky-200   text-sky-700", iconCls: "text-sky-500" },
+  error: { icon: FiAlertCircle, cls: "bg-red-50 border-red-200 text-red-700", iconCls: "text-red-500" },
+  info: { icon: FiInfo, cls: "bg-sky-50 border-sky-200 text-sky-700", iconCls: "text-sky-500" },
 };

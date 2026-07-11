@@ -1,7 +1,11 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import usePaymentStore from "./paymentStore";
-import { cancelOrder, getMyOrders } from "../services/order.service";
+import {
+  cancelOrder,
+  getMyOrders,
+  pollOrderStatus,
+} from "../services/order.service";
 import {
   groupOrdersByDate,
   isOrderCancellable,
@@ -13,73 +17,34 @@ import { placeOrder } from "../services/order.service";
 import queryClient from "../lib/queryClient";
 import useUIStore from "./uiStore";
 
-/**
- * ============================================================================
- * Order Store (Cart & Checkout Management)
- * ============================================================================
- * This store manages the entire shopping lifecycle:
- * 1. Cart Management: Adding, removing, and updating item quantities.
- * 2. Persistence: LocalStorage sync for cart items and customer details.
- * 3. Validation: Enforcing per-item limits and total order caps.
- * 4. Checkout: Orchestrating order submission and duplicate prevention.
- * 5. Security: Handling masked payment data for safe storage.
- */
-
-/**
- * Validates if an item object contains required fields for the cart.
- * @param {Object} item - Product object to validate
- * @returns {boolean} True if item is valid
- */
 const isValidItem = (item) =>
   item &&
   typeof item.id !== "undefined" &&
   typeof item.price === "number" &&
   item.price > 0;
 
-/**
- * Calculates total items count and total currency amount for a list of items.
- * Rounds to 2 decimal places to avoid floating point issues.
- * 
- * @param {Array} items - List of cart items
- * @returns {{ totalItems: number, totalAmount: number }}
- */
 const calculateTotals = (items) => {
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
-  const totalAmount = items.reduce(
-    (sum, i) => sum + i.price * i.quantity,
-    0
-  );
-
+  const totalAmount = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const roundedAmount = Math.round(totalAmount * 100) / 100;
-
   return { totalItems, totalAmount: roundedAmount };
 };
 
-/**
- * Main Order Store Hook
- */
+const SUCCESS_STATUSES = ["PAID", "CONFIRMED", "PREPARING", "READY"];
+const ERROR_STATUSES = ["CANCELED", "CANCELLATION_PENDING"];
+
 const useOrderStore = create(
   persist(
     (set, get) => ({
       /* =====================
          STATE (Properties)
       ====================== */
-
-      /** @type {Array} Current items in shopping cart */
       items: [],
-      /** @type {number} Total count of all items in cart */
       totalItems: 0,
-      /** @type {number} Subtotal currency amount */
       totalAmount: 0,
-      /** @type {boolean} UI state for the side cart drawer */
       isCartDrawerOpen: false,
-      /** @type {string} Optional user-provided order note/instruction */
       note: "",
-      
-      /** 
-       * Customer shipping and contact information.
-       * Synchronized with Checkout forms.
-       */
+
       customerDetails: {
         email: "",
         firstName: "",
@@ -88,42 +53,30 @@ const useOrderStore = create(
         region: "",
         city: "",
         address: "",
-        zipCode: ""
+        zipCode: "",
       },
 
-      /** @type {'cash' | 'credit_card'} Currently selected payment method */
-      paymentMethod: "cash", 
-      /** @type {Object | null} Masked card data (Never contains full credentials) */
-      savedCard: null,       
-      
-      /** @type {Object | null} Mirror of the most recently successful order */
+      paymentMethod: "CASH",
+      selectedDiscount: 0,
+      pointsToRedeem: 0,
+      stripeClientSecret: null,
+      stripePaymentIntentId: null,
+      pendingOrderId: null,
       lastOrder: null,
 
-      /** @type {Array} Orders fetched for profile/history views */
       myOrders: [],
-      /** @type {boolean} Loading state for profile order history */
       myOrdersLoading: false,
-      /** @type {string | null} Error for profile order history */
       myOrdersError: null,
 
-      /** @type {boolean} Global loading state for async operations */
       loading: false,
-      /** @type {string | null} Global error message for validation or API failures */
       error: null,
 
       /* =====================
          ACTIONS (Methods)
       ====================== */
 
-      /**
-       * Adds a new item or increments quantity if it exists.
-       * Enforces MAX_QUANTITY per product.
-       * @param {Object} item - Product details
-       * @param {number} [quantity=1] - Number of items to add
-       */
       addItem: (item, quantity = 1) => {
-        set({ error: null }); // Clear error on action start
-        
+        set({ error: null });
         if (!isValidItem(item)) {
           console.error("OrderStore: Invalid item data", item);
           set({ error: "Invalid item data" });
@@ -134,9 +87,10 @@ const useOrderStore = create(
         const existing = items.find((i) => i.id === item.id);
         const currentQty = existing ? existing.quantity : 0;
 
-        // Validation: Limit per product
         if (currentQty + quantity > MAX_QUANTITY) {
-          set({ error: `Cannot exceed ${MAX_QUANTITY} items for this product.` });
+          set({
+            error: `Cannot exceed ${MAX_QUANTITY} items for this product.`,
+          });
           return;
         }
 
@@ -144,15 +98,10 @@ const useOrderStore = create(
           let updatedItems;
           if (existing) {
             updatedItems = state.items.map((i) =>
-              i.id === item.id
-                ? { ...i, quantity: i.quantity + quantity }
-                : i
+              i.id === item.id ? { ...i, quantity: i.quantity + quantity } : i,
             );
           } else {
-            updatedItems = [
-              ...state.items,
-              { ...item, quantity },
-            ];
+            updatedItems = [...state.items, { ...item, quantity }];
           }
 
           return {
@@ -163,15 +112,8 @@ const useOrderStore = create(
         });
       },
 
-      /**
-       * Sets an exact quantity for a specific item.
-       * Removes the item if quantity hits 0.
-       * @param {string|number} id - Item ID
-       * @param {number} quantity - Target quantity value
-       */
       updateQuantity: (id, quantity) => {
-        set({ error: null }); 
-        
+        set({ error: null });
         if (quantity <= 0) {
           get().removeItem(id);
           return;
@@ -184,83 +126,44 @@ const useOrderStore = create(
 
         set((state) => {
           const updatedItems = state.items.map((i) =>
-            i.id === id ? { ...i, quantity } : i
+            i.id === id ? { ...i, quantity } : i,
           );
-
-          return {
-            ...calculateTotals(updatedItems),
-            items: updatedItems,
-          };
+          return { ...calculateTotals(updatedItems), items: updatedItems };
         });
       },
 
-      /**
-       * Quick increment for a specific item.
-       * @param {string|number} id - Item ID
-       */
       increaseQty: (id) => {
-        set({ error: null }); 
-        
+        set({ error: null });
         set((state) => {
           const item = state.items.find((i) => i.id === id);
           if (item && item.quantity >= MAX_QUANTITY) {
-             return { error: `Max quantity (${MAX_QUANTITY}) reached` };
+            return { error: `Max quantity (${MAX_QUANTITY}) reached` };
           }
-
           const updatedItems = state.items.map((i) =>
-            i.id === id ? { ...i, quantity: i.quantity + 1 } : i
+            i.id === id ? { ...i, quantity: i.quantity + 1 } : i,
           );
-
-          return {
-            ...calculateTotals(updatedItems),
-            items: updatedItems,
-          };
+          return { ...calculateTotals(updatedItems), items: updatedItems };
         });
       },
 
-      /**
-       * Quick decrement for a specific item.
-       * @param {string|number} id - Item ID
-       */
       decreaseQty: (id) => {
-        set({ error: null }); 
-        
+        set({ error: null });
         set((state) => {
           const updatedItems = state.items
-            .map((i) =>
-              i.id === id
-                ? { ...i, quantity: i.quantity - 1 }
-                : i
-            )
+            .map((i) => (i.id === id ? { ...i, quantity: i.quantity - 1 } : i))
             .filter((i) => i.quantity > 0);
-
-          return {
-            ...calculateTotals(updatedItems),
-            items: updatedItems,
-          };
+          return { ...calculateTotals(updatedItems), items: updatedItems };
         });
       },
 
-      /**
-       * Completely removes an item regardless of quantity.
-       * @param {string|number} id - Item ID
-       */
       removeItem: (id) => {
-        set({ error: null }); 
-        
+        set({ error: null });
         set((state) => {
           const updatedItems = state.items.filter((i) => i.id !== id);
-
-          return {
-            ...calculateTotals(updatedItems),
-            items: updatedItems,
-          };
+          return { ...calculateTotals(updatedItems), items: updatedItems };
         });
       },
 
-      /**
-       * Resets the entire cart and transient order state.
-       */
       clearCart: () => {
         set({
           items: [],
@@ -268,89 +171,40 @@ const useOrderStore = create(
           totalAmount: 0,
           note: "",
           error: null,
+          selectedDiscount: 0,
+          pointsToRedeem: 0,
         });
       },
 
-      /** Open the side-drawer UI */
       openCartDrawer: () => set({ isCartDrawerOpen: true }),
-      /** Close the side-drawer UI */
       closeCartDrawer: () => set({ isCartDrawerOpen: false }),
-
-      /** 
-       * Sets the order note. 
-       * @param {string} note - User instructions
-       */
       setNote: (note) => set({ note }),
-
-      /**
-       * Bulk updates customer delivery information.
-       * @param {Partial<Object>} details - Specific fields to update
-       */
-      setCustomerDetails: (details) => set((state) => ({
-        customerDetails: { ...state.customerDetails, ...details }
-      })),
-
-      /** @param {'cash' | 'credit_card'} method */
+      setCustomerDetails: (details) =>
+        set((state) => ({
+          customerDetails: { ...state.customerDetails, ...details },
+        })),
       setPaymentMethod: (method) => set({ paymentMethod: method }),
-
-      /** 
-       * Saves MASKED card details.
-       * @param {Object} cardDetails - Object containing masked name/number/expiry
-       */
-      saveCard: (cardDetails) => {
-        set({ error: null });
-        set({ savedCard: cardDetails });
-      },
-
-      /** 
-       * Returns delivery fee if cart isn't empty.
-       * @returns {number} 
-       */
-      getDeliveryFee: () => {
-        const { items } = get();
-        return items.length > 0 ? DELIVERY_FEE : 0;
-      },
-
-      /** 
-       * Returns price + delivery.
-       * @returns {number} 
-       */
-      getTotalWithDelivery: () => {
-        const { totalAmount } = get();
-        const deliveryFee = get().getDeliveryFee();
-        return totalAmount + deliveryFee;
-      },
-
-      /** Manually clear the global error state */
+      setDiscount: (discount, points) =>
+        set({ selectedDiscount: discount, pointsToRedeem: points }),
+      clearDiscount: () => set({ selectedDiscount: 0, pointsToRedeem: 0 }),
+      saveCard: (cardDetails) => set({ error: null, savedCard: cardDetails }),
+      getDeliveryFee: () => (get().items.length > 0 ? DELIVERY_FEE : 0),
+      getTotalWithDelivery: () => get().totalAmount + get().getDeliveryFee(),
       clearError: () => set({ error: null }),
-
       clearMyOrdersError: () => set({ myOrdersError: null }),
-
-      getMergedOrders: () => {
-        const { myOrders, lastOrder } = get();
-        return mergeOrdersWithLastOrder(myOrders, lastOrder);
-      },
-
+      getMergedOrders: () =>
+        mergeOrdersWithLastOrder(get().myOrders, get().lastOrder),
       getGroupedOrders: () => groupOrdersByDate(get().getMergedOrders()),
-
-      getTrackingOrder: () => {
-        const { lastOrder } = get();
-        return pickTrackingOrder(get().getMergedOrders(), lastOrder);
-      },
+      getTrackingOrder: () =>
+        pickTrackingOrder(get().getMergedOrders(), get().lastOrder),
 
       fetchMyOrders: async () => {
         set({ myOrdersLoading: true, myOrdersError: null });
-
         try {
           const res = await getMyOrders();
-          set({
-            myOrders: res?.data || [],
-            myOrdersLoading: false,
-            myOrdersError: null,
-          });
+          set({ myOrders: res?.data || [], myOrdersLoading: false });
           return res?.data || [];
         } catch (error) {
-          console.error("Failed to fetch user orders:", error);
           set({
             myOrdersLoading: false,
             myOrdersError: "Could not load your recent orders.",
@@ -363,14 +217,7 @@ const useOrderStore = create(
         const orderToCancel = get()
           .getMergedOrders()
           .find((order) => String(order.id) === String(orderId));
-
-        if (!orderToCancel) {
-          return {
-            ok: false,
-            message: "Order not found.",
-          };
-        }
-
+        if (!orderToCancel) return { ok: false, message: "Order not found." };
         if (!isOrderCancellable(orderToCancel)) {
           return {
             ok: false,
@@ -378,9 +225,7 @@ const useOrderStore = create(
               "This order can no longer be cancelled because preparation has already started.",
           };
         }
-
         set({ myOrdersLoading: true, myOrdersError: null });
-
         try {
           await cancelOrder(orderId);
           const orders = await get().fetchMyOrders();
@@ -390,115 +235,264 @@ const useOrderStore = create(
             orders,
           };
         } catch (error) {
-          console.error("Failed to cancel order:", error);
           set({
             myOrdersLoading: false,
-            myOrdersError:
-              "An error occurred while cancelling your order. Please try again.",
+            myOrdersError: "An error occurred while cancelling your order.",
           });
           return {
             ok: false,
-            message:
-              "An error occurred while cancelling your order. Please try again.",
+            message: "An error occurred while cancelling your order.",
           };
         }
       },
 
       /**
-       * Submits the final order.
-       * Includes logic for:
-       * 1. Empty cart validation
-       * 2. Max order total cap ($10,000)
-       * 3. Duplicate order prevention (shash comparison of items/qty)
-       * 4. API Simulation delay
-       * 5. Transaction logging
-       * 
-       * @async
-       * @returns {Promise<boolean>} Success status
+       * Submits the final order payload matching your precise structural design.
        */
       submitOrder: async () => {
+        console.log("[orderStore] submitOrder initiated.");
         set({ loading: true, error: null });
 
         try {
           const state = get();
-          
-          if (state.items.length === 0) {
-             throw new Error("Cart is empty");
-          }
+          if (state.items.length === 0) throw new Error("Cart is empty");
 
-          // Validation: Max Total ($10,000 for safety)
           const totalWithDelivery = state.getTotalWithDelivery();
-          if (totalWithDelivery > 10000) {
+          if (totalWithDelivery > 10000)
             throw new Error("Order total exceeds limit of 10,000$.");
-          }
 
-          // Validation: Duplicate Order Prevention
-          const currentHash = JSON.stringify(state.items.map(i => `${i.id}-${i.quantity}`));
-          const lastHash = state.lastOrder ? JSON.stringify(state.lastOrder.items.map(i => `${i.id}-${i.quantity}`)) : null;
-          
-          if (currentHash === lastHash) {
+          const currentHash = JSON.stringify(
+            state.items.map((i) => `${i.id}-${i.quantity}`),
+          );
+          const lastOrderSucceeded =
+            state.lastOrder &&
+            SUCCESS_STATUSES.includes(state.lastOrder.status);
+          const lastHash = lastOrderSucceeded
+            ? JSON.stringify(
+                state.lastOrder.items.map((i) => `${i.id}-${i.quantity}`),
+              )
+            : null;
+
+          if (lastOrderSucceeded && currentHash === lastHash) {
             throw new Error("Wait! You just placed this exact order.");
           }
 
-          // Make real API request to place the order
-          const response = await placeOrder({
-             items: [...state.items],
-             totalAmount: state.totalAmount,
-             deliveryFee: state.getDeliveryFee(),
-             finalTotal: totalWithDelivery,
-             customerDetails: state.customerDetails,
-             paymentMethod: state.paymentMethod,
-             note: state.note
-          });
-
-          const newOrder = {
-             id: response.data.id || Math.floor(10000 + Math.random() * 90000).toString(),
-             date: response.data.createdAt || new Date().toISOString(),
-             items: [...state.items],
-             totalAmount: state.totalAmount,
-             deliveryFee: state.getDeliveryFee(),
-             finalTotal: totalWithDelivery,
-             customerDetails: state.customerDetails,
-             paymentMethod: state.paymentMethod,
-             cardDetails: state.savedCard,
-             note: state.note
+          // Exact payload expected by your backend specifications
+          const orderPayload = {
+            items: state.items.map((item) => {
+              // Handle custom meals (from customization page)
+              if (item.customizations) {
+                return {
+                  mealId: null, // Custom meals don't have a predefined mealId
+                  customizations: item.customizations,
+                  comment: item.comment || "",
+                  quantity: item.quantity,
+                };
+              }
+              // Handle regular menu items
+              return {
+                mealId: item.id,
+                quantity: item.quantity,
+              };
+            }),
+            points: state.pointsToRedeem || 0,
+            paymentMethod: state.paymentMethod,
           };
 
-          // Log to Payment Store for transaction history (PRD requirement)
+          console.log(
+            "[orderStore] Sending placeOrder request with payload:",
+            orderPayload,
+          );
+          try {
+            const response = await placeOrder(orderPayload);
+            console.log("[orderStore] placeOrder response received:", response);
+          } catch (error) {
+            console.log(
+              "[orderStore] placeOrder error received:",
+              error?.response?.data?.message,
+            );
+          }
+
+          // Extract properties from the structured response schema
+          const orderData = response.data; // Includes: { id, status, stripeClientSecret, ... }
+          const orderId = orderData.id;
+          const clientSecret = orderData.stripeClientSecret;
+
+          if (state.paymentMethod === "CREDIT_CARD") {
+            if (!clientSecret) {
+              throw new Error(
+                "Payment could not be initialized. Missing client secret.",
+              );
+            }
+
+            set({
+              stripeClientSecret: clientSecret,
+              stripePaymentIntentId: orderData.stripePaymentIntentId,
+              pendingOrderId: orderId,
+              loading: false,
+            });
+
+            // FIX: Return the raw backend response data block directly to the caller component
+            // This contains response.status = "PENDING" and response.stripeClientSecret
+            // which handles the "requiresPayment" conditional logic implicitly!
+            return orderData;
+          }
+
+          // Cash handling path
+          const finalOrder = await pollOrderStatus(orderId);
+          const newOrder = {
+            id: finalOrder.id,
+            clientId: finalOrder.clientId,
+            createdAt: finalOrder.createdAt || new Date().toISOString(),
+            status: finalOrder.status,
+            totalPrice: finalOrder.totalPrice || totalWithDelivery,
+            discount: finalOrder.discount || 0,
+            items:
+              finalOrder.items ||
+              state.items.map((item) => ({
+                id: item.id,
+                mealId: item.id,
+                quantity: item.quantity,
+                snapshotName: item.name,
+                snapshotPrice: item.price,
+                imageUrl: item.image,
+              })),
+            customerDetails: state.customerDetails,
+            paymentMethod: state.paymentMethod,
+            note: state.note,
+            stripeClientSecret: finalOrder.stripeClientSecret || "",
+            stripePaymentIntentId: finalOrder.stripePaymentIntentId || "",
+          };
+
+          const isSuccess = SUCCESS_STATUSES.includes(finalOrder.status);
+          if (ERROR_STATUSES.includes(finalOrder.status)) {
+            throw new Error(
+              `Order ${finalOrder.status.toLowerCase()}. Please contact support.`,
+            );
+          }
+
           usePaymentStore.getState().addTransaction({
-             id: newOrder.id,
-             amount: totalWithDelivery,
-             status: 'success'
+            id: newOrder.id,
+            amount: totalWithDelivery,
+            status: isSuccess ? "success" : "failed",
           });
 
-          // Transition to success state
-          set({ 
-             lastOrder: newOrder,
-             loading: false 
+          set({
+            lastOrder: newOrder,
+            loading: false,
+            stripeClientSecret: null,
+            stripePaymentIntentId: null,
+            pendingOrderId: null,
           });
-          
-          // Cleanup cart on success
-          get().clearCart();
 
-          // Invalidate dashboard caches so the new order appears immediately
-          queryClient.invalidateQueries({ queryKey: ["kitchen"] });
+          if (isSuccess) get().clearCart();
+
           queryClient.invalidateQueries({ queryKey: ["orders"] });
           queryClient.invalidateQueries({ queryKey: ["ingredients"] });
 
-          // Trigger dynamic notification for dashboard admin
           useUIStore.getState().addNotification({
             title: `New Order #${newOrder.id}`,
-            message: `Order received from ${state.customerDetails?.name || "Customer"} totaling ${totalWithDelivery.toFixed(2)} EGP. ${state.items.length} item(s) to prepare.`,
+            message: `Order received from ${state.customerDetails?.firstName || "Customer"} totaling ${totalWithDelivery.toFixed(2)} $. ${state.items.length} item(s) to prepare.`,
             type: "warning", // Orange warning badge for new incoming orders
             category: "Orders",
           });
 
-          return true;
+          return newOrder; // Consistently return payload structure
         } catch (err) {
-          console.error("[ORDER] submission failed:", err);
-          set({ 
-            loading: false, 
-            error: err.message || "Failed to place order. Please try again." 
+          console.error("[ORDER] submission failed error details:", err);
+          set({
+            loading: false,
+            error: err.message || "Failed to place order. Please try again.",
+          });
+          return null;
+        }
+      },
+
+      /**
+       * Confirms payment securely using explicitly provided token keys.
+       */
+      confirmStripePayment: async (
+        stripe,
+        cardElement,
+        clientSecretOverride,
+      ) => {
+        const state = get();
+        const pendingOrderId = state.pendingOrderId;
+        // Fallback to state token if override isn't supplied by call pattern
+        const secretToUse = clientSecretOverride || state.stripeClientSecret;
+
+        if (!secretToUse || !pendingOrderId) {
+          throw new Error("No pending payment credentials found to authorize.");
+        }
+
+        set({ loading: true, error: null });
+
+        try {
+          const { error } = await stripe.confirmCardPayment(secretToUse, {
+            payment_method: { card: cardElement },
+          });
+
+          if (error) throw new Error(error.message);
+
+          const finalOrder = await pollOrderStatus(pendingOrderId);
+          const totalWithDelivery = state.getTotalWithDelivery();
+          const isSuccess = SUCCESS_STATUSES.includes(finalOrder.status);
+
+          if (ERROR_STATUSES.includes(finalOrder.status)) {
+            throw new Error(
+              `Order ${finalOrder.status.toLowerCase()}. Please contact support.`,
+            );
+          }
+
+          const newOrder = {
+            id: finalOrder.id,
+            clientId: finalOrder.clientId,
+            createdAt: finalOrder.createdAt || new Date().toISOString(),
+            status: finalOrder.status,
+            totalPrice: finalOrder.totalPrice || totalWithDelivery,
+            discount: finalOrder.discount || 0,
+            items:
+              finalOrder.items ||
+              state.items.map((item) => ({
+                id: item.id,
+                mealId: item.id,
+                quantity: item.quantity,
+                snapshotName: item.name,
+                snapshotPrice: item.price,
+                imageUrl: item.image,
+              })),
+            customerDetails: state.customerDetails,
+            paymentMethod: state.paymentMethod,
+            note: state.note,
+            stripeClientSecret: finalOrder.stripeClientSecret || "",
+            stripePaymentIntentId: finalOrder.stripePaymentIntentId || "",
+          };
+
+          usePaymentStore.getState().addTransaction({
+            id: newOrder.id,
+            amount: totalWithDelivery,
+            status: isSuccess ? "success" : "failed",
+          });
+
+          set({
+            lastOrder: newOrder,
+            loading: false,
+            stripeClientSecret: null,
+            stripePaymentIntentId: null,
+            pendingOrderId: null,
+          });
+
+          if (isSuccess) get().clearCart();
+
+          queryClient.invalidateQueries({ queryKey: ["kitchen"] });
+          queryClient.invalidateQueries({ queryKey: ["orders"] });
+
+          return isSuccess;
+        } catch (err) {
+          console.error("[ORDER] Stripe payment confirmation failed:", err);
+          set({
+            loading: false,
+            error: err.message || "Payment verification failed.",
           });
           return false;
         }
@@ -506,27 +500,22 @@ const useOrderStore = create(
     }),
     {
       name: "revive-order-store",
-      /** List of state properties to persist across browser reloads */
       partialize: (state) => ({
         items: state.items,
         note: state.note,
         customerDetails: state.customerDetails,
         paymentMethod: state.paymentMethod,
-        savedCard: state.savedCard,
         lastOrder: state.lastOrder,
+        // Don't persist selectedDiscount and pointsToRedeem to avoid stale discounts
+        // when user's loyalty points change
       }),
-      /** Custom merge logic to ensure totals are recalculated from persisted items */
       merge: (persistedState, currentState) => {
         const items = persistedState?.items || [];
         const totals = calculateTotals(items);
-        return {
-          ...currentState,
-          ...persistedState,
-          ...totals,
-        };
+        return { ...currentState, ...persistedState, ...totals };
       },
-    }
-  )
+    },
+  ),
 );
 
 export default useOrderStore;

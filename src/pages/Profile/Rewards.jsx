@@ -1,9 +1,9 @@
 import React from "react";
 import { FaCheckCircle } from "react-icons/fa";
-import { useLoyaltyStore } from "../../store";
+import {useProfileStore } from "../../store";
 
 const Rewards = () => {
-  const points = useLoyaltyStore((s) => s.points);
+  const points = useProfileStore((s) => s.user?.loyaltyPoints || 0);
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -56,7 +56,7 @@ const Rewards = () => {
             </h3>
           </div>
           <p className="text-sm text-gray-500 leading-relaxed pl-9">
-            For every <span className="font-semibold text-gray-700">5 EGP</span>{" "}
+            For every <span className="font-semibold text-gray-700">5 USD</span>{" "}
             spent on an order, you earn{" "}
             <span className="font-semibold text-gray-700">1 point</span>.
           </p>

@@ -12,7 +12,11 @@ import { persist } from "zustand/middleware";
 
 const isValidTransaction = (transaction) =>
   transaction &&
-  transaction.id &&
+  // FIX: `transaction.id &&` would incorrectly reject a valid id of 0.
+  // Order IDs shouldn't realistically be 0, but checking for
+  // null/undefined explicitly is safer than relying on truthiness.
+  transaction.id !== null &&
+  transaction.id !== undefined &&
   typeof transaction.amount === "number" &&
   transaction.amount > 0;
 
@@ -34,7 +38,17 @@ const usePaymentStore = create(
       ====================== */
 
       /**
-       * Add a payment transaction
+       * Add a payment transaction. If a transaction with this id already
+       * exists, its status is updated in place instead of being ignored.
+       *
+       * FIX: Previously, a duplicate id was silently dropped entirely —
+       * meaning a failed payment attempt followed by a successful retry
+       * on the SAME order (same id, reusing the same PaymentIntent) never
+       * got its outcome recorded. The stale "failed" entry from the first
+       * attempt stuck around permanently even after the order actually
+       * succeeded. This is a real, expected scenario in your flow: e.g.
+       * a declined test card retried with a valid one on the same order.
+       *
        * @param {Object} transaction - { id, amount, status }
        */
       addTransaction: (transaction) => {
@@ -44,13 +58,18 @@ const usePaymentStore = create(
         }
 
         const state = get();
-        
-        // Prevent duplicates
-        if (state.transactions.some(t => t.id === transaction.id)) {
-           return;
-        }
+        const existingIndex = state.transactions.findIndex(t => t.id === transaction.id);
 
-        const newTransactions = [...state.transactions, transaction].slice(-MAX_HISTORY_LENGTH);
+        let newTransactions;
+        if (existingIndex !== -1) {
+          // Update the existing record's status/amount rather than
+          // ignoring this call outright.
+          newTransactions = state.transactions.map((t, i) =>
+            i === existingIndex ? { ...t, ...transaction } : t
+          );
+        } else {
+          newTransactions = [...state.transactions, transaction].slice(-MAX_HISTORY_LENGTH);
+        }
 
         set({
           transactions: newTransactions,
