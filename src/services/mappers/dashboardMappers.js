@@ -7,6 +7,7 @@
  * only these mappers need to be updated, keeping the UI safe.
  */
 import { parseNutrients } from "../../utils/nutrients";
+import { inferIngredientUnit } from "../../utils/stockUtils";
 
 // ── Dashboard Overview Mappers ─────────────────────────────────────
 
@@ -238,8 +239,12 @@ export const mapMenuItems = (data) => {
       }
       const name = ing.name || ing.ingredient?.name || ing.ingredientName || ing.snapshotName || "Ingredient";
       const rawAmt = ing.amount !== undefined ? ing.amount : (ing.quantityGrams !== undefined ? ing.quantityGrams : (ing.quantity !== undefined ? ing.quantity : "0"));
-      const unit = ing.unit || "g";
-      const amount = typeof rawAmt === "string" && rawAmt.endsWith(unit) ? rawAmt : `${rawAmt}${unit}`;
+      const rawUnit = ing.unit || "g";
+      const unit = inferIngredientUnit(name, rawUnit);
+      const cleanAmt = String(rawAmt).replace(/[^\d.]/g, "") || "0";
+      const amount = typeof rawAmt === "string" && rawAmt.endsWith(unit)
+        ? rawAmt
+        : (unit === "pieces" || unit === "pcs" ? `${cleanAmt} ${unit}` : `${cleanAmt}${unit}`);
       const idVal = ing.id || ing.ingredientId || ing.ingredient?.id || (idx + 1);
       const ingredientIdVal = ing.ingredientId || ing.ingredient?.id || (typeof ing.id === "number" && ing.id < 10000000000 ? ing.id : undefined);
 
@@ -319,8 +324,10 @@ const extractStock = (item) => {
 };
 
 const extractUnit = (item) => {
-  if (item === null || item === undefined || typeof item !== "object") return "g";
-  return item.unit || item.unitName || item.stockUnit || item.measurementUnit || item.unitOfMeasure || "g";
+  const name = item?.name || item?.ingredientName || "";
+  if (item === null || item === undefined || typeof item !== "object") return inferIngredientUnit(name, "g");
+  const raw = item.unit || item.unitName || item.stockUnit || item.measurementUnit || item.unitOfMeasure || "g";
+  return inferIngredientUnit(name, raw);
 };
 
 export const mapIngredients = (data) => {

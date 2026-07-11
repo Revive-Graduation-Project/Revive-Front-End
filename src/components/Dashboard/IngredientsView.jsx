@@ -332,7 +332,7 @@ function IngredientsView() {
                   </tr>
                 ) : (
                   filtered.map((item) => {
-                    const { text: stockText, isOut, isLow } = formatStock(item.stock, item.unit);
+                    const { text: stockText, isOut, isLow } = formatStock(item.stock, item.unit, item.name);
                     return (
                       <tr
                         key={item.id}

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { FiChevronDown, FiSearch, FiX, FiPlus } from "react-icons/fi";
+import { inferIngredientUnit } from "../../../utils/stockUtils";
 
 const scrollbarStyles = `
   .custom-slim-scroll {
@@ -71,17 +72,11 @@ export default function IngredientSelector({
       ...p,
       name: ing.name,
       ingredientId: ing.id,
-      unit: ing.unit || "g",
+      unit: inferIngredientUnit(ing.name, ing.unit),
       amount: p.amount || "0",
     }));
     setIsOpen(false);
     setSearch("");
-  };
-
-  const handleCustomSelect = () => {
-    setIsCustomName(true);
-    setNewIngredient((p) => ({ ...p, name: "", ingredientId: undefined, unit: "g", amount: p.amount || "0" }));
-    setIsOpen(false);
   };
 
   const handleKeyDown = (e) => {
@@ -190,7 +185,7 @@ export default function IngredientSelector({
               {filtered.length === 0 ? (
                 <div className="py-8 text-center flex flex-col items-center justify-center">
                   <p className="text-[13px] text-gray-500 font-bold mb-1">No ingredients found</p>
-                  <p className="text-[11px] text-gray-400">Try searching a different name or add custom below</p>
+                  <p className="text-[11px] text-gray-400">Try searching a different name</p>
                 </div>
               ) : (
                 filtered.map((ing, idx) => {
@@ -237,23 +232,12 @@ export default function IngredientSelector({
                             : "bg-green-50 text-green-700 border border-green-200/60"
                         }`}
                       >
-                        {isOut ? "0 in stock" : `${ing.stock} ${ing.unit}`}
+                        {isOut ? "0 in stock" : `${ing.stock} ${inferIngredientUnit(ing.name, ing.unit)}`}
                       </span>
                     </div>
                   );
                 })
               )}
-            </div>
-
-            {/* Footer / Custom Add */}
-            <div className="mt-2 pt-2 border-t border-gray-100">
-              <button
-                type="button"
-                onClick={handleCustomSelect}
-                className="w-full flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl bg-linear-to-r from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 text-orange-600 font-bold text-[12px] transition-all cursor-pointer border border-orange-200/60 shadow-2xs hover:scale-[1.01]"
-              >
-                <FiPlus size={14} /> Type custom ingredient name...
-              </button>
             </div>
           </div>
         </>
