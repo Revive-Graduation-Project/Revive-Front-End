@@ -384,6 +384,13 @@ export const validateMenuFile = async (payload) => {
   return api.post("/api/inventory/validate", formData, { headers }).then(r => r.data);
 };
 
+export const importMenuJson = async (validMeals) => {
+  const headers = {};
+  const user = useAuthStore.getState().user;
+  if (user?.role) headers["X-User-Role"] = user.role;
+  return api.post("/api/inventory/import-json", validMeals, { headers }).then(r => r.data);
+};
+
 // ── Ingredients ───────────────────────────────────────────────────────────────────
 export const getIngredientsMetrics = async () => {
   const ingredients = await getIngredients().catch(() => []);

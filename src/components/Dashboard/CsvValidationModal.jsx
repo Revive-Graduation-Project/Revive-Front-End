@@ -1,12 +1,22 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiX, FiCheckCircle, FiAlertTriangle, FiLoader } from 'react-icons/fi';
+import { FiX, FiCheckCircle, FiAlertTriangle, FiLoader, FiUploadCloud } from 'react-icons/fi';
+import { useImportMenu } from '../../hooks/dashboard/useMenuUploads';
+
+const LoadingState = ({ title, subtitle }) => (
+  <div className="flex flex-col items-center justify-center py-20">
+    <FiLoader size={48} className="animate-spin text-blue-500 mb-4" />
+    <p className="text-gray-600 font-medium">{title}</p>
+    {subtitle && <p className="text-sm text-gray-400 mt-2">{subtitle}</p>}
+  </div>
+);
 
 const CsvValidationModal = ({ 
   isOpen, 
   onClose, 
   validationResult, 
-  isValidating
+  isValidating,
+  onImportSuccess
 }) => {
   if (!isOpen) return null;
 
@@ -14,6 +24,19 @@ const CsvValidationModal = ({
   const invalidMeals = validationResult?.invalidMeals || [];
   const hasValidMeals = validMeals.length > 0;
   const hasInvalidMeals = invalidMeals.length > 0;
+
+  const { mutate: importMenu, isPending: isImporting } = useImportMenu();
+
+  const handleConfirmImport = () => {
+    importMenu(validMeals, {
+      onSuccess: () => {
+        if (onImportSuccess) onImportSuccess(validMeals.length);
+      },
+      onSettled: () => {
+        onClose();
+      }
+    });
+  };
 
   return (
     <AnimatePresence>
@@ -51,11 +74,14 @@ const CsvValidationModal = ({
             {/* Content Area */}
             <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-gray-50/30">
               {isValidating ? (
-                <div className="flex flex-col items-center justify-center py-20">
-                  <FiLoader size={48} className="animate-spin text-blue-500 mb-4" />
-                  <p className="text-gray-600 font-medium">Analyzing CSV file...</p>
-                  <p className="text-sm text-gray-400 mt-2">Checking for duplicates and missing data</p>
-                </div>
+                <LoadingState 
+                  title="Analyzing CSV file..." 
+                  subtitle="Checking for duplicates and missing data" 
+                />
+              ) : isImporting ? (
+                <LoadingState 
+                  title={`Processing ${validMeals.length} meals — this may take a minute...`} 
+                />
               ) : (
                 <div className="space-y-8">
                   {/* Ready to Import Section */}
@@ -141,10 +167,18 @@ const CsvValidationModal = ({
             <div className="p-6 border-t border-gray-100 bg-white flex items-center justify-end gap-3">
               <button
                 onClick={onClose}
-                disabled={isValidating}
-                className="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isValidating || isImporting}
+                className="px-6 py-2.5 rounded-xl text-gray-600 font-semibold text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
                 Close
+              </button>
+              <button
+                onClick={handleConfirmImport}
+                disabled={!hasValidMeals || isValidating || isImporting}
+                className="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <FiUploadCloud size={18} />
+                Confirm Import
               </button>
             </div>
           </motion.div>

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "../../utils/toastUtils";
-import { getMenuUploads, uploadMenuFile, validateMenuFile } from "../../services/dashboardService";
+import { getMenuUploads, uploadMenuFile, validateMenuFile, importMenuJson } from "../../services/dashboardService";
 import useUIStore from "../../store/uiStore";
 
 export const menuUploadKeys = {
@@ -78,6 +78,41 @@ export function useValidateMenu() {
         validMeals: trueValid,
         invalidMeals: [...result.invalidMeals, ...dbDuplicates],
       };
+    },
+  });
+}
+
+function extractErrorMessage(err) {
+  return err?.response?.data?.message || err.message || "Please try again.";
+}
+
+/** Mutation: import menu json */
+export function useImportMenu() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: importMenuJson,
+    onSuccess: (data) => {
+      toast.success("Import started!", {
+        description: data.message || "Your menu will update shortly.",
+        duration: 6000,
+      });
+      useUIStore.getState().addNotification({
+        title: "Menu CSV Imported",
+        message: data.message || "Menu items are being processed.",
+        type: "success",
+        category: "Performance",
+      });
+    },
+    onError: (err) => {
+      toast.error("Import failed.", {
+        description: extractErrorMessage(err),
+        duration: 8000,
+      });
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ["menu"], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["ingredients"], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: menuUploadKeys.all });
     },
   });
 }

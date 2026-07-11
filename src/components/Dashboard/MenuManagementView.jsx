@@ -109,6 +109,26 @@ function MenuManagementView() {
     );
   };
 
+  const handleImportSuccess = (validMealsCount) => {
+    // Record the upload in localStorage to show in Recent Uploads
+    if (selectedFile) {
+      const uploads = JSON.parse(localStorage.getItem('menuUploads') || '[]');
+      const now = new Date();
+      const newUpload = {
+        id: `UPL-${Date.now()}`,
+        filename: selectedFile.name,
+        date: now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+        status: "Success",
+        added: validMealsCount || 0, 
+        updated: 0
+      };
+      localStorage.setItem('menuUploads', JSON.stringify([newUpload, ...uploads]));
+    }
+    setSelectedFile(null); // Reset selection
+    refetch(); // Refetch the uploads query
+  };
+
   if (isUploadsLoading) {
     return (
       <div>
@@ -266,6 +286,8 @@ function MenuManagementView() {
         onClose={() => setIsValidationModalOpen(false)}
         validationResult={validationResult}
         isValidating={isValidating}
+        onImportSuccess={handleImportSuccess}
+        filename={selectedFile?.name}
       />
     </div>
   );
