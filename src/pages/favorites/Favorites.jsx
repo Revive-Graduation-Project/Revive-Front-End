@@ -7,7 +7,7 @@ import FavoritesList from "../../components/Favorites/FavoritesList";
  */
 export default function Favorites() {
   return (
-    <div className="max-w-7xl mx-auto px-4 pt-28 pb-8 min-h-screen">
+    <div className="max-w-7xl mx-auto px-4 pt-32 pb-8 min-h-screen">
       <FavoritesList />
     </div>
   );

@@ -32,7 +32,7 @@ export default function Cart() {
   };
 
   return (
-    <div className="cart-page bg-gray-50 min-h-screen pt-24 md:pt-32">
+    <div className="cart-page bg-gray-50 min-h-screen pt-32 md:pt-32">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Section - Takes 2 columns */}
@@ -57,9 +57,9 @@ export default function Cart() {
                       <button
                         type="button"
                         onClick={() => setShowVoucherSelector(true)}
-                        className="flex items-center gap-2 text-gray-600 hover:text-orange-600 transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 text-sm md:text-base text-gray-600 hover:text-orange-600 transition-colors"
                       >
-                        <FiTag className="text-lg" />
+                        <FiTag className="text-base md:text-lg" />
                         <span className="font-medium">Choose your Voucher →</span>
                       </button>
                     )

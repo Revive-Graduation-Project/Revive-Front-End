@@ -19,7 +19,7 @@ export default function Payment() {
   const finalTotal = totalAmount - discountAmount;
 
   return (
-    <div className="payment-page bg-gray-50 min-h-screen pt-24 md:pt-32">
+    <div className="payment-page bg-gray-50 min-h-screen pt-32 md:pt-32">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 

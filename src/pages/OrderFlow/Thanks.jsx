@@ -32,7 +32,7 @@ export default function Thanks() {
   };
 
   return (
-        <div className="thanks-page bg-white min-h-screen pt-42 pb-16">
+        <div className="thanks-page bg-white min-h-screen pt-32 pb-16">
       <div className="max-w-4xl mx-auto px-4 text-center">
 
         {/* Loading state while polling for CONFIRMED status */}

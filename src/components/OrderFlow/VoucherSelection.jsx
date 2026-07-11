@@ -35,15 +35,15 @@ export default function VoucherSelection() {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <div>
-          <h3 className="text-base font-bold text-gray-900 tracking-tight">Available Discounts</h3>
+          <h3 className="text-sm md:text-base font-bold text-gray-900 tracking-tight">Available Discounts</h3>
           <p className="text-xs text-gray-500 mt-0.5">Redeem your hard-earned points for rewards</p>
         </div>
-        <div className="bg-orange-50 px-3 py-1.5 rounded-full border border-orange-100/60 text-right">
-          <p className="text-[11px] font-medium text-orange-600 uppercase tracking-wider">Your Balance</p>
-          <p className="text-sm font-bold text-orange-600 text-center">{points} pts</p>
+        <div className="bg-orange-50 px-3 py-1.5 md:px-4 md:py-2 rounded-full border border-orange-100/60 inline-flex flex-col items-center justify-center">
+          <p className="text-[10px] md:text-[11px] font-medium text-orange-600 uppercase tracking-wider text-center leading-tight">Your Balance</p>
+          <p className="text-xs md:text-sm font-bold text-orange-600 text-center leading-tight">{points} pts</p>
         </div>
       </div>
       
@@ -58,7 +58,7 @@ export default function VoucherSelection() {
               type="button"
               disabled={isLocked}
               onClick={() => handleSelectVoucher(voucher.discount, voucher.pointsRequired)}
-              className={`w-full p-4 rounded-xl border transition-all duration-200 text-left flex items-center justify-between relative overflow-hidden ${
+              className={`w-full p-3 md:p-4 rounded-xl border transition-all duration-200 text-left flex items-center justify-between relative overflow-hidden ${
                 isLocked
                   ? "border-gray-100 bg-gray-50/50 opacity-60 cursor-not-allowed"
                   : isSelected
@@ -71,10 +71,10 @@ export default function VoucherSelection() {
                 <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-3 rounded-r-full border-y border-r ${isSelected ? 'border-orange-300 bg-white' : 'border-gray-200 bg-gray-50'}`} />
               )}
 
-              <div className="flex items-center gap-4 pl-2">
+              <div className="flex items-center gap-3 md:gap-4 pl-2">
                 {/* Status Indicator (Check, Circle, or Lock) */}
                 <div
-                  className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
+                  className={`w-4 h-4 md:w-5 md:h-5 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
                     isLocked 
                       ? "border-gray-200 bg-gray-100 text-gray-400"
                       : isSelected 
@@ -83,17 +83,17 @@ export default function VoucherSelection() {
                   }`}
                 >
                   {isLocked ? (
-                    <FiLock className="text-[10px]" />
+                    <FiLock className="text-[8px] md:text-[10px]" />
                   ) : isSelected ? (
-                    <FiCheck className="text-xs stroke-3" />
+                    <FiCheck className="text-[10px] md:text-xs stroke-3" />
                   ) : null}
                 </div>
 
-                <div>
-                  <p className={`font-bold tracking-wide text-sm ${isLocked ? "text-gray-400" : "text-gray-800"}`}>
+                <div className="flex-1 min-w-0">
+                  <p className={`font-bold tracking-wide text-xs md:text-sm ${isLocked ? "text-gray-400" : "text-gray-800"}`}>
                     {voucher.label}
                   </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-[10px] md:text-xs text-gray-500 mt-0.5">
                     {isLocked ? `Requires ${voucher.pointsRequired} points` : `Redeem ${voucher.pointsRequired} points`}
                   </p>
                 </div>
@@ -101,7 +101,7 @@ export default function VoucherSelection() {
 
               {/* End badge */}
               {isSelected && (
-                <span className="text-xs font-bold text-orange-600 bg-orange-100/80 px-2.5 py-1 rounded-md tracking-wide uppercase">
+                <span className="text-[10px] md:text-xs font-bold text-orange-600 bg-orange-100/80 px-2 py-0.5 md:px-2.5 md:py-1 rounded-md tracking-wide uppercase shrink-0">
                   Applied
                 </span>
               )}

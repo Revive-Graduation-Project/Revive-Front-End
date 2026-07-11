@@ -46,7 +46,7 @@ export default function Checkout() {
   };
 
   return (
-    <div className="checkout-page bg-gray-50 min-h-screen pt-24 md:pt-32">
+    <div className="checkout-page bg-gray-50 min-h-screen pt-32 md:pt-32">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className={`grid gap-8 ${isEligibleForVoucher ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1 lg:grid-cols-2 lg:max-w-4xl lg:mx-auto'}`}>
           {/* Left: Cart items always shown, voucher shown underneath only if eligible */}
