@@ -80,7 +80,7 @@ const CsvValidationModal = ({
                 />
               ) : isImporting ? (
                 <LoadingState 
-                  title={`Queuing ${validMeals.length} meals — this will happen in the background...`} 
+                  title={`Processing ${validMeals.length} meals — this may take a minute…`} 
                 />
               ) : (
                 <div className="space-y-8">
