@@ -2,14 +2,16 @@ import { useState, useMemo } from "react";
 import DashboardHeader from "./DashboardHeader";
 import { useMenuUploads, useUploadMenu } from "../../hooks/dashboard/useMenuUploads";
 import { toast } from "../../utils/toastUtils";
-import { FiUploadCloud, FiFileText } from "react-icons/fi";
+import { FiUploadCloud, FiFileText, FiInfo } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 import EmptyState from "./shared/EmptyState";
+import CsvInstructionsModal from "./CsvInstructionsModal";
 
 function MenuManagementView() {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [isInstructionsModalOpen, setIsInstructionsModalOpen] = useState(false);
 
 
   // Dynamic calendar — `new Date()` is inside the memo so the snapshot
@@ -115,6 +117,12 @@ function MenuManagementView() {
           <p className="text-[13px] text-gray-500 max-w-[500px] leading-relaxed">
             Update your live menu instantly by uploading your latest menu spreadsheet. Our system automatically parses item names, descriptions, pricing, and dietary tags to keep your storefront fresh.
           </p>
+          <button 
+            onClick={() => setIsInstructionsModalOpen(true)}
+            className="mt-3 text-[13px] font-bold text-[#F97316] hover:text-[#ea580c] flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            {"\uD83D\uDCCB"} CSV Format Guide
+          </button>
         </div>
 
         {/* Drop Zone Area */}
@@ -223,6 +231,11 @@ function MenuManagementView() {
         </div>
 
       </div>
+
+      <CsvInstructionsModal 
+        isOpen={isInstructionsModalOpen}
+        onClose={() => setIsInstructionsModalOpen(false)}
+      />
     </div>
   );
 }
