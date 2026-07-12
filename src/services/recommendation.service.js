@@ -1,6 +1,7 @@
 import { api } from "./api";
 import { getMenu } from "./menu.service";
 import { useAuthStore } from "../store";
+import axios from "axios";
 
 /**
  * Fetch AI meal recommendations for the authenticated user.
@@ -12,8 +13,30 @@ import { useAuthStore } from "../store";
  * @returns {{ data: Array }} - Enriched recommended meals
  */
 export const getSuggestedMeals = async (role) => {
+  const authUser = useAuthStore.getState().user;
+  let profilePromise;
+
+  if (role !== "CLIENT") {
+    profilePromise = Promise.resolve({
+      status: 200,
+      data: {
+        id: authUser?.id || 1,
+        age: 30,
+        gender: "Male",
+        goal: "lose_weight",
+        weight: 80,
+        height: 180,
+        exercisesRegularly: true,
+        healthConditions: ["None"],
+        phoneNumber: "01000000000",
+      },
+    });
+  } else {
+    profilePromise = api.get(`/api/clients/profile/${authUser?.id}`);
+  }
+
   const [profileRes, mealsRes] = await Promise.allSettled([
-    api.get(`/api/clients/profile/${useAuthStore.getState().user?.id}`),
+    profilePromise,
     getMenu(),
   ]);
 
@@ -27,11 +50,20 @@ export const getSuggestedMeals = async (role) => {
   const user = profileRes.value.data;
   const meals = mealsRes.value.data;
 
+  const mapGoal = (g) => {
+    if (!g) return null;
+    const upper = g.toUpperCase();
+    if (upper.includes("LOSE") || upper.includes("LOSS")) return "lose_weight";
+    if (upper.includes("GAIN")) return "gain_weight";
+    if (upper.includes("MUSCLE")) return "build_muscle";
+    return "maintain";
+  };
+
   const minimalProfile = {
     id: user?.id,
     age: user?.age,
     gender: user?.gender,
-    goal: user?.goal,
+    goal: mapGoal(user?.goal),
     weight: user?.weight,
     height: user?.height,
     exercisesRegularly: user?.exercisesRegularly,
@@ -49,10 +81,9 @@ export const getSuggestedMeals = async (role) => {
     discountPercentage: meal?.discountPercentage,
   }));
 
-  const aiResponse = await api.post("/api/recommendations", {
+  const aiResponse = await axios.post("https://youssef-ashraf-healthy-meal-ai-api.hf.space/recommend", {
     user: minimalProfile,
     meals: minimalMeals,
-    role,
     top_n: 5,
   });
 

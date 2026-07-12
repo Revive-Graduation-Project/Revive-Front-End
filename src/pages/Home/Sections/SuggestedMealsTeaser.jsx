@@ -1,4 +1,7 @@
+import React from "react";
 import { Link } from "react-router-dom";
+import { Box, Container, Typography, Button, Stack, useTheme } from "@mui/material";
+import { Lock } from "lucide-react";
 import RegularFoodCard from "../../../components/ui/RegularFoodCard";
 
 const PLACEHOLDER_MEALS = [
@@ -41,70 +44,130 @@ const PLACEHOLDER_MEALS = [
 ];
 
 const SuggestedMealsTeaser = () => {
-  return (
-    <section className="py-8 md:py-12">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center gap-3 mb-6">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
-            Suggested For You
-          </h2>
-          <span className="text-3xl">✨</span>
-        </div>
+  const theme = useTheme();
 
-        <div className="relative">
+  return (
+    <Box component="section" sx={{ py: { xs: 4, md: 6 } }}>
+      <Container maxWidth="xl" sx={{ px: { xs: 2, md: 4 } }}>
+        <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 3 }}>
+          <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', color: 'text.primary', fontSize: { xs: '1.5rem', md: '2rem' } }}>
+            Suggested For You
+          </Typography>
+          <Typography variant="h4" component="span">✨</Typography>
+        </Stack>
+
+        <Box sx={{ position: 'relative', borderRadius: 4, overflow: 'hidden' }}>
           {/* Cards with light blur */}
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-8 blur-[2px] pointer-events-none select-none opacity-60">
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', xl: 'repeat(4, 1fr)' },
+              gap: { xs: 1, md: 4 },
+              filter: 'blur(3px)',
+              pointerEvents: 'none',
+              userSelect: 'none',
+              opacity: 0.6,
+              transform: 'scale(0.98)',
+              transition: 'transform 0.3s ease',
+            }}
+          >
             {PLACEHOLDER_MEALS.map((meal) => (
-              <div key={meal.id} aria-hidden="true" inert className="w-full">
+              <Box key={meal.id} aria-hidden="true" width="100%">
                 <RegularFoodCard meal={meal} />
-              </div>
+              </Box>
             ))}
-          </div>
+          </Box>
 
           {/* Overlay */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/40 rounded-2xl">
-            {/* Lock Icon */}
-            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4 shadow-sm">
-              <svg
-                className="w-8 h-8 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                />
-              </svg>
-            </div>
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: 'rgba(255, 255, 255, 0.45)',
+              backdropFilter: 'blur(8px)',
+              borderRadius: 4,
+              p: 3,
+              textAlign: 'center',
+            }}
+          >
+            <Box
+              sx={{
+                width: 72,
+                height: 72,
+                borderRadius: '50%',
+                bgcolor: 'background.paper',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 2.5,
+                boxShadow: '0px 8px 24px rgba(0,0,0,0.08)',
+              }}
+            >
+              <Lock color="#16A34A" size={36} />
+            </Box>
 
-            <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2 text-center">
+            <Typography variant="h4" component="h3" sx={{ fontWeight: 800, color: 'text.primary', mb: 1.5, fontSize: { xs: '1.25rem', md: '1.75rem' } }}>
               Meals tailored just for you!
-            </h3>
-            <p className="text-gray-500 text-sm md:text-base mb-6 text-center px-4">
-              Sign in to get AI-powered meal recommendations based on your
-              health goals
-            </p>
-            <div className="flex gap-3">
-              <Link
+            </Typography>
+            <Typography variant="body1" sx={{ color: 'text.secondary', mb: 4, maxWidth: 450, fontWeight: 500 }}>
+              Sign in to unlock AI-powered meal recommendations precisely matched to your personal health goals.
+            </Typography>
+
+            <Stack direction="row" spacing={2}>
+              <Button
+                component={Link}
                 to="/auth/login"
-                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2.5 rounded-full text-sm font-semibold transition"
+                variant="contained"
+                sx={{
+                  bgcolor: '#f97316',
+                  color: 'white',
+                  borderRadius: 8,
+                  px: 4,
+                  py: 1.2,
+                  fontWeight: 700,
+                  textTransform: 'none',
+                  fontSize: '1rem',
+                  boxShadow: '0 4px 14px 0 rgba(249,115,22,0.39)',
+                  '&:hover': {
+                    bgcolor: '#ea580c',
+                    boxShadow: '0 6px 20px rgba(249,115,22,0.23)',
+                  },
+                }}
               >
                 Sign In
-              </Link>
-              <Link
+              </Button>
+              <Button
+                component={Link}
                 to="/auth/signup"
-                className="border border-orange-500 text-orange-500 hover:bg-orange-50 px-6 py-2.5 rounded-full text-sm font-semibold transition"
+                variant="outlined"
+                sx={{
+                  borderColor: '#f97316',
+                  color: '#f97316',
+                  borderRadius: 8,
+                  px: 4,
+                  py: 1.2,
+                  fontWeight: 700,
+                  textTransform: 'none',
+                  fontSize: '1rem',
+                  borderWidth: 2,
+                  '&:hover': {
+                    borderColor: '#ea580c',
+                    borderWidth: 2,
+                    bgcolor: 'rgba(249, 115, 22, 0.04)',
+                  },
+                }}
               >
                 Create Account
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+              </Button>
+            </Stack>
+          </Box>
+        </Box>
+      </Container>
+    </Box>
   );
 };
 

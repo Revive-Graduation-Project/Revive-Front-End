@@ -9,6 +9,7 @@ import { useSearchParams } from "react-router-dom";
 import MenuFilter from "./Sections/MenuFilter";
 import OffersSection from "./Sections/OffersSection";
 import SuggestedMealsSection from "./Sections/SuggestedMealsSection";
+import SuggestedMealsTeaser from "../Home/Sections/SuggestedMealsTeaser";
 import RegularFood from "../Home/Sections/RegularFood";
 import DishSearchInput from "../../components/Menu/DishSearchInput";
 
@@ -136,8 +137,10 @@ export default function Menu() {
 
                 <OffersSection />
 
-                {/* Suggested Meals Section (Displayed for logged-in users when recommendations exist) */}
-                {!isGuest && (
+                {/* Suggested Meals Section */}
+                {isGuest ? (
+                    <SuggestedMealsTeaser />
+                ) : (
                     <SuggestedMealsSection items={filteredRecommendations} />
                 )}
 
