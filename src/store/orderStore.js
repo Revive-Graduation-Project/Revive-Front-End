@@ -394,6 +394,9 @@ const useOrderStore = create(
 
         try {
           await cancelOrder(orderId);
+          if (get().lastOrder && String(get().lastOrder.id) === String(orderId)) {
+            set({ lastOrder: { ...get().lastOrder, status: "CANCELED" } });
+          }
           const orders = await get().fetchMyOrders();
           return {
             ok: true,

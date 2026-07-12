@@ -41,8 +41,13 @@ export const pickTrackingOrder = (orders = [], lastOrder) => {
   const activeOrder = orders.find((order) =>
     ACTIVE_TRACKING_ORDER_STATUSES.includes(normalizeStatus(order.status))
   );
+  if (activeOrder) return activeOrder;
 
-  return activeOrder || lastOrder || orders[0] || null;
+  if (lastOrder && ACTIVE_TRACKING_ORDER_STATUSES.includes(normalizeStatus(lastOrder.status))) {
+    return lastOrder;
+  }
+
+  return null;
 };
 
 export const isOrderCancellable = (order) => {
