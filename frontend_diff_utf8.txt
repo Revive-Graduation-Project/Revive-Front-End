@@ -1,0 +1,257 @@
+﻿diff --git a/src/pages/customization/Customization.jsx b/src/pages/customization/Customization.jsx
+index 8036f3f..cc801e7 100644
+--- a/src/pages/customization/Customization.jsx
++++ b/src/pages/customization/Customization.jsx
+@@ -17,11 +17,11 @@ const mapCategoryToSection = (categoryStr) => {
+ };
+ 
+ const sectionTitles = {
+-  protein: "Protein",
+-  veggies: "Veggies",
++  protein: "Main (Meat/Chicken)",
++  veggies: "Additions (Veggies)",
+   cheese: "Cheese",
+-  sauces: "Sauces",
+-  extras: "Extras"
++  sauces: "Extras (Sauces)",
++  extras: "Other Extras"
+ };
+ 
+ const Customize = () => {
+@@ -29,75 +29,79 @@ const Customize = () => {
+   const [loading, setLoading] = useState(true);
+ 
+   useEffect(() => {
+-    const fetchMeals = async () => {
++    const fetchData = async () => {
+       try {
+-        const response = await api.get('/menu');
+-        const rawMeals = response.data;
+-
+-        const mappedMeals = rawMeals.map(meal => {
+-          // Group ingredients by mapped category
+-          const sectionsMap = {
+-            protein: [],
+-            veggies: [],
+-            cheese: [],
+-            sauces: [],
+-            extras: []
+-          };
++        const [menuRes, ingRes] = await Promise.all([
++          api.get('/menu'),
++          api.get('/ingredients')
++        ]);
++        
++        const rawMeals = menuRes.data;
++        const rawIngredients = ingRes.data;
++
++        // Group ALL ingredients by mapped category for the global table
++        const globalSectionsMap = {
++          protein: [],
++          veggies: [],
++          cheese: [],
++          sauces: [],
++          extras: []
++        };
++
++        rawIngredients.forEach(ing => {
++          const secType = mapCategoryToSection(ing.category);
++          
++          let calories = 0, protein = 0, carbs = 0, fat = 0;
++          ing.nutrients?.forEach(n => {
++            const name = (n.nutrientName || "").toLowerCase();
++            if (name.includes("energy")) calories = n.value;
++            else if (name.includes("protein")) protein = n.value;
++            else if (name.includes("carbohydrate")) carbs = n.value;
++            else if (name.includes("lipid") || name.includes("fat")) fat = n.value;
++          });
+ 
+-          meal.mealIngredients?.forEach(mi => {
+-            const ing = mi.ingredient;
+-            const secType = mapCategoryToSection(ing.category);
+-            
+-            // Extract some basic nutrients
+-            let calories = 0, protein = 0, carbs = 0, fat = 0;
+-            ing.nutrients?.forEach(n => {
+-              const name = (n.nutrientName || "").toLowerCase();
+-              if (name.includes("energy")) calories = n.value;
+-              else if (name.includes("protein")) protein = n.value;
+-              else if (name.includes("carbohydrate")) carbs = n.value;
+-              else if (name.includes("lipid") || name.includes("fat")) fat = n.value;
+-            });
+-
+-            sectionsMap[secType].push({
+-              id: ing.id,
+-              name: ing.name,
+-              price: 0, // Ingredients don't have individual prices in backend yet
+-              calories,
+-              protein,
+-              carbs,
+-              fat
+-            });
++          globalSectionsMap[secType].push({
++            id: ing.id,
++            name: ing.name,
++            price: 0, // Could be adjusted based on logic
++            calories,
++            protein,
++            carbs,
++            fat
+           });
++        });
+ 
+-          // Convert map to array of sections
+-          const sections = Object.keys(sectionsMap)
+-            .filter(key => sectionsMap[key].length > 0)
+-            .map(key => ({
+-              title: sectionTitles[key],
+-              type: key,
+-              maxSelect: key === "protein" ? 1 : null,
+-              required: key === "protein" || key === "veggies",
+-              items: sectionsMap[key]
+-            }));
++        // Convert map to array of sections for the table
++        const globalSections = Object.keys(globalSectionsMap)
++          .filter(key => globalSectionsMap[key].length > 0)
++          .map(key => ({
++            title: sectionTitles[key],
++            type: key,
++            maxSelect: key === "protein" ? 1 : null,
++            required: false,
++            items: globalSectionsMap[key]
++          }));
+ 
++        const mappedMeals = rawMeals.map(meal => {
+           return {
+             id: meal.id,
+             name: meal.name,
+             image: meal.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
+             bases: [{ id: `base-${meal.id}`, name: "Regular", basePrice: meal.price }],
+-            sections
++            // Use the global ingredients for every meal customization
++            sections: globalSections
+           };
+         });
+ 
+         setCustomizeData(mappedMeals);
+       } catch (err) {
+-        console.error("Failed to fetch meals:", err);
++        console.error("Failed to fetch menu or ingredients:", err);
+       } finally {
+         setLoading(false);
+       }
+     };
+ 
+-    fetchMeals();
++    fetchData();
+   }, []);
+ 
+   return (
+diff --git a/src/pages/customization/Sections/IngredientsSection.jsx b/src/pages/customization/Sections/IngredientsSection.jsx
+index 6dee1b6..1f3f415 100644
+--- a/src/pages/customization/Sections/IngredientsSection.jsx
++++ b/src/pages/customization/Sections/IngredientsSection.jsx
+@@ -1,7 +1,5 @@
+-// components/customize/SectionsList.jsx
+-
++import React from "react";
+ import SectionWrapper from "./SectionWrapper";
+-import ItemsRow from "./ItemsRow";
+ import { useCustomizeStore } from "../../../store/useCustomizeStore";
+ 
+ const IngredientsSection = () => {
+@@ -11,34 +9,68 @@ const IngredientsSection = () => {
+ 
+   return (
+     <SectionWrapper title="Customize Your Meal">
+-      {selectedMeal.sections.map((section) => {
+-        const selectedItems = selectedSections[section.type] || [];
+-
+-        return (
+-          <div key={section.type} className="mb-8">
+-            <div className="flex items-center mb-1">
+-              <h4 className="text-sm font-medium mr-2">
+-                {section.title}
+-                {section.required && (
+-                  <span className="text-red-500 ml-1">*</span>
+-                )}
+-              </h4>
++      <div className="overflow-x-auto">
++        <table className="w-full text-left border-collapse">
++          <thead>
++            <tr className="border-b bg-gray-50 text-gray-600 text-sm">
++              <th className="p-3 font-semibold">Ingredient</th>
++              <th className="p-3 font-semibold text-center">Calories</th>
++              <th className="p-3 font-semibold text-center">Protein</th>
++              <th className="p-3 font-semibold text-center">Carbs</th>
++              <th className="p-3 font-semibold text-center">Fat</th>
++              <th className="p-3 font-semibold text-center">Action</th>
++            </tr>
++          </thead>
++          <tbody>
++            {selectedMeal.sections.map((section) => {
++              const selectedItems = selectedSections[section.type] || [];
+ 
+-              {section.maxSelect && (
+-                <span className="text-xs text-gray-400">
+-                  Max {section.maxSelect}
+-                </span>
+-              )}
+-            </div>
++              return (
++                <React.Fragment key={section.type}>
++                  {/* Category Header Row */}
++                  <tr className="bg-gray-100">
++                    <td colSpan="6" className="p-3 font-bold text-gray-800">
++                      {section.title}
++                      {section.required && <span className="text-red-500 ml-1">*</span>}
++                      {section.maxSelect && (
++                        <span className="text-xs text-gray-500 font-normal ml-3">
++                          (Max {section.maxSelect})
++                        </span>
++                      )}
++                    </td>
++                  </tr>
+ 
+-            <ItemsRow
+-              items={section.items}
+-              selectedItems={selectedItems}
+-              onToggle={(item) => toggleItem(section, item)}
+-            />
+-          </div>
+-        );
+-      })}
++                  {/* Ingredient Rows */}
++                  {section.items.map((item) => {
++                    const isSelected = selectedItems.some((i) => i.id === item.id);
++                    return (
++                      <tr key={item.id} className="border-b hover:bg-gray-50 transition-colors">
++                        <td className="p-3 font-medium text-gray-700">{item.name}</td>
++                        <td className="p-3 text-center text-sm text-gray-600">{item.calories || 0} kcal</td>
++                        <td className="p-3 text-center text-sm text-gray-600">{item.protein || 0}g</td>
++                        <td className="p-3 text-center text-sm text-gray-600">{item.carbs || 0}g</td>
++                        <td className="p-3 text-center text-sm text-gray-600">{item.fat || 0}g</td>
++                        <td className="p-3 text-center">
++                          <button
++                            onClick={() => toggleItem(section, item)}
++                            className={`px-3 py-1 text-sm font-medium rounded-full transition-colors ${
++                              isSelected 
++                                ? 'bg-red-100 text-red-600 hover:bg-red-200' 
++                                : 'bg-orange-100 text-orange-600 hover:bg-orange-200'
++                            }`}
++                          >
++                            {isSelected ? 'Remove' : 'Add'}
++                          </button>
++                        </td>
++                      </tr>
++                    );
++                  })}
++                </React.Fragment>
++              );
++            })}
++          </tbody>
++        </table>
++      </div>
+     </SectionWrapper>
+   );
+ };

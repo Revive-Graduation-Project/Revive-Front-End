@@ -90,38 +90,38 @@ const Hero = () => {
             alt="Healthy Food"
             className="
       rounded-full shadow-lg z-0 relative
-      w-64 sm:w-72 md:w-70 lg:w-auto
-      left-0 lg:left-60
-      top-0 lg:top-15
+      w-64 h-64 sm:w-72 sm:h-72 md:w-80 md:h-80 lg:w-[350px] lg:h-[350px] object-cover
+      left-0 lg:left-40
+      top-0 lg:top-10
       hidden lg:block
     "
           />
 
-          {/* Small dishes */}
+          {/* Small dishes orbiting the main dish */}
           <img
             src="/images/dish.png"
             alt="dish"
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 lg:bottom-10 lg:left-150 w-12 lg:w-14 rounded-full shadow-md hidden lg:block"
+            className="absolute w-12 lg:w-14 rounded-full shadow-md hidden lg:block lg:left-[307px] lg:top-[392px] hover:scale-110 transition-transform duration-300"
           />
           <img
             src="/images/dish.png"
             alt="dish"
-            className="absolute -bottom-10 left-1/3 lg:-bottom-20 lg:left-132 w-12 lg:w-14 rounded-full shadow-md hidden lg:block"
+            className="absolute w-12 lg:w-14 rounded-full shadow-md hidden lg:block lg:left-[162px] lg:top-[332px] hover:scale-110 transition-transform duration-300"
           />
           <img
             src="/images/dish.png"
             alt="dish"
-            className="absolute -bottom-20 right-1/3 lg:-bottom-35 lg:left-95 w-12 lg:w-14 rounded-full shadow-md hidden lg:block"
+            className="absolute w-12 lg:w-14 rounded-full shadow-md hidden lg:block lg:left-[102px] lg:top-[187px] hover:scale-110 transition-transform duration-300"
           />
           <img
             src="/images/dish.png"
             alt="dish"
-            className="absolute -bottom-10 right-1/4 lg:-bottom-20 lg:left-55 w-12 lg:w-14 rounded-full shadow-md hidden lg:block"
+            className="absolute w-12 lg:w-14 rounded-full shadow-md hidden lg:block lg:left-[162px] lg:top-[42px] hover:scale-110 transition-transform duration-300"
           />
           <img
             src="/images/dish.png"
             alt="dish"
-            className="absolute bottom-6 right-1/2 translate-x-1/2 lg:bottom-10 lg:left-35 w-12 lg:w-14 rounded-full shadow-md hidden lg:block"
+            className="absolute w-12 lg:w-14 rounded-full shadow-md hidden lg:block lg:left-[307px] lg:-top-[18px] hover:scale-110 transition-transform duration-300"
           />
         </div>
       </div>

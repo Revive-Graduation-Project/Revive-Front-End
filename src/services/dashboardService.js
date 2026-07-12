@@ -397,6 +397,29 @@ export const validateMenuFile = async (payload) => {
   return api.post("/api/inventory/validate", formData, { headers }).then(r => r.data);
 };
 
+export const getImportJobStatus = async (jobId) => {
+  return api.get(`/api/inventory/import-status/${jobId}`).then(r => r.data);
+};
+
+export const getActiveImportJob = async () => {
+  const res = await api.get("/api/inventory/import-jobs/active").catch(err => {
+    if (err?.response?.status === 204) return null;
+    throw err;
+  });
+  return res ? res.data : null;
+};
+
+export const getAllImportJobs = async () => {
+  return api.get("/api/inventory/import-jobs").then(r => r.data.content || r.data);
+};
+
+export const cancelImportJob = async (jobId) => {
+  const headers = {};
+  const user = useAuthStore.getState().user;
+  if (user?.role) headers["X-User-Role"] = user.role;
+  return api.post(`/api/inventory/import-jobs/${jobId}/cancel`, {}, { headers }).then(r => r.data);
+};
+
 export const importMenuJson = async (validMeals) => {
   const headers = {};
   const user = useAuthStore.getState().user;

@@ -29,8 +29,8 @@ const CsvValidationModal = ({
 
   const handleConfirmImport = () => {
     importMenu(validMeals, {
-      onSuccess: () => {
-        if (onImportSuccess) onImportSuccess(validMeals.length);
+      onSuccess: (data) => {
+        if (onImportSuccess) onImportSuccess(data?.jobId);
       },
       onSettled: () => {
         onClose();

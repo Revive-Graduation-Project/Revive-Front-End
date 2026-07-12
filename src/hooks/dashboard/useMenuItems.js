@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "../../utils/toastUtils";
-import { getMenuCategories, getMenuItems, deleteMenuItem, updateMenuItem, createMenuItem, saveRecipe, getRecipeIngredients, uploadMealImage } from "../../services/dashboardService";
+import { getMenuCategories, getMenuItems, deleteMenuItem, updateMenuItem, createMenuItem, saveRecipe, getRecipeIngredients, uploadMealImage, updateMenuDiscount } from "../../services/dashboardService";
 import useUIStore from "../../store/uiStore";
 
 export const menuKeys = {
@@ -314,3 +314,30 @@ export function useSaveRecipe() {
   });
 }
 
+/** Mutation: update discount on a single menu item */
+export function useUpdateMenuDiscount() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }) => updateMenuDiscount(id, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: menuKeys.all });
+      toast.success("Discount updated!");
+    },
+    onError: () => toast.error("Failed to update discount."),
+  });
+}
+
+/** Mutation: apply the same discount to multiple menu items */
+export function useBulkUpdateMenuDiscount() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ ids, ...discountData }) => {
+      await Promise.all(ids.map(id => updateMenuDiscount(id, discountData)));
+    },
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: menuKeys.all });
+      toast.success(`Discount applied to ${variables.ids.length} meals!`);
+    },
+    onError: () => toast.error("Failed to apply bulk discount."),
+  });
+}

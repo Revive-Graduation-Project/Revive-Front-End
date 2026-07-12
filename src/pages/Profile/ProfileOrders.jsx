@@ -121,7 +121,7 @@ export default function Orders() {
                   </p>
                   <div className="space-y-4">
                     {dateOrders.map((order) => (
-                      <OrderCard key={order.id} order={order} />
+                      <OrderCard key={order.id} order={order} onCancelOrder={handleCancelOrder} />
                     ))}
                   </div>
                 </div>
