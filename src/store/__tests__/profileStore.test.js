@@ -2,12 +2,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import useProfileStore from "../profileStore";
 import useAuthStore from "../authStore";
 
-vi.mock("../../services/user.service", () => ({
-  getProfileById: vi.fn(),
+vi.mock("../../services/clientProfileService", () => ({
+  getProfile: vi.fn(),
   updateProfile: vi.fn(),
 }));
 
-const { getProfileById } = await import("../../services/user.service");
+const { getProfile } = await import("../../services/clientProfileService");
 
 describe("useProfileStore", () => {
   beforeEach(() => {
@@ -24,11 +24,11 @@ describe("useProfileStore", () => {
   it("does not reuse a cached profile from a different auth user", async () => {
     useProfileStore.setState({ user: { id: 99, firstName: "Old" } });
 
-    getProfileById.mockResolvedValue({ data: { id: 1, firstName: "New" } });
+    getProfile.mockResolvedValue({ data: { id: 1, firstName: "New" } });
 
     const result = await useProfileStore.getState().fetchProfile();
 
     expect(result).toEqual({ id: 1, firstName: "New" });
-    expect(getProfileById).toHaveBeenCalledWith(1);
+    expect(getProfile).toHaveBeenCalledWith(1);
   });
 });

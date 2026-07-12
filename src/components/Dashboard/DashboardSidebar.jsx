@@ -10,7 +10,7 @@ import {
 } from "react-icons/md";
 import { FiShoppingBag, FiLogOut, FiUsers } from "react-icons/fi";
 import useAuthStore from "../../store/authStore";
-import { isKitchenOnlyUser, isAdminUser } from "../../utils/roleUtils";
+import { isKitchenOnlyUser, isAdminUser, isSuperAdmin } from "../../utils/roleUtils";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: MdDashboard, end: true },
@@ -27,7 +27,7 @@ function DashboardSidebar() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const isChief = isKitchenOnlyUser(user);
-  const isAdmin = isAdminUser(user);
+  const isSuper = isSuperAdmin(user);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
@@ -39,8 +39,11 @@ function DashboardSidebar() {
   let visibleNavItems = navItems;
   if (isChief) {
     visibleNavItems = navItems.filter((item) => item.to === "/dashboard/live-kitchen");
-  } else if (!isAdmin) {
-    visibleNavItems = navItems.filter((item) => item.to !== "/dashboard/staff-management");
+  } else if (isSuper) {
+    visibleNavItems = [
+      ...navItems,
+      { to: "/", label: "Customer App", icon: MdRestaurantMenu, end: true },
+    ];
   }
 
   const handleLogout = () => {

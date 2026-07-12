@@ -5,9 +5,6 @@ import {
   useUpdateKitchenStatus,
   useActiveTickets,
   useUpdateTicketStatus,
-  useUpdateChefStatus,
-  useUpdateChefStation,
-  useUpdateChefDisplayName,
 } from "../../hooks/dashboard/useKitchenOrders";
 import { KanbanCardSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
@@ -18,7 +15,6 @@ import { COLUMNS } from "./LiveKitchen/constants";
 import { LiveIndicator } from "./LiveKitchen/LiveIndicator";
 import { OrderCard, DoneCard, EmptyColumn } from "./LiveKitchen/OrderCards";
 import { KitchenTicketsTable } from "./LiveKitchen/KitchenTicketsTable";
-import { ChefManagement } from "./LiveKitchen/ChefManagement";
 
 function LiveKitchenView() {
   const [viewingOrder, setViewingOrder] = useState(null);
@@ -35,9 +31,6 @@ function LiveKitchenView() {
   // ── Kitchen-service hooks ──
   const { data: tickets, isLoading: ticketsLoading, error: ticketsError, refetch: refetchTickets, isFetching: ticketsFetching } = useActiveTickets();
   const { mutate: mutateTicketStatus } = useUpdateTicketStatus();
-  const { mutate: mutateChefStatus } = useUpdateChefStatus();
-  const { mutate: mutateChefStation } = useUpdateChefStation();
-  const { mutate: mutateChefName } = useUpdateChefDisplayName();
 
   // ── Action handler — routes to confirmation modals for destructive actions ──
   const handleAction = useCallback((orderId, nextStatus) => {
@@ -145,18 +138,6 @@ function LiveKitchenView() {
             isFetching={ticketsFetching}
             onRetry={refetchTickets}
             onAction={handleTicketAction}
-          />
-
-          {/* ══════════════════════════════════════════════════════
-              SECTION: Chef Management
-          ═══════════════════════════════════════════════════════ */}
-          <ChefManagement
-            tickets={tickets}
-            isLoading={ticketsLoading}
-            error={ticketsError}
-            onUpdateStatus={mutateChefStatus}
-            onUpdateStation={mutateChefStation}
-            onUpdateName={mutateChefName}
           />
 
         </div>
