@@ -453,11 +453,14 @@ const useOrderStore = create(
 
           // Make real API request to place the order
           const response = await placeOrder({
-             items: state.items.map(i => ({
-               mealId: Number(i.id),
-               quantity: i.quantity,
-               ...(i.customizations && Object.keys(i.customizations).length > 0 ? { customizations: i.customizations } : {})
-             })),
+               items: state.items.map(i => {
+                 const isCustom = typeof i.id === "string" && i.id.startsWith("custom-");
+                 return { 
+                   mealId: isCustom ? null : Number(i.id), 
+                   quantity: i.quantity,
+                   ...(i.customizations && Object.keys(i.customizations).length > 0 ? { customizations: i.customizations } : {})
+                 };
+               }),
              totalAmount: state.totalAmount,
              deliveryFee: state.getDeliveryFee(),
              finalTotal: totalWithDelivery,
