@@ -45,7 +45,7 @@ const OrderCard = ({ order, onCancelOrder }) => {
     }
   };
 
-  const friendlyTime = order?.time || formatOrderTime(order?.createdAt);
+  const friendlyTime = formatOrderTime(order?.time || order?.createdAt);
 
   return (
     <div

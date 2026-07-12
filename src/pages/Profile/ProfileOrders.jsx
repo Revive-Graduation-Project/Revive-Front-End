@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
 import OrderCard from "./components/OrderCard";
 import OrderTracking from "./components/OrderTracking";
 import { useOrderStore } from "../../store";
@@ -8,7 +9,9 @@ import { useShallow } from "zustand/shallow";
 
 
 export default function Orders() {
-  const [activeTab, setActiveTab] = useState("history");
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") === "tracking" ? "tracking" : "history";
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   const {
   myOrders,

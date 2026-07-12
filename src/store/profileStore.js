@@ -41,8 +41,8 @@ const useProfileStore = create(
           }
           set({ user, loading: false, error: null });
 
-          // Sync loyalty points with loyaltyStore if present
-          if (typeof user.loyaltyPoints === "number") {
+          // Sync loyalty points with loyaltyStore if present on backend (> 0)
+          if (typeof user.loyaltyPoints === "number" && user.loyaltyPoints > 0) {
             import("../store/loyaltyStore")
               .then((mod) => {
                 mod.default?.setState({ points: user.loyaltyPoints });

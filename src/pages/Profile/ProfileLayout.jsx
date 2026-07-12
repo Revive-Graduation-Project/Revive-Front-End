@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Outlet } from "react-router";
 import Sidebar from "./components/Sidebar";
-import { useProfileStore, useAuthStore } from "../../store";
+import { useProfileStore, useAuthStore, useOrderStore } from "../../store";
 import { LoadingSpinner } from "../../components";
 import {
   LuClipboard,
@@ -28,6 +28,7 @@ export default function ProfileLayout() {
     if (!user && !loading && !error) {
       fetchProfile();
     }
+    useOrderStore.getState().fetchMyOrders();
     return () => {
       mounted = false;
     };

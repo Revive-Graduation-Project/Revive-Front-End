@@ -67,28 +67,6 @@ export default function OrderDetailsModal({ isOpen, onClose, order, showCustomer
                     <span className="block text-[13px] font-semibold text-[#1a1a1a]">{customerName}</span>
                   </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm text-gray-400">
-                    <FiPhone size={14} />
-                  </div>
-                  <div>
-                    <span className="block text-[11px] font-bold text-gray-400 uppercase tracking-wide">Phone</span>
-                    <span className={`block text-[13px] font-semibold ${customerPhone ? "text-[#1a1a1a]" : "text-gray-400 italic"}`}>
-                      {customerPhone || "Not provided"}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm text-gray-400">
-                    <FiMapPin size={14} />
-                  </div>
-                  <div>
-                    <span className="block text-[11px] font-bold text-gray-400 uppercase tracking-wide">Delivery Address</span>
-                    <span className={`block text-[13px] font-semibold ${customerAddress ? "text-[#1a1a1a]" : "text-gray-400 italic"}`}>
-                      {customerAddress || "Not available"}
-                    </span>
-                  </div>
-                </div>
               </div>
             </div>
           )}
