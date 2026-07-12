@@ -1,8 +1,8 @@
-import { Link, NavLink, useLocation } from "react-router";
+import { Link, NavLink } from "react-router";
 import Cart from "../ui/Cart";
 import SearchBar from "./SearchBar";
 import { FaUserCircle } from "react-icons/fa";
-import { MdOutlineKeyboardArrowDown, MdDashboard } from "react-icons/md";
+import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 import { useState } from "react";
 import { useAuthStore } from "../../store";
 
@@ -11,7 +11,6 @@ import { useAuthStore } from "../../store";
    PUBLIC    → visible to everyone
    PROTECTED → visible only when authenticated
 ───────────────────────────────────────────── */
-// All nav links are always visible — access control is handled at the route level by ProtectedRoute
 const ALL_NAV_LINKS = [
   { to: "/", label: "Home" },
   { to: "/menu", label: "Menu" },
@@ -19,33 +18,20 @@ const ALL_NAV_LINKS = [
   { to: "/favorites", label: "Favorites" },
 ];
 
-/* ─────────────────────────────────────────────
-   More dropdown links
-   Links that live permanently inside the "More"
-   dropdown because the main nav is already full.
-   The button label updates to reflect the active
-   link inside (e.g. "More" → "Profile").
-───────────────────────────────────────────── */
-const MORE_LINKS = [
-  { to: "/profile", label: "Profile", icon: FaUserCircle },
-];
-
 /**
  * Shared className resolver for NavLink — keeps active styling DRY.
  */
 const navLinkClass = ({ isActive }) =>
-  `${isActive ? "active-navlink" : ""} hover:text-green p-2 self-start`;
+  `${isActive ? "active-navlink text-green font-semibold" : "text-gray-600"} hover:text-green transition-colors px-3 py-2 rounded-md self-center`;
 
 /* ─────────────────────────────────────────────
    Navbar Component
    - Reads isAuthenticated from Zustand authStore
    - Conditionally renders nav links & action button
    - Route-level protection is already handled in App.jsx
-   - "More" dropdown links to home-page section anchors
 ───────────────────────────────────────────── */
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isMoreOpen, setIsMoreOpen] = useState(false);
 
   // Read authentication state & user
   const { isAuthenticated, user } = useAuthStore();
@@ -54,147 +40,101 @@ function Navbar() {
   const isStaff = user && ["admin", "manager", "chief", "chef"].includes(userRole);
 
   // Dynamically include Dashboard (or Live Kitchen + Orders for Chief) if user has staff role
-  const dynamicMoreLinks = [
-    ...MORE_LINKS,
+  const dynamicNavLinks = [
+    ...ALL_NAV_LINKS,
     ...(isStaff
       ? isChief
         ? [
-            { to: "/dashboard/live-kitchen", label: "Live Kitchen", icon: MdDashboard },
-            { to: "/dashboard/orders", label: "Orders", icon: MdDashboard },
+            { to: "/dashboard/live-kitchen", label: "Live Kitchen" },
+            { to: "/dashboard/orders", label: "Orders" },
           ]
-        : [{ to: "/dashboard", label: "Dashboard", icon: MdDashboard }]
+        : [{ to: "/dashboard", label: "Dashboard" }]
       : []),
   ];
 
-  // Detect if the current route matches any link inside the More dropdown
-  // so the button label can reflect the active page (e.g. "More" → "Profile")
-  const location = useLocation();
-  const activeMoreLink = dynamicMoreLinks.find((l) =>
-    location.pathname.startsWith(l.to)
-  );
-
   return (
-    <nav className="bg-gray-50 fixed inset-x-0 z-30 flex flex-wrap p-3 gap-y-3">
-
-      {/* ── Top bar: Logo · Search · Actions ── */}
-      <div className="w-full flex flex-wrap p-3 gap-y-2 justify-around items-center">
-
-        {/* Branding */}
-        <h1 className="grow text-center">
-          <Link to="/">
-            <span className="branding-title text-3xl md:text-4xl text-orange">
-              Re
-            </span>
-            <span className="branding-title text-3xl md:text-4xl text-green">
-              vive
-            </span>
-          </Link>
-        </h1>
-
-        <SearchBar />
-
-        {/* Cart + Auth action */}
-        <div className="flex items-center justify-center gap-x-4 grow order-2 md:order-3">
-          <Cart />
-
-          {isAuthenticated ? (
-            /* ── Authenticated: Profile icon ── */
-            <Link
-              to="/profile"
-              className="text-green flex items-center gap-x-2 group transition-colors"
-              title="View your profile"
-            >
-              <FaUserCircle className="text-3xl transform group-hover:rotate-360 duration-500" />
-              <span className="text-xl tracking-tight font-medium">Profile</span>
+    <nav className="bg-white/95 backdrop-blur-md shadow-sm fixed inset-x-0 top-0 z-30 flex flex-col w-full border-b border-gray-100">
+      <div className="w-full flex flex-col md:flex-row p-3 gap-y-4 justify-between items-center max-w-7xl mx-auto px-4 lg:px-8">
+        
+        {/* ── Top bar: Logo · Search · Actions ── */}
+        <div className="w-full flex justify-between items-center gap-x-4">
+          {/* Branding */}
+          <h1 className="flex-shrink-0">
+            <Link to="/" className="flex items-center hover:opacity-90 transition-opacity">
+              <span className="branding-title text-3xl md:text-4xl font-bold text-orange tracking-tight">
+                Re
+              </span>
+              <span className="branding-title text-3xl md:text-4xl font-bold text-green tracking-tight">
+                vive
+              </span>
             </Link>
-          ) : (
-            /* ── Guest: Login link ── */
-            <Link
-              to="/auth/login"
-              className="text-green flex items-center gap-x-2 group transition-colors"
-            >
-              <FaUserCircle className="text-3xl transform group-hover:rotate-360 duration-500" />
-              <span className="text-xl tracking-tight font-medium">Login</span>
-            </Link>
-          )}
+          </h1>
+
+          {/* Desktop Search */}
+          <div className="hidden md:flex flex-grow justify-center px-4 max-w-2xl">
+            <SearchBar />
+          </div>
+
+          {/* Cart + Auth action */}
+          <div className="flex items-center gap-x-4 md:gap-x-6 flex-shrink-0">
+            <Cart />
+
+            {isAuthenticated ? (
+              /* ── Authenticated: Profile icon ── */
+              <Link
+                to="/profile"
+                className="flex items-center gap-x-2 group"
+                title="View your profile"
+              >
+                <div className="p-2 rounded-full bg-gray-50 group-hover:bg-green/10 transition-colors duration-300">
+                  <FaUserCircle className="text-2xl md:text-3xl text-green group-hover:scale-110 transition-transform duration-300 ease-out" />
+                </div>
+                <span className="text-base md:text-lg tracking-tight font-medium text-gray-700 group-hover:text-green hidden sm:block transition-colors">Profile</span>
+              </Link>
+            ) : (
+              /* ── Guest: Login link ── */
+              <Link
+                to="/auth/login"
+                className="flex items-center gap-x-2 group"
+              >
+                <div className="p-2 rounded-full bg-gray-50 group-hover:bg-green/10 transition-colors duration-300">
+                  <FaUserCircle className="text-2xl md:text-3xl text-gray-400 group-hover:text-green group-hover:scale-110 transition-all duration-300 ease-out" />
+                </div>
+                <span className="text-base md:text-lg tracking-tight font-medium text-gray-600 group-hover:text-green hidden sm:block transition-colors">Login</span>
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile Search */}
+        <div className="w-full md:hidden flex justify-center">
+          <SearchBar />
         </div>
       </div>
 
-      {/* ── Nav links (collapsible on mobile) ──
-          overflow-hidden drives the max-h collapse animation on mobile.
-          md:overflow-visible lets the absolute "More" dropdown escape
-          the container on desktop without being clipped.               */}
+      {/* ── Nav links (collapsible on mobile) ── */}
       <div
         className={`${
-          !isOpen ? "max-h-0" : "max-h-screen"
-        } md:max-h-screen overflow-hidden md:overflow-visible transition-all duration-500 ease-in-out w-full`}
+          !isOpen ? "max-h-0 opacity-0" : "max-h-[400px] opacity-100"
+        } md:max-h-screen md:opacity-100 overflow-hidden transition-all duration-500 ease-in-out w-full`}
       >
-        <div className="flex flex-col text-lg md:flex-row md:justify-center md:gap-x-14 lg:gap-x-28 md:text-xl text-gray-800">
-
-          {/* Nav links — shown to all users; ProtectedRoute guards access at page level */}
-          {ALL_NAV_LINKS.map(({ to, label }) => (
+        <div className="flex flex-col md:flex-row items-center justify-center md:gap-x-8 lg:gap-x-12 text-base md:text-lg font-medium text-gray-700 py-4 md:py-3 border-t border-gray-100 max-w-7xl mx-auto">
+          {dynamicNavLinks.map(({ to, label }) => (
             <NavLink key={to} className={navLinkClass} to={to}>
               {label}
             </NavLink>
           ))}
-
-          {/* ── More Dropdown ── */}
-          <div className="relative self-start">
-            <button
-              onClick={() => setIsMoreOpen((prev) => !prev)}
-              className={`${
-                activeMoreLink || isMoreOpen ? "active-navlink" : ""
-              } hover:text-green p-2 flex items-center gap-1 cursor-pointer`}
-              aria-haspopup="true"
-              aria-expanded={isMoreOpen}
-            >
-              {/* Show active link name when inside a More route, otherwise "More" */}
-              {activeMoreLink ? activeMoreLink.label : "More"}
-              <MdOutlineKeyboardArrowDown
-                className={`text-xl text-green transition-transform duration-300 ${
-                  isMoreOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-
-            {/* Dropdown panel */}
-            <div
-              className={`${
-                isMoreOpen ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
-              } overflow-hidden transition-all duration-300 ease-in-out
-                md:absolute md:left-0 md:top-full md:mt-1
-                md:bg-white md:rounded-xl md:shadow-lg md:border md:border-gray-100 md:min-w-50`}
-            >
-              {/* Map over dynamicMoreLinks */}
-              {dynamicMoreLinks.map(({ to, label, icon: Icon }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  className={({ isActive }) =>
-                    `flex items-center gap-2 px-4 py-3 text-base hover:bg-gray-50 transition-colors ${
-                      isActive ? "text-green font-semibold" : "text-gray-700"
-                    }`
-                  }
-                  onClick={() => setIsMoreOpen(false)}
-                >
-                  {Icon ? <Icon className="text-lg text-green" /> : <FaUserCircle className="text-lg text-green" />}
-                  {label}
-                </NavLink>
-              ))}
-            </div>
-          </div>
-
         </div>
       </div>
 
       {/* ── Mobile hamburger toggle ── */}
       <button
-        className="absolute left-1/2 transform -translate-x-1/2 -bottom-3.5 md:hidden flex items-center gap-x-1 cursor-pointer"
+        className="absolute left-1/2 transform -translate-x-1/2 -bottom-4 md:hidden flex items-center justify-center w-8 h-8 bg-white border border-gray-200 rounded-full shadow-sm z-40"
         onClick={() => setIsOpen((prev) => !prev)}
         aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
         aria-expanded={isOpen}
       >
-        <MdOutlineKeyboardArrowDown className="text-2xl text-green" />
+        <MdOutlineKeyboardArrowDown className={`text-2xl text-green transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
     </nav>
   );

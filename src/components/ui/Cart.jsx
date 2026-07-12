@@ -6,15 +6,15 @@ function Cart() {
   const totalItems = useOrderStore((state) => state.totalItems);
 
   return (
-    <div className="relative">
+    <div className="relative flex items-center">
       <button
-        className="flex items-center text-3xl text-(--color-green) transition-colors cursor-pointer relative"
+        className="flex items-center justify-center p-2 rounded-full text-2xl md:text-3xl text-green hover:bg-green/10 hover:scale-110 transition-all duration-300 cursor-pointer relative group"
         onClick={openCartDrawer}
         aria-label="Open cart"
       >
-        <FiShoppingCart />
+        <FiShoppingCart strokeWidth={2.5} className="group-hover:text-green-600 transition-colors" />
         {totalItems > 0 && (
-          <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+          <span className="absolute top-0 right-0 transform translate-x-1/4 -translate-y-1/4 bg-orange shadow-sm text-white text-[10px] md:text-xs font-bold rounded-full min-w-[18px] md:min-w-[20px] h-[18px] md:h-[20px] flex items-center justify-center px-1 border-2 border-white">
             {totalItems}
           </span>
         )}
