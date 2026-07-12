@@ -13,7 +13,7 @@
 import { api } from "./api";
 import * as Mappers from "./mappers/dashboardMappers";
 import { useAuthStore } from "../store";
-import { evaluateStock, inferIngredientUnit } from "../utils/stockUtils";
+import { evaluateStock } from "../utils/stockUtils";
 import { formatTimeAgo } from "../utils/activityLog";
 import axios from "axios";
 
@@ -147,19 +147,16 @@ export const getInventoryAlerts = async () => {
   
   const lowStock = ingredients
     .filter(i => {
-      const { isOutOfStock, isLowStock } = evaluateStock(i.stock, i.unit, i.name);
+      const { isOutOfStock, isLowStock } = evaluateStock(i.stock, i.unit);
       return isOutOfStock || isLowStock;
     })
-    .map(i => {
-      const u = inferIngredientUnit(i.name, i.unit);
-      return {
-        id: i.id,
-        name: i.name,
-        stock: `${i.stock} ${u}`,
-        unit: u,
-        image: i.image || ""
-      };
-    });
+    .map(i => ({
+      id: i.id,
+      name: i.name,
+      stock: `${i.stock} ${i.unit || "g"}`,
+      unit: i.unit || "g",
+      image: i.image || ""
+    }));
 
   return {
     lowStock
@@ -336,28 +333,20 @@ export const deleteMenuItem        = (id) => api.delete(`/api/menu/${id}`).then(
 export const updateMenuItem        = (id, data) => api.put(`/api/menu/${id}`, data).then(r => r.data);
 export const createMenuItem        = (data) => api.post("/api/menu", data).then(r => r.data);
 export const updateMenuDiscount    = (id, data) => api.patch(`/api/menu/${id}/discount`, data).then(r => r.data);
-export const uploadMealImage = (id, file) => {
+export const uploadMealImage       = (id, file) => {
   const formData = new FormData();
   formData.append("file", file);
-  const headers = { "Content-Type": "multipart/form-data", ...buildAuthHeaders() };
+  const headers = { "Content-Type": "multipart/form-data" };
+  const user = useAuthStore.getState().user;
+  if (user && user.role) {
+    headers["X-User-Role"] = user.role;
+  }
   return api.post(`/api/menu/${id}/image`, formData, { headers }).then(r => r.data);
 };
 
 // ── Recipe Builder ────────────────────────────────────────────────
 export const getRecipeIngredients  = () => api.get("/api/ingredients").then(r => r.data);
 export const saveRecipe            = (data) => api.post("/api/menu", data).then(r => r.data);
-
-// ── Auth helpers ─────────────────────────────────────────────────
-/**
- * Returns a headers object with X-User-Role injected when available.
- * Single source of truth — eliminates duplicated auth header injection.
- */
-const buildAuthHeaders = () => {
-  const headers = {};
-  const user = useAuthStore.getState().user;
-  if (user?.role) headers["X-User-Role"] = user.role;
-  return headers;
-};
 
 // ── Menu Management ───────────────────────────────────────────────
 export const getMenuUploads = () => {
@@ -371,7 +360,11 @@ export const uploadMenuFile = async (payload) => {
   const formData = new FormData();
   formData.append("file", file);
 
-  const headers = { "Content-Type": "multipart/form-data", ...buildAuthHeaders() };
+  const headers = { "Content-Type": "multipart/form-data" };
+  const user = useAuthStore.getState().user;
+  if (user && user.role) {
+    headers["X-User-Role"] = user.role;
+  }
 
   const result = await api.post("/api/inventory/upload", formData, { headers, onUploadProgress }).then(r => r.data);
 
@@ -398,27 +391,48 @@ export const validateMenuFile = async (payload) => {
   const file = payload?.file || payload;
   const formData = new FormData();
   formData.append("file", file);
-  const headers = { "Content-Type": "multipart/form-data", ...buildAuthHeaders() };
+  const headers = { "Content-Type": "multipart/form-data" };
+  const user = useAuthStore.getState().user;
+  if (user?.role) headers["X-User-Role"] = user.role;
   return api.post("/api/inventory/validate", formData, { headers }).then(r => r.data);
 };
 
+export const getImportJobStatus = async (jobId) => {
+  return api.get(`/api/inventory/import-status/${jobId}`).then(r => r.data);
+};
+
+export const getActiveImportJob = async () => {
+  const res = await api.get("/api/inventory/import-jobs/active").catch(err => {
+    if (err?.response?.status === 204) return null;
+    throw err;
+  });
+  return res ? res.data : null;
+};
+
+export const getAllImportJobs = async () => {
+  return api.get("/api/inventory/import-jobs").then(r => r.data.content || r.data);
+};
+
 export const cancelImportJob = async (jobId) => {
-  return api.delete(`/api/inventory/import-status/${jobId}`).then(r => r.data);
+  const headers = {};
+  const user = useAuthStore.getState().user;
+  if (user?.role) headers["X-User-Role"] = user.role;
+  return api.post(`/api/inventory/import-jobs/${jobId}/cancel`, {}, { headers }).then(r => r.data);
 };
 
 export const importMenuJson = async (validMeals) => {
-  return api.post("/api/inventory/import-json", validMeals, { headers: buildAuthHeaders() }).then(r => r.data);
+  const headers = {};
+  const user = useAuthStore.getState().user;
+  if (user?.role) headers["X-User-Role"] = user.role;
+  return api.post("/api/inventory/import-json", validMeals, { headers }).then(r => r.data);
 };
-
-export const getImportStatus = (jobId) =>
-  api.get(`/api/inventory/import-status/${jobId}`).then(r => r.data);
 
 // ── Ingredients ───────────────────────────────────────────────────────────────────
 export const getIngredientsMetrics = async () => {
   const ingredients = await getIngredients().catch(() => []);
   const total = ingredients.length;
-  const outOfStock = ingredients.filter(i => evaluateStock(i.stock, i.unit, i.name).isOutOfStock).length;
-  const lowStock = ingredients.filter(i => evaluateStock(i.stock, i.unit, i.name).isLowStock).length;
+  const outOfStock = ingredients.filter(i => evaluateStock(i.stock, i.unit).isOutOfStock).length;
+  const lowStock = ingredients.filter(i => evaluateStock(i.stock, i.unit).isLowStock).length;
   return Mappers.mapIngredientsMetrics({
     total, totalChange: 0,
     lowStock, lowStockChange: 0,
