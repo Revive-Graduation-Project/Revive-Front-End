@@ -63,9 +63,15 @@ export const HEIGHT_UNITS = ["m", "ft", "cm", "in"];
 export const WEIGHT_UNITS = ["kg", "lb"];
 
 // --- Order history (profile) ---
+export const CANCELLABLE_ORDER_STATUSES = [
+  "PENDING",
+  "CONFIRMED",
+];
+
 export const NON_CANCELLABLE_ORDER_STATUSES = [
   "PREPARING",
   "READY",
+  "DONE",
   "CANCELED",
   "COMPLETED",
   "FAILED",
