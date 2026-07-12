@@ -1,10 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import { toast } from "../../utils/toastUtils";
-import { getMenuUploads, uploadMenuFile } from "../../services/dashboardService";
+import {
+  getMenuUploads,
+  uploadMenuFile,
+  validateMenuFile,
+  importMenuJson,
+  getImportStatus,
+  cancelImportJob,
+} from "../../services/dashboardService";
 import useUIStore from "../../store/uiStore";
 
 export const menuUploadKeys = {
   all: ["menu-uploads"],
+  jobStatus: (jobId) => ["import-job-status", jobId],
 };
 
 export function useMenuUploads() {
@@ -48,7 +57,7 @@ export function useUploadMenu() {
         });
         return result;
       } catch (err) {
-        toast.error(`Failed to upload ${file.name || "Menu CSV"}.`, { id: toastId, duration: 6000, description: err?.response?.data?.message || err.message || "Please try again." });
+        toast.error(`Failed to upload ${file.name || "Menu CSV"}.`, { id: toastId, duration: 6000, description: extractErrorMessage(err) });
         throw err;
       }
     },
@@ -58,4 +67,168 @@ export function useUploadMenu() {
       qc.invalidateQueries({ queryKey: ["ingredients"], refetchType: "all" });
     },
   });
+}
+
+/** Mutation: validate menu file (CSV) */
+export function useValidateMenu() {
+  return useMutation({
+    mutationFn: async ({ file, existingMealNames = [] }) => {
+      const result = await validateMenuFile(file);
+      const existingSet = new Set(existingMealNames.map(n => n.toLowerCase()));
+
+      const dbDuplicates = result.validMeals
+        .filter(m => existingSet.has(m.mealName.toLowerCase()))
+        .map(m => ({ mealName: m.mealName, reason: "Already exists in system" }));
+
+      const uniqueValidMeals = result.validMeals
+        .filter(m => !existingSet.has(m.mealName.toLowerCase()));
+
+      return {
+        validMeals: uniqueValidMeals,
+        invalidMeals: [...result.invalidMeals, ...dbDuplicates],
+      };
+    },
+  });
+}
+
+function extractErrorMessage(err) {
+  return err?.response?.data?.message || err.message || "Please try again.";
+}
+
+/**
+ * Mutation: import menu JSON.
+ * Returns immediately (202) with a jobId. The modal closes and the uploads
+ * table row polls for the final status via useImportJobStatus.
+ */
+export function useImportMenu() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: importMenuJson,
+    onSuccess: (data, variables, context) => {
+      toast.success("Import queued!", {
+        description: `${data.mealCount} meals are being processed in the background.`,
+        duration: 5000,
+      });
+      useUIStore.getState().addNotification({
+        title: "Menu CSV Import Queued",
+        message: `Processing ${data.mealCount} meals in the background.`,
+        type: "info",
+        category: "Performance",
+      });
+    },
+    onError: (err) => {
+      toast.error("Import failed.", {
+        description: extractErrorMessage(err),
+        duration: 8000,
+      });
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: menuUploadKeys.all });
+    },
+  });
+}
+
+/**
+ * Query: polls GET /import-status/{jobId} every 3 seconds until terminal.
+ * When DONE → success toast + updates localStorage row.
+ * When FAILED → error toast + updates localStorage row with message.
+ */
+export function useImportJobStatus(jobId) {
+  const qc = useQueryClient();
+  const processedRef = useRef(false);
+
+  useEffect(() => {
+    processedRef.current = false;
+  }, [jobId]);
+
+  const query = useQuery({
+    queryKey: menuUploadKeys.jobStatus(jobId),
+    queryFn: () => getImportStatus(jobId),
+    enabled: !!jobId,
+    // Stop polling once a terminal state is reached
+    refetchInterval: (query) => {
+      const state = query.state?.data?.state;
+      return state === "DONE" || state === "FAILED" ? false : 3000;
+    },
+  });
+
+  useEffect(() => {
+    if (!query.data || processedRef.current) return;
+    const data = query.data;
+
+    if (data.state === "DONE") {
+      processedRef.current = true;
+      toast.success("Import complete!", {
+        description: "All meals have been processed and added to the menu.",
+        duration: 6000,
+      });
+      useUIStore.getState().addNotification({
+        title: "Menu Import Complete ✅",
+        message: "All meals have been processed and added to the menu.",
+        type: "success",
+        category: "Performance",
+      });
+      _updateUploadEntryStatus(jobId, "success", null);
+      qc.invalidateQueries({ queryKey: ["menu"], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["ingredients"], refetchType: "all" });
+    } else if (data.state === "FAILED") {
+      processedRef.current = true;
+      toast.error("Import failed.", {
+        description: data.errorMessage || "An error occurred during processing.",
+        duration: 10000,
+      });
+      useUIStore.getState().addNotification({
+        title: "Menu Import Failed ❌",
+        message: data.errorMessage || "An error occurred during processing.",
+        type: "error",
+        category: "Performance",
+      });
+      _updateUploadEntryStatus(jobId, "failed", data.errorMessage);
+    }
+  }, [query.data, jobId, qc]);
+
+  return query;
+}
+
+/**
+ * Mutation: cancel a running import job.
+ */
+export function useCancelImportJob() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: cancelImportJob,
+    onSuccess: (_, jobId) => {
+      toast.success("Import cancelled", {
+        description: "The background job was cancelled successfully.",
+        duration: 4000,
+      });
+      useUIStore.getState().addNotification({
+        title: "Import Cancelled",
+        message: "The background job was cancelled successfully.",
+        type: "info",
+        category: "Performance",
+      });
+      _updateUploadEntryStatus(jobId, "failed", "Import cancelled by user");
+      qc.invalidateQueries({ queryKey: menuUploadKeys.jobStatus(jobId) });
+    },
+    onError: (err) => {
+      toast.error("Failed to cancel import", {
+        description: err?.response?.data || err.message || "Please try again.",
+        duration: 5000,
+      });
+    },
+  });
+}
+
+/** Updates the importStatus field of the localStorage upload entry matching jobId. */
+function _updateUploadEntryStatus(jobId, importStatus, errorMessage) {
+  try {
+    const uploads = JSON.parse(localStorage.getItem("menuUploads") || "[]");
+    const updated = uploads.map(u =>
+      u.jobId === jobId ? { ...u, importStatus, errorMessage } : u
+    );
+    localStorage.setItem("menuUploads", JSON.stringify(updated));
+  } catch {
+    // Non-critical — localStorage failure should not crash the app
+  }
 }

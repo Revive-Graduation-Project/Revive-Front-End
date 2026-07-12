@@ -62,7 +62,7 @@ function LiveKitchenView() {
         <DashboardHeader title="Live Kitchen" />
 
         <div className="flex flex-col gap-6 overflow-hidden mt-6">
-          <LiveIndicator isFetching={isFetching} onRefresh={refetch} />
+          <LiveIndicator isFetching={isFetching} error={error} onRefresh={refetch} />
 
           {error ? (
             <div className="py-12 bg-white rounded-3xl shadow-sm">
@@ -71,7 +71,7 @@ function LiveKitchenView() {
           ) : (
             <>
               {/* 3-column kanban */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                 {COLUMNS.map((col) => {
                   const cards = boards[col.key] || [];
                   return (
@@ -183,10 +183,10 @@ function LiveKitchenView() {
         isOpen={!!orderToRevert}
         onClose={() => setOrderToRevert(null)}
         onConfirm={confirmRevert}
-        title="Not Done?"
-        message="Are you sure this order is not Done and should be moved back to the Ready list?"
-        confirmLabel="Not Done"
-        confirmClassName="bg-[#16A34A] hover:bg-green-700 shadow-lg shadow-green-500/30"
+        title="Move back to Ready?"
+        message="Are you sure this order should be moved back from Done to the Ready column?"
+        confirmLabel="< Ready"
+        confirmClassName="bg-[#F97316] hover:bg-orange-600 shadow-lg shadow-orange-500/30"
       />
 
       {/* ── Ticket status confirm modal ── */}
@@ -203,7 +203,9 @@ function LiveKitchenView() {
         message={`Are you sure you want to move ticket #${ticketConfirm?.ticketId} to ${ticketConfirm?.status}?`}
         confirmLabel={ticketConfirm?.label || "Confirm"}
         confirmClassName={
-          ticketConfirm?.status === "READY"
+          ticketConfirm?.status?.toUpperCase() === "CANCELLED" || ticketConfirm?.status?.toUpperCase() === "CANCELED"
+            ? "bg-rose-600 hover:bg-rose-700 shadow-lg shadow-rose-500/30"
+            : ticketConfirm?.status?.toUpperCase() === "READY" || ticketConfirm?.status?.toUpperCase() === "PREPARING"
             ? "bg-[#F97316] hover:bg-orange-600 shadow-lg shadow-orange-500/30"
             : "bg-[#16A34A] hover:bg-green-700 shadow-lg shadow-green-500/30"
         }

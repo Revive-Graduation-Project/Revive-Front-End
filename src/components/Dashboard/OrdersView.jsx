@@ -181,7 +181,7 @@ function OrdersView() {
 
           {/* Orders overview chart + daily goal */}
           {metrics && (
-            <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-4">
+            <div className="grid grid-cols-1 xl:grid-cols-[1.6fr_1fr] gap-4">
               <OrdersOverviewChart data={ordersOverview} />
 
               <div className="bg-white rounded-3xl p-6 shadow-sm flex flex-col justify-between border border-gray-50 relative h-[240px]">
@@ -211,7 +211,7 @@ function OrdersView() {
                 <div className="flex justify-between items-end w-full mt-auto">
                   <p className="text-[11px] font-bold text-[#1a1a1a] m-0">Today Sales</p>
                   <p className="text-[11px] font-semibold text-gray-400 m-0">
-                    (${metrics.dailyGoal.salesCurrent.toLocaleString()} / ${metrics.dailyGoal.salesTarget.toLocaleString()})
+                    ({metrics.dailyGoal.salesCurrent.toLocaleString()} / {metrics.dailyGoal.salesTarget.toLocaleString()} EGP)
                   </p>
                 </div>
               </div>
@@ -222,7 +222,7 @@ function OrdersView() {
           <div className="bg-white rounded-3xl shadow-sm py-4 px-2">
             {/* Tab bar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 pb-4 border-b border-gray-100 gap-4 sm:gap-0">
-              <div className="flex items-center gap-6 overflow-x-auto w-full">
+              <div className="flex items-center gap-3 sm:gap-6 overflow-x-auto w-full pb-2 sm:pb-0">
                 {TABS.map((tab) => {
                   const count = tab === "All" ? totalCount : (countsByStatus[tab] || 0);
                   const isActive = activeTab === tab;
@@ -275,7 +275,7 @@ function OrdersView() {
                       <td className="px-5 py-4 text-[13px] text-[#1a1a1a] font-medium">{order.time.replace(/ (AM|PM)/, "")}</td>
                       <td className="px-5 py-4 text-[13px] font-medium text-[#1a1a1a] max-w-[180px] truncate">{order.name}</td>
                       <td className="px-5 py-4 text-[13px] text-[#1a1a1a] font-medium">{order.items}</td>
-                      <td className="px-5 py-4 text-[13px] font-bold text-orange-500">${order.total.toFixed(0)}</td>
+                      <td className="px-5 py-4 text-[13px] font-bold text-orange-500">{order.total.toFixed(0)} EGP</td>
                       <td className="px-5 py-4 text-[13px] text-[#1a1a1a] font-medium">{order.customer}</td>
                       <td className="px-5 py-4">
                         <StatusBadge status={order.status} />

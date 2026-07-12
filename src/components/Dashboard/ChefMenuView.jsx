@@ -28,10 +28,10 @@ const MENU_SORT_COLS = [
   { key: "calories", label: "Calories" },
   { key: "protein", label: "Protein" },
   { key: "sugar", label: "Sugar" },
-  { key: "price", label: "Price" },
+  { key: "price", label: "Price (EGP)" },
 ];
 
-const TABLE_HEADERS = ["Meal", "Category", "Fat", "Cal", "Pro", "Sug", "Price", "Actions"];
+const TABLE_HEADERS = ["Meal", "Category", "Fat", "Cal", "Pro", "Sug", "Price (EGP)", "Actions"];
 
 function ChefMenuView() {
   const [activeTab, setActiveTab] = useState("All Menu");
@@ -195,7 +195,7 @@ function ChefMenuView() {
 
             {/* Table */}
             <div className="overflow-x-auto relative">
-              <table className="w-full border-collapse">
+              <table className="w-full border-collapse min-w-[700px]">
                 <thead>
                   <tr className="border-b border-gray-100">
                     {TABLE_HEADERS.map((h) => (
@@ -237,7 +237,6 @@ function ChefMenuView() {
                           </div>
                           <div>
                             <p className="text-[13px] font-bold text-[#1a1a1a] m-0">{item.name}</p>
-                            <p className="text-[11px] text-gray-400 m-0 group-hover:text-orange-300 transition-colors duration-200">{item.category}</p>
                             <span className="text-[10px] font-semibold text-orange-400 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-0.5 group-hover:translate-y-0 inline-block">
                               Click to view details →
                             </span>
@@ -249,7 +248,7 @@ function ChefMenuView() {
                       <td className="px-5 py-3.5 text-[12px] text-green-600 font-semibold">{item.calories ?? "-"}</td>
                       <td className="px-5 py-3.5 text-[12px] text-green-600 font-semibold">{item.protein ?? "-"}</td>
                       <td className="px-5 py-3.5 text-[12px] text-green-600 font-semibold">{item.sugar ?? "-"}</td>
-                      <td className="px-5 py-3.5 text-[13px] font-bold text-orange-500">${item.price}</td>
+                      <td className="px-5 py-3.5 text-[13px] font-bold text-orange-500">{item.price} EGP</td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2">
                           <button

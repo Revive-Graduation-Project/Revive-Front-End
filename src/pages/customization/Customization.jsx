@@ -1,134 +1,126 @@
-import React, { useState, useEffect } from "react";
+import React, { useRef, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import CustomizeHero from "./Sections/CustomizeHero";
-import BaseSelector from "./Sections/BaseSelector";
-import IngredientsSection from "./Sections/IngredientsSection";
-import CommentBox from "./Sections/CommentBox";
-import SummaryBox from "./Sections/SummaryBox";
+import MainIngredientSection from "./Sections/MainIngredientSection";
+import CategorySection from "./Sections/CategorySection";
+import SpecialInstructions from "./Sections/SpecialInstructions";
+import MealSummaryCard from "./Sections/MealSummaryCard";
+import MobileStickyBar from "./Sections/MobileStickyBar";
 import { api } from "../../services/api";
-
-const mapCategoryToSection = (categoryStr) => {
-  if (!categoryStr) return "extras";
-  const cat = categoryStr.toLowerCase();
-  if (cat.includes("protein") || cat.includes("meat") || cat.includes("poultry") || cat.includes("finfish")) return "protein";
-  if (cat.includes("vegetable")) return "veggies";
-  if (cat.includes("dairy") || cat.includes("cheese")) return "cheese";
-  if (cat.includes("fat") || cat.includes("oil") || cat.includes("sauce")) return "sauces";
-  return "extras";
-};
-
-const sectionTitles = {
-  protein: "Protein",
-  veggies: "Veggies",
-  cheese: "Cheese",
-  sauces: "Sauces",
-  extras: "Extras"
-};
+import { useCustomizeStore } from "../../store/useCustomizeStore";
+import { mapSlotsToFixedCategories } from "./utils/categoryGrouping";
 
 const Customize = () => {
-  const [customizeData, setCustomizeData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { primaryItem, selectedSections, toggleItem, updateItemGrams } = useCustomizeStore();
+  const summaryRef = useRef(null);
 
-  useEffect(() => {
-    const fetchMeals = async () => {
-      try {
-        const response = await api.get('/menu');
-        const rawMeals = response.data;
+  const { data: primaryItems = [], isLoading } = useQuery({
+    queryKey: ["customization", "primaryItems"],
+    queryFn: async () => {
+      const response = await api.get('/api/ingredients');
+      const allIngredients = response.data || [];
+      return allIngredients.filter(ing => {
+        const cat = (ing.category || "").toLowerCase();
+        return cat.includes("chicken") || cat.includes("beef") || cat.includes("protein") || cat.includes("fish");
+      });
+    },
+    staleTime: 1000 * 60 * 5 // Cache for 5 minutes
+  });
 
-        const mappedMeals = rawMeals.map(meal => {
-          // Group ingredients by mapped category
-          const sectionsMap = {
-            protein: [],
-            veggies: [],
-            cheese: [],
-            sauces: [],
-            extras: []
-          };
+  const { data: buildOptions, isLoading: optionsLoading } = useQuery({
+    queryKey: ["customization", "buildOptions", primaryItem?.category],
+    queryFn: async () => {
+      const response = await api.get(`/api/customizations/build-options?primaryCategory=${primaryItem.category}`);
+      return response.data;
+    },
+    enabled: !!primaryItem,
+    staleTime: 1000 * 60 * 5 // Cache for 5 minutes
+  });
 
-          meal.mealIngredients?.forEach(mi => {
-            const ing = mi.ingredient;
-            const secType = mapCategoryToSection(ing.category);
-            
-            // Extract some basic nutrients
-            let calories = 0, protein = 0, carbs = 0, fat = 0;
-            ing.nutrients?.forEach(n => {
-              const name = (n.nutrientName || "").toLowerCase();
-              if (name.includes("energy")) calories = n.value;
-              else if (name.includes("protein")) protein = n.value;
-              else if (name.includes("carbohydrate")) carbs = n.value;
-              else if (name.includes("lipid") || name.includes("fat")) fat = n.value;
-            });
+  // Map dynamic backend slots to strict static frontend order:
+  // 1. Main Ingredient (handled separately via MainIngredientSection)
+  // 2. Base -> 3. Vegetables -> 4. Sauces -> 5. Extras
+  const fixedCategories = useMemo(() => {
+    return mapSlotsToFixedCategories(buildOptions?.slots || []);
+  }, [buildOptions]);
 
-            sectionsMap[secType].push({
-              id: ing.id,
-              name: ing.name,
-              price: 0, // Ingredients don't have individual prices in backend yet
-              calories,
-              protein,
-              carbs,
-              fat
-            });
-          });
-
-          // Convert map to array of sections
-          const sections = Object.keys(sectionsMap)
-            .filter(key => sectionsMap[key].length > 0)
-            .map(key => ({
-              title: sectionTitles[key],
-              type: key,
-              maxSelect: key === "protein" ? 1 : null,
-              required: key === "protein" || key === "veggies",
-              items: sectionsMap[key]
-            }));
-
-          return {
-            id: meal.id,
-            name: meal.name,
-            image: meal.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
-            bases: [{ id: `base-${meal.id}`, name: "Regular", basePrice: meal.price }],
-            sections
-          };
-        });
-
-        setCustomizeData(mappedMeals);
-      } catch (err) {
-        console.error("Failed to fetch meals:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMeals();
-  }, []);
+  const scrollToSummary = () => {
+    summaryRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
 
   return (
-    <div className="bg-white min-h-screen px-20">
-      {/* HERO */}
-      <div className="container mx-auto  pt-32">
+    <div className="bg-gray-50/50 min-h-screen pb-24 overflow-x-hidden">
+      {/* HERO SECTION */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
         <CustomizeHero />
       </div>
 
-      {/* MAIN CONTENT */}
-      <div className="container mx-auto px-4 md:px-10 lg:px-20 py-16 grid lg:grid-cols-3 gap-10">
-        {/* LEFT SIDE */}
-        <div className="lg:col-span-2">
-          <h2 className="text-2xl font-bold mb-6">🍳 Let's Start Cooking..</h2>
+      {/* TWO-COLUMN LAYOUT */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+        {/* LEFT COLUMN: CUSTOMIZATION CONTROLS */}
+        <div className="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-8 md:p-10 shadow-sm border border-gray-100">
+          <div className="border-b border-gray-100 pb-6 mb-8">
+            <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+              Let&apos;s Craft Your Bowl
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Select your favorite ingredients in each category below. Real-time nutrition and pricing update instantly.
+            </p>
+          </div>
 
-          {loading ? (
-             <p>Loading menu...</p>
+          {/* Fixed Category 1: Main Ingredient */}
+          <MainIngredientSection
+            primaryItems={primaryItems}
+            isLoading={isLoading}
+          />
+
+          {/* Fixed Categories 2-5: Base -> Vegetables -> Sauces -> Extras */}
+          {!primaryItem ? (
+            <div className="my-10 p-8 rounded-3xl bg-orange-50/50 border-2 border-dashed border-orange-200 text-center">
+              <span className="text-3xl block mb-2">🥗</span>
+              <h4 className="text-base font-bold text-gray-800">
+                Choose a Main Ingredient First
+              </h4>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1 max-w-md mx-auto">
+                Once you select your primary protein or base bowl choice above, we&apos;ll load custom Bases, Vegetables, Sauces, and Extras suited for your meal.
+              </p>
+            </div>
+          ) : optionsLoading ? (
+            <div className="space-y-6 my-6">
+              {[1, 2, 3].map((n) => (
+                <div key={n} className="animate-pulse space-y-3">
+                  <div className="h-6 w-48 bg-gray-200 rounded" />
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="h-32 bg-gray-100 rounded-2xl" />
+                    <div className="h-32 bg-gray-100 rounded-2xl" />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
-             <>
-               <BaseSelector meals={customizeData} />
-               <IngredientsSection />
-             </>
+            fixedCategories.map((cat) => (
+              <CategorySection
+                key={cat.id}
+                category={cat}
+                selectedSections={selectedSections}
+                onToggleItem={toggleItem}
+                onUpdateGrams={updateItemGrams}
+              />
+            ))
           )}
-          <CommentBox />
+
+          {/* Special Instructions */}
+          <SpecialInstructions />
         </div>
 
-        {/* RIGHT SIDE */}
-        <div>
-          <SummaryBox />
+        {/* RIGHT COLUMN: STICKY MEAL SUMMARY CARD */}
+        <div ref={summaryRef} className="lg:col-span-4 w-full">
+          <MealSummaryCard />
         </div>
       </div>
+
+      {/* RESPONSIVE MOBILE FLOATING BAR */}
+      <MobileStickyBar onScrollToSummary={scrollToSummary} />
     </div>
   );
 };

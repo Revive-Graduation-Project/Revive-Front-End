@@ -177,13 +177,14 @@ function IngredientsView() {
 
 
   const { data: ingredients, isLoading, error, refetch } = useIngredients();
-  const { mutate: uploadFile, isPending: isUploading, isSuccess: isUploaded }    = useUploadIngredients();
+  const { mutate: uploadFile, isPending: isUploading, isSuccess: isUploaded, reset: resetUpload } = useUploadIngredients();
   const { mutate: updateStock } = useUpdateIngredientStock();
 
   // ── File handlers ─────────────────────────────────────────────────────────
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    resetUpload(); // Clear previous upload success/error state when choosing a new file
     setSelectedFile(file);
     e.target.value = ""; // allow re-selecting the same file
   };
@@ -261,7 +262,7 @@ function IngredientsView() {
         <div className="bg-white rounded-3xl shadow-sm">
 
           {/* Toolbar */}
-          <div className="px-6 pt-6 pb-2 flex items-center justify-between gap-4">
+          <div className="px-6 pt-6 pb-2 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
             {/* Search by name */}
             <div className="relative flex-1 max-w-xs">
               <FiSearch
@@ -278,7 +279,7 @@ function IngredientsView() {
             </div>
 
             {/* Sort + Nutrients Scale Notice */}
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <span className="text-[12px] font-bold text-orange-600 bg-orange-50 px-3.5 py-1.5 rounded-xl border border-orange-200/60 shadow-2xs whitespace-nowrap">
                 Nutrients for every 100g :
               </span>
@@ -293,7 +294,7 @@ function IngredientsView() {
 
           {/* Table */}
           <div className="overflow-x-auto px-6 pb-6 mt-2">
-            <table className="w-full border-collapse">
+            <table className="w-full border-collapse min-w-[750px]">
               <thead>
                 <tr className="bg-[#F5F6F8] rounded-xl overflow-hidden">
                   {TABLE_HEADERS.map((h, idx) => (
@@ -318,7 +319,7 @@ function IngredientsView() {
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={8}>
+                    <td colSpan={TABLE_HEADERS.length}>
                       <EmptyState
                         title="No ingredients found"
                         description={
@@ -331,7 +332,7 @@ function IngredientsView() {
                   </tr>
                 ) : (
                   filtered.map((item) => {
-                    const { text: stockText, isOut, isLow } = formatStock(item.stock, item.unit);
+                    const { text: stockText, isOut, isLow } = formatStock(item.stock, item.unit, item.name);
                     return (
                       <tr
                         key={item.id}
@@ -379,7 +380,7 @@ function IngredientsView() {
                         <td className="px-4 py-4 text-center w-[90px]">
                           <span
                             className={`text-[13px] font-extrabold ${
-                              isOut ? "text-red-500" : isLow ? "text-amber-500" : "text-[#1a1a1a]"
+                              isOut ? "text-red-500" : isLow ? "text-amber-500" : "text-green-600"
                             }`}
                           >
                             {stockText}

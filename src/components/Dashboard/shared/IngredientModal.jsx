@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { FiX, FiAlertCircle } from "react-icons/fi";
+import { inferIngredientUnit } from "../../../utils/stockUtils";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const parseStock = (v) => v.replace(/[^\d.]/g, "").replace(/^(\d*\.?\d*).*/, "$1");
@@ -16,13 +17,16 @@ const validateStock = (v) => {
 /**
  * IngredientModal — Edit mode only.
  * Updates a single ingredient's stock via PATCH /api/ingredients/{id}/stock.
+ *
+ * The parent closes this modal immediately on submit (optimistic / non-blocking
+ * UX), so there is no in-modal loading or success state needed.
  * Calls onSubmit({ stock: number }) when the form is valid.
  */
-function IngredientModal({ isOpen, onClose, onSubmit, initialData, isPending, isSuccess }) {
+function IngredientModal({ isOpen, onClose, onSubmit, initialData }) {
   const [stock, setStock] = useState("");
   const [error, setError] = useState("");
 
-  // Reset form whenever the modal opens
+  // Reset form whenever the modal opens with new data
   useEffect(() => {
     if (isOpen && initialData) {
       setStock(String(initialData.stock ?? ""));
@@ -49,8 +53,6 @@ function IngredientModal({ isOpen, onClose, onSubmit, initialData, isPending, is
     ? "border-red-400 focus:border-red-400"
     : "border-gray-200 focus:border-orange-400";
 
-  const submitLabel = isPending ? "Saving..." : isSuccess ? "Saved!" : "Save Changes";
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden">
@@ -76,7 +78,7 @@ function IngredientModal({ isOpen, onClose, onSubmit, initialData, isPending, is
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5" noValidate>
           <div>
             <label htmlFor="stockInput" className="block text-[13px] font-bold text-gray-700 mb-1.5">
-              Stock Amount (g)
+              Stock Amount ({initialData ? inferIngredientUnit(initialData.name, initialData.unit) : "g"})
             </label>
             <input
               id="stockInput"
@@ -99,17 +101,15 @@ function IngredientModal({ isOpen, onClose, onSubmit, initialData, isPending, is
             <button
               type="button"
               onClick={onClose}
-              disabled={isPending}
-              className="px-5 py-2.5 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-5 py-2.5 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isPending || isSuccess}
-              className="px-5 py-2.5 rounded-xl font-bold text-white bg-orange-500 hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/30 disabled:opacity-75 disabled:cursor-not-allowed"
+              className="px-5 py-2.5 rounded-xl font-bold text-white bg-orange-500 hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/30"
             >
-              {submitLabel}
+              Save Changes
             </button>
           </div>
         </form>
@@ -120,4 +120,3 @@ function IngredientModal({ isOpen, onClose, onSubmit, initialData, isPending, is
 }
 
 export default IngredientModal;
-

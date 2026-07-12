@@ -11,7 +11,7 @@ export const COLUMNS = [
 ];
 
 // ── Kitchen ticket constants ───────────────────────────────────────
-export const TICKET_TABS = ["All", "Queue", "Preparing", "Ready", "Done"];
+export const TICKET_TABS = ["All", "Queue", "Preparing", "Ready", "Done", "Cancelled"];
 export const TICKET_HEADERS = ["Ticket ID", "Order ID", "Status", "Assigned Chef", "Time Elapsed", "Actions"];
 export const STATIONS = ["UNASSIGNED", "GRILL", "PREP", "FRY", "PASTRY", "SALADS"];
 
@@ -19,6 +19,9 @@ export const STATUS_FLOW = {
   Queue:     { next: "Preparing", label: "Start Preparing" },
   Preparing: { next: "Ready",     label: "Mark Ready" },
   Ready:     { next: "Done",      label: "Mark Done"  },
+  QUEUED:    { next: "Preparing", label: "Start Preparing" },
+  PREPARING: { next: "Ready",     label: "Mark Ready" },
+  READY:     { next: "Done",      label: "Mark Done"  },
 };
 
 // ── Pure helpers ──────────────────────────────────────────────────

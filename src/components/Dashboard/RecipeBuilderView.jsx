@@ -4,12 +4,15 @@ import DashboardHeader from "./DashboardHeader";
 import { useCreateMenuItem, useUpdateMenuItem } from "../../hooks/dashboard/useMenuItems";
 import { useIngredients } from "../../hooks/dashboard/useIngredients";
 import {
-  FiPlus, FiTrash2, FiCamera, FiBookOpen, FiDollarSign,
+  FiPlus, FiTrash2, FiCamera, FiBookOpen,
   FiAlignLeft, FiChevronDown, FiGrid, FiUploadCloud, FiSearch, FiX
 } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 import IngredientSelector from "./shared/IngredientSelector";
+import { inferIngredientUnit } from "../../utils/stockUtils";
+
+const CATEGORIES = ["Chicken", "Meat", "Seafood", "Vegetarian", "Desserts", "Mixed"];
 
 export default function RecipeBuilderView() {
   const { state } = useLocation();
@@ -22,12 +25,13 @@ export default function RecipeBuilderView() {
   const [mealImagePreview, setMealImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
 
 
   const { data: availableIngredients = [] } = useIngredients();
-  const { mutate: createMeal, isSuccess: created, isPending: creating, isLoading: createLoading, reset: resetCreate } = useCreateMenuItem();
-  const { mutate: updateMeal, isSuccess: updated, isPending: updating, isLoading: updateLoading, reset: resetUpdate } = useUpdateMenuItem();
-  const isSaving = creating || createLoading || updating || updateLoading;
+  const { mutate: createMeal, isSuccess: created, isPending: creating, reset: resetCreate } = useCreateMenuItem();
+  const { mutate: updateMeal, isSuccess: updated, isPending: updating, reset: resetUpdate } = useUpdateMenuItem();
+  const isSaving = creating || updating;
   const saved = created || updated;
 
   // Pre-fill form when editing an existing meal
@@ -39,6 +43,8 @@ export default function RecipeBuilderView() {
         price: editMeal.price !== undefined ? String(editMeal.price) : "",
         description: editMeal.description ?? "",
       });
+      const cat = editMeal.category ?? "";
+      setIsCustomCategory(Boolean(cat && !CATEGORIES.includes(cat)));
       if (editMeal.image) setMealImagePreview(editMeal.image);
       if (editMeal.ingredients?.length) {
         const normIngs = editMeal.ingredients.map((ing, idx) => {
@@ -48,8 +54,8 @@ export default function RecipeBuilderView() {
           const rawAmt = typeof ing === "object" && ing !== null
             ? (ing.amount !== undefined ? ing.amount : (ing.quantityGrams !== undefined ? ing.quantityGrams : (ing.quantity !== undefined ? ing.quantity : "0")))
             : "0";
-          const unit = typeof ing === "object" && ing !== null ? (ing.unit || "g") : "g";
-          const amount = typeof rawAmt === "string" && rawAmt.endsWith(unit) ? rawAmt : `${rawAmt}${unit}`;
+          const unit = typeof ing === "object" && ing !== null ? inferIngredientUnit(name, ing.unit) : inferIngredientUnit(name, "g");
+          const amount = typeof rawAmt === "string" && rawAmt.endsWith(unit) ? rawAmt : (unit === "pieces" || unit === "pcs" ? `${rawAmt} ${unit}` : `${rawAmt}${unit}`);
           return {
             ...(typeof ing === "object" && ing !== null ? ing : {}),
             id: typeof ing === "object" && ing !== null ? (ing.id || ing.ingredientId || Date.now() + idx) : Date.now() + idx,
@@ -77,8 +83,11 @@ export default function RecipeBuilderView() {
   const addIngredient = () => {
     if (!newIngredient.name.trim() || newIngredient.name === "__custom__") return;
     const cleanNum = newIngredient.amount ? String(newIngredient.amount).replace(/[^\d.]/g, "") : "0";
-    const formattedAmount = `${cleanNum || "0"}${newIngredient.unit || "g"}`;
-    setLocalIngredients((prev) => [...prev, { id: Date.now(), ...newIngredient, amount: formattedAmount }]);
+    const unit = inferIngredientUnit(newIngredient.name, newIngredient.unit);
+    const formattedAmount = unit === "pieces" || unit === "pcs"
+      ? `${cleanNum || "0"} ${unit}`
+      : `${cleanNum || "0"}${unit}`;
+    setLocalIngredients((prev) => [...prev, { id: Date.now(), ...newIngredient, unit, amount: formattedAmount }]);
     setNewIngredient({ name: "", amount: "", ingredientId: undefined, unit: "g" });
     setIsCustomName(false);
   };
@@ -110,6 +119,7 @@ export default function RecipeBuilderView() {
         setTimeout(() => {
           if (!editMeal) {
             setForm({ name: "", category: "", price: "", description: "" });
+            setIsCustomCategory(false);
             setMealImagePreview(null);
             setImageFile(null);
             setLocalIngredients([]);
@@ -152,7 +162,7 @@ export default function RecipeBuilderView() {
         </p>
       </div>
 
-      <div className="px-4 md:px-12 max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-x-12 gap-y-10 items-start">
+      <div className="px-4 md:px-8 max-w-[1200px] mx-auto grid grid-cols-1 xl:grid-cols-[1.1fr_1fr] gap-x-12 gap-y-10 items-start">
         {/* ── Left Column ── */}
         <div className="flex flex-col gap-8">
 
@@ -170,47 +180,90 @@ export default function RecipeBuilderView() {
                 </div>
                 <div className="relative">
                   <p className="text-[14px] font-medium text-[#1a1a1a] mb-2">Category</p>
-                  <button
-                    type="button"
-                    onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                    aria-haspopup="listbox"
-                    aria-expanded={isCategoryOpen}
-                    className="w-full text-left bg-white rounded-full px-5 py-3.5 flex items-center gap-3 shadow-sm border border-transparent hover:border-orange-200 focus:border-orange-200 focus:outline-none transition-colors cursor-pointer"
-                  >
-                    <FiGrid className="text-gray-400 shrink-0" size={16} />
-                    <span className={`text-[13px] font-medium flex-1 ${form.category ? 'text-gray-700' : 'text-gray-400'}`}>
-                      {form.category || "Select category..."}
-                    </span>
-                    <FiChevronDown className="text-gray-400 shrink-0" size={14} />
-                  </button>
-
-                  {isCategoryOpen && (
+                  {isCustomCategory ? (
+                    <div className="bg-white rounded-full px-5 py-3.5 flex items-center gap-3 shadow-sm border border-orange-300 focus-within:border-orange-400 transition-colors">
+                      <FiGrid className="text-orange-500 shrink-0" size={16} />
+                      <input
+                        placeholder="Type custom category..."
+                        className="bg-transparent border-none outline-none w-full text-[13px] font-bold text-[#1a1a1a] placeholder:font-normal placeholder:text-gray-400"
+                        value={form.category}
+                        onChange={handleChange("category")}
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsCustomCategory(false);
+                          setForm((f) => ({ ...f, category: "" }));
+                        }}
+                        className="text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full w-6 h-6 flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+                        title="Back to category list"
+                      >
+                        <FiX size={14} />
+                      </button>
+                    </div>
+                  ) : (
                     <>
-                      <div className="fixed inset-0 z-40" onClick={() => setIsCategoryOpen(false)} aria-hidden="true" tabIndex={-1}></div>
-                      <div className="absolute top-[76px] left-0 w-full bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] py-2 z-50 border border-gray-100/50" role="listbox">
-                        {["Chicken", "Meat", "Seafood", "Vegetarian", "Desserts", "Mixed"].map(cat => (
-                            <button
-                              key={cat}
-                              type="button"
-                              role="option"
-                              aria-selected={form.category === cat}
-                              onClick={() => { setForm(f => ({ ...f, category: cat })); setIsCategoryOpen(false); }}
-                              className={`w-full text-left px-5 py-2.5 text-[13px] font-medium cursor-pointer transition-colors flex items-center justify-between focus:outline-none focus:bg-gray-50 ${form.category === cat ? "bg-orange-50 text-orange-600" : "text-gray-600 hover:bg-gray-50 hover:text-orange-500"
+                      <button
+                        type="button"
+                        onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                        aria-haspopup="listbox"
+                        aria-expanded={isCategoryOpen}
+                        className="w-full text-left bg-white rounded-full px-5 py-3.5 flex items-center gap-3 shadow-sm border border-transparent hover:border-orange-200 focus:border-orange-200 focus:outline-none transition-colors cursor-pointer"
+                      >
+                        <FiGrid className="text-gray-400 shrink-0" size={16} />
+                        <span className={`text-[13px] font-medium flex-1 ${form.category ? "text-gray-700" : "text-gray-400"}`}>
+                          {form.category || "Select category..."}
+                        </span>
+                        <FiChevronDown className="text-gray-400 shrink-0" size={14} />
+                      </button>
+
+                      {isCategoryOpen && (
+                        <>
+                          <div className="fixed inset-0 z-40" onClick={() => setIsCategoryOpen(false)} aria-hidden="true" tabIndex={-1}></div>
+                          <div className="absolute top-[76px] left-0 w-full bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] py-2 z-50 border border-gray-100/50 overflow-hidden" role="listbox">
+                            {CATEGORIES.map((cat) => (
+                              <button
+                                key={cat}
+                                type="button"
+                                role="option"
+                                aria-selected={form.category === cat}
+                                onClick={() => {
+                                  setForm((f) => ({ ...f, category: cat }));
+                                  setIsCategoryOpen(false);
+                                }}
+                                className={`w-full text-left px-5 py-2.5 text-[13px] font-medium cursor-pointer transition-colors flex items-center justify-between focus:outline-none focus:bg-gray-50 ${
+                                  form.category === cat ? "bg-orange-50 text-orange-600" : "text-gray-600 hover:bg-gray-50 hover:text-orange-500"
                                 }`}
-                            >
-                              {cat}
-                            </button>
-                        ))}
-                      </div>
+                              >
+                                {cat}
+                              </button>
+                            ))}
+                            <div className="mt-1 pt-1 border-t border-gray-100 px-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsCategoryOpen(false);
+                                  setIsCustomCategory(true);
+                                  setForm((f) => ({ ...f, category: "" }));
+                                }}
+                                className="w-full flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-linear-to-r from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 text-orange-600 font-bold text-[12px] transition-all cursor-pointer border border-orange-200/60 shadow-2xs hover:scale-[1.01]"
+                              >
+                                <FiPlus size={14} /> Type custom category...
+                              </button>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </>
                   )}
                 </div>
               </div>
 
               <div>
-                <p className="text-[14px] font-medium text-[#1a1a1a] mb-2">Price</p>
+                <p className="text-[14px] font-medium text-[#1a1a1a] mb-2">Price (EGP)</p>
                 <div className="bg-white rounded-full px-5 py-3.5 flex items-center gap-3 shadow-sm">
-                  <FiDollarSign className="text-gray-400 shrink-0" size={16} />
+                  <span className="text-[12px] font-bold text-orange-500 shrink-0">EGP</span>
                   <input placeholder="Enter meal price..." className="bg-transparent border-none outline-none w-full text-[13px] font-medium text-gray-600" value={form.price} onChange={handlePriceInput} />
                 </div>
               </div>
@@ -272,7 +325,7 @@ export default function RecipeBuilderView() {
                     value={newIngredient.amount}
                     onChange={handleIngredientAmountInput}
                   />
-                  <span className="text-[12px] font-bold text-gray-400 shrink-0">{newIngredient.unit || "g"}</span>
+                  <span className="text-[12px] font-bold text-gray-400 shrink-0">{inferIngredientUnit(newIngredient.name, newIngredient.unit)}</span>
                 </div>
               </div>
 

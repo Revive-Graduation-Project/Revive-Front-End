@@ -43,7 +43,7 @@ const FAQSection = () => {
     <section
       className=" relative bg-cover bg-center bg-no-repeat"
       style={{
-        backgroundImage: "url('/public/images/Frame 258 (2).png')",
+        backgroundImage: "url('/images/Frame 258 (2).png')",
       }}
     >
       <div className="absolute inset-0 " />

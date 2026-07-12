@@ -1,22 +1,54 @@
+import { useMemo } from "react";
 import { useMenuStore } from "../../../store/menuStore";
-
-const categories = ["All", "Starter", "Main", "Side", "Dessert", "Drink"];
+import { useMenuItems, useMenuCategories, isMenuItemActive } from "../../../hooks/dashboard/useMenuItems";
 
 const MenuFilter = () => {
   const { selectedCategory, setSelectedCategory } = useMenuStore();
+  const { data: rawMeals = [] } = useMenuItems({});
+  const { data: backendCategories = [] } = useMenuCategories();
+
+  // Build categories strictly from backend data (no mock categories)
+  const categories = useMemo(() => {
+    const catSet = new Set(["All"]);
+
+    // Add categories returned from backend categories endpoint
+    if (Array.isArray(backendCategories)) {
+      backendCategories.forEach((cat) => {
+        const name = typeof cat === "object" ? cat?.name : cat;
+        if (name && typeof name === "string" && name.trim()) {
+          catSet.add(name.trim());
+        }
+      });
+    }
+
+    // Add categories present on active menu items fetched from backend
+    const activeMeals = rawMeals.filter(isMenuItemActive);
+    activeMeals.forEach((item) => {
+      if (item.category && item.category.trim()) {
+        catSet.add(item.category.trim());
+      }
+    });
+
+    return Array.from(catSet);
+  }, [backendCategories, rawMeals]);
 
   return (
-    <div className="flex items-center gap-1 md:gap-6 pt-40 md:pt-20 pb-10">
-      <div className="flex gap-1.5 md:gap-3 flex-wrap">
+    <div className="pt-6 pb-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-xl md:text-2xl font-extrabold text-gray-800 tracking-tight">
+          Explore by <span className="text-orange">Categories</span>
+        </h3>
+      </div>
+      <div className="flex gap-2 md:gap-3 flex-wrap">
         {categories.map((cat) => (
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={`px-1 py-0.5 md:px-4 md:py-1.5 rounded-full text-xs md:text-sm font-medium transition-all duration-200 cursor-pointer
+            className={`px-3 py-1.5 md:px-5 md:py-2 rounded-full text-xs md:text-sm font-semibold transition-all duration-200 cursor-pointer
               ${
                 selectedCategory === cat
-                  ? "bg-orange-500 text-white shadow-md shadow-orange-200"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "bg-orange text-white shadow-md shadow-orange/30 scale-105"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
           >
             {cat}

@@ -26,7 +26,7 @@ function TrendingMenus({ data }) {
         <TimeFilter defaultValue="This Month" />
       </div>
 
-      <div className="flex flex-col gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-1 gap-5">
         {data.map((item) => (
           <div
             key={item.id}
@@ -61,7 +61,7 @@ function TrendingMenus({ data }) {
               <div className="flex items-center gap-1">
                 <MdAttachMoney size={15} className="text-[#F97316]" />
                 <span className="text-[10px] text-[#1a1a1a] font-medium">Revenue</span>
-                <span className="text-[11px] font-bold text-[#F97316] ml-1">${(item.revenue / 1000).toFixed(3)}</span>
+                <span className="text-[11px] font-bold text-[#F97316] ml-1">{(item.revenue / 1000).toFixed(1)}k EGP</span>
               </div>
             </div>
           </div>

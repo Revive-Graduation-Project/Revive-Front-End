@@ -1,0 +1,7 @@
+meal_name,category,price,description,ingredients
+Valid Chicken,Main,15.99,Delicious grilled chicken,Chicken Breast:200g; Salt:5g
+Valid Salad,Starter,5.50,Fresh garden salad,Tomato:100g; Onion:50g
+Invalid Price Meal,Main,invalid_price,This meal has a bad price,Beef:150g
+Duplicate Dessert,Dessert,8.00,Sweet treat,Sugar:50g; Flour:100g
+Duplicate Dessert,Dessert,8.00,Sweet treat,Sugar:50g; Flour:100g
+Missing Ingredients Meal,Main,12.00,This meal has no ingredients,

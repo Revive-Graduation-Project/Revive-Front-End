@@ -1,5 +1,7 @@
 import { FiInbox } from "react-icons/fi";
 import { COLUMNS, getActionButtonStyle } from "./constants";
+import { useAuthStore } from "../../../store";
+import { isAdminUser } from "../../../utils/roleUtils";
 
 export function OrderInfoGrid({ order }) {
   const displayName = order.name ||
@@ -43,6 +45,8 @@ export function ViewDetailsHint() {
 
 export function OrderCard({ order, columnKey, onAction, onViewOrder }) {
   const col = COLUMNS.find((c) => c.key === columnKey);
+  const { user } = useAuthStore();
+  const isAdmin = isAdminUser(user);
 
   return (
     <div
@@ -57,12 +61,20 @@ export function OrderCard({ order, columnKey, onAction, onViewOrder }) {
 
       {/* Action buttons */}
       <div className="flex justify-center mt-1 gap-2">
-        {col.prevStatus && (
+        {columnKey === "queue" && isAdmin && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onAction(order.id, "cancelled"); }}
+            className="flex-1 py-2 rounded-xl text-[12px] font-bold transition-all shadow-sm bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 hover:text-rose-700 cursor-pointer"
+          >
+            Cancel
+          </button>
+        )}
+        {col.prevStatus && isAdmin && (
           <button
             onClick={(e) => { e.stopPropagation(); onAction(order.id, col.prevStatus); }}
             className={`flex-1 py-2 rounded-xl text-[12px] font-bold transition-all shadow-sm ${getActionButtonStyle("Start Preparing")}`}
           >
-            Undo
+            &lt; Undo
           </button>
         )}
         <button
@@ -77,6 +89,9 @@ export function OrderCard({ order, columnKey, onAction, onViewOrder }) {
 }
 
 export function DoneCard({ order, onViewOrder, onRevert }) {
+  const { user } = useAuthStore();
+  const isAdmin = isAdminUser(user);
+
   return (
     <div
       role="button"
@@ -88,12 +103,20 @@ export function DoneCard({ order, onViewOrder, onRevert }) {
       <OrderInfoGrid order={order} />
       <ViewDetailsHint />
       <div className="flex justify-center mt-1">
-        <button
-          onClick={(e) => { e.stopPropagation(); if (onRevert) onRevert(); }}
-          className="w-full py-2 rounded-xl text-[12px] font-bold transition-all shadow-sm bg-gray-100 hover:bg-orange-50 text-gray-400 hover:text-orange-500 border border-gray-100 hover:border-orange-200 cursor-pointer"
-        >
-          Not Done
-        </button>
+        {isAdmin ? (
+          <button
+            onClick={(e) => { e.stopPropagation(); if (onRevert) onRevert(); }}
+            className="w-full py-2 px-3 rounded-xl text-[12px] font-bold transition-all shadow-sm bg-gray-100 hover:bg-orange-50 text-gray-600 hover:text-orange-600 border border-gray-200 hover:border-orange-200 cursor-pointer flex items-center justify-center gap-1.5"
+            title="Move back to Ready status"
+          >
+            <span className="text-[14px] font-extrabold">&lt;</span>
+            <span>Back to Ready</span>
+          </button>
+        ) : (
+          <div className="w-full py-2 px-3 rounded-xl text-[12px] font-semibold text-center text-gray-400 bg-gray-50 border border-gray-100">
+            Completed
+          </div>
+        )}
       </div>
     </div>
   );

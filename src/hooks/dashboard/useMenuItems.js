@@ -71,7 +71,10 @@ export function useDeleteMenuItem() {
         category: "Performance",
       });
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: menuKeys.all, refetchType: "all" }),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: menuKeys.all, refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["ingredients"] });
+    },
   });
 }
 
@@ -217,7 +220,10 @@ export function useUpdateMenuItem() {
         category: "Performance",
       });
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: menuKeys.all, refetchType: "all" }),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: menuKeys.all, refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["ingredients"] });
+    },
   });
 }
 
@@ -266,7 +272,10 @@ export function useCreateMenuItem() {
         category: "Performance",
       });
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: menuKeys.all, refetchType: "all" }),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: menuKeys.all, refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["ingredients"] });
+    },
   });
 }
 
@@ -298,6 +307,10 @@ export function useSaveRecipe() {
         Array.isArray(old) ? [itemToAdd, ...old] : old
       );
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: menuKeys.all, refetchType: "all" }),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: menuKeys.all, refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["ingredients"] });
+    },
   });
 }
+

@@ -1,9 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useAuthStore } from "../store";
-
-/** Roles allowed to access the dashboard */
-const STAFF_ROLES = ["admin", "manager", "chief", "chef"];
+import { isStaffUser } from "../utils/roleUtils";
 
 /**
  * StaffRoute
@@ -16,7 +14,7 @@ function StaffRoute({ children }) {
   const { isAuthenticated, user } = useAuthStore();
   const navigate = useNavigate();
 
-  const isStaff = user && STAFF_ROLES.includes(user.role?.toLowerCase());
+  const isStaff = isStaffUser(user);
 
   useEffect(() => {
     // If logged in but not staff, redirect to home
