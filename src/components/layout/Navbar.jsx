@@ -1,7 +1,7 @@
 import { Link, NavLink, useLocation } from "react-router";
 import Cart from "../ui/Cart";
 import SearchBar from "./SearchBar";
-import { FaUserCircle } from "react-icons/fa";
+import { FaUserCircle, FaGift, FaClipboardList } from "react-icons/fa";
 import { MdOutlineKeyboardArrowDown, MdDashboard } from "react-icons/md";
 import { useState } from "react";
 import { useAuthStore } from "../../store";
@@ -27,7 +27,8 @@ const ALL_NAV_LINKS = [
    link inside (e.g. "More" → "Profile").
 ───────────────────────────────────────────── */
 const MORE_LINKS = [
-  { to: "/profile", label: "Profile", icon: FaUserCircle },
+  { to: "/profile/orders", label: "My Orders", icon: FaClipboardList },
+  { to: "/profile/rewards", label: "Rewards", icon: FaGift },
 ];
 
 /**
@@ -138,51 +139,53 @@ function Navbar() {
             </NavLink>
           ))}
 
-          {/* ── More Dropdown ── */}
-          <div className="relative self-start">
-            <button
-              onClick={() => setIsMoreOpen((prev) => !prev)}
-              className={`${
-                activeMoreLink || isMoreOpen ? "active-navlink" : ""
-              } hover:text-green p-2 flex items-center gap-1 cursor-pointer`}
-              aria-haspopup="true"
-              aria-expanded={isMoreOpen}
-            >
-              {/* Show active link name when inside a More route, otherwise "More" */}
-              {activeMoreLink ? activeMoreLink.label : "More"}
-              <MdOutlineKeyboardArrowDown
-                className={`text-xl text-green transition-transform duration-300 ${
-                  isMoreOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
+          {/* ── More Dropdown (only rendered when there are extra links, e.g. for staff) ── */}
+          {dynamicMoreLinks.length > 0 && (
+            <div className="relative self-start">
+              <button
+                onClick={() => setIsMoreOpen((prev) => !prev)}
+                className={`${
+                  activeMoreLink || isMoreOpen ? "active-navlink" : ""
+                } hover:text-green p-2 flex items-center gap-1 cursor-pointer`}
+                aria-haspopup="true"
+                aria-expanded={isMoreOpen}
+              >
+                {/* Show active link name when inside a More route, otherwise "More" */}
+                {activeMoreLink ? activeMoreLink.label : "More"}
+                <MdOutlineKeyboardArrowDown
+                  className={`text-xl text-green transition-transform duration-300 ${
+                    isMoreOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
 
-            {/* Dropdown panel */}
-            <div
-              className={`${
-                isMoreOpen ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
-              } overflow-hidden transition-all duration-300 ease-in-out
-                md:absolute md:left-0 md:top-full md:mt-1
-                md:bg-white md:rounded-xl md:shadow-lg md:border md:border-gray-100 md:min-w-50`}
-            >
-              {/* Map over dynamicMoreLinks */}
-              {dynamicMoreLinks.map(({ to, label, icon: Icon }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  className={({ isActive }) =>
-                    `flex items-center gap-2 px-4 py-3 text-base hover:bg-gray-50 transition-colors ${
-                      isActive ? "text-green font-semibold" : "text-gray-700"
-                    }`
-                  }
-                  onClick={() => setIsMoreOpen(false)}
-                >
-                  {Icon ? <Icon className="text-lg text-green" /> : <FaUserCircle className="text-lg text-green" />}
-                  {label}
-                </NavLink>
-              ))}
+              {/* Dropdown panel */}
+              <div
+                className={`${
+                  isMoreOpen ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
+                } overflow-hidden transition-all duration-300 ease-in-out
+                  md:absolute md:left-0 md:top-full md:mt-1
+                  md:bg-white md:rounded-xl md:shadow-lg md:border md:border-gray-100 md:min-w-50`}
+              >
+                {/* Map over dynamicMoreLinks */}
+                {dynamicMoreLinks.map(({ to, label, icon: Icon }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2 px-4 py-3 text-base hover:bg-gray-50 transition-colors ${
+                        isActive ? "text-green font-semibold" : "text-gray-700"
+                      }`
+                    }
+                    onClick={() => setIsMoreOpen(false)}
+                  >
+                    {Icon ? <Icon className="text-lg text-green" /> : <FaUserCircle className="text-lg text-green" />}
+                    {label}
+                  </NavLink>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
       </div>

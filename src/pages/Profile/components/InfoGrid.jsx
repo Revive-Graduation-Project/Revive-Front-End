@@ -1,5 +1,6 @@
 import React from "react";
 import useAuthStore from "../../../store/authStore";
+import useLoyaltyStore from "../../../store/loyaltyStore";
 
 const pretty = {
   LOSE_WEIGHT: "Lose Weight",
@@ -40,7 +41,8 @@ export default function InfoGrid({ user = {}, profile = {} }) {
       ? profile.healthConditions
       : [];
   const phone = profile.phoneNumber || "-";
-  const loyaltyPoints = profile.loyaltyPoints ?? 0;
+  const storePoints = useLoyaltyStore((s) => s.points);
+  const loyaltyPoints = storePoints > 0 ? storePoints : (profile.loyaltyPoints ?? 0);
   const authUser = useAuthStore((s) => s.user) || {};
   const displayName =
     authUser?.fullName ||
