@@ -3,6 +3,7 @@ import { FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store";
+import { isStaffUser } from "../../utils/roleUtils";
 
 function Login() {
   const { login, loading, error } = useAuthStore();
@@ -22,8 +23,14 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     await login(formData);
-    const { isAuthenticated } = useAuthStore.getState();
-    if (isAuthenticated) navigate("/");
+    const { isAuthenticated, user } = useAuthStore.getState();
+    if (isAuthenticated) {
+      if (isStaffUser(user)) {
+        navigate("/dashboard");
+      } else {
+        navigate("/");
+      }
+    }
   };
 
   return (

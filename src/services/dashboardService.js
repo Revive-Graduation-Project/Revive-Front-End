@@ -257,7 +257,8 @@ const ADMIN_ORDER_STATUS_MAP = {
 
 export const updateOrderStatus = (orderId, status) => {
   const mapped = ADMIN_ORDER_STATUS_MAP[status?.toLowerCase()] || status?.toUpperCase() || status;
-  return api.patch(`/api/orders/admin/${encodeURIComponent(orderId)}/status`, { status: mapped }).then(r => r.data);
+  const numericId = String(orderId).replace('#', '');
+  return api.patch(`/api/orders/admin/${encodeURIComponent(numericId)}/status`, { status: mapped }).then(r => r.data);
 };
 
 // ── Kitchen ───────────────────────────────────────────────────────

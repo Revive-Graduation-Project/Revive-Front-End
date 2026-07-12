@@ -19,8 +19,8 @@ function DashboardLayout() {
 
   const isChief = isKitchenOnlyUser(user);
 
-  // Restrict Chief to Live Kitchen and Orders only
-  const isAllowedForChief = location.pathname.includes("/live-kitchen") || location.pathname.includes("/orders");
+  // Restrict Chief to Live Kitchen only
+  const isAllowedForChief = location.pathname.includes("/live-kitchen");
   if (isChief && !isAllowedForChief) {
     return <Navigate to="/dashboard/live-kitchen" replace />;
   }

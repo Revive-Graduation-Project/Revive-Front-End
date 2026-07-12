@@ -50,3 +50,11 @@ export const resetPassword = (data) => {
   return api.post("/auth/password/reset", data);
 };
 
+// Staff Management
+export const createStaff = (data) => {
+  return api.post("/auth/staff/signup", data);
+};
+
+export const createAdmin = (data) => {
+  return api.post("/auth/admin/signup", data);
+};

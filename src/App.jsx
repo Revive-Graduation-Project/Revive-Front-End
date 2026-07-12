@@ -25,6 +25,7 @@ import {
   MenuManagement,
   Ingredients,
   Notifications,
+  StaffManagement,
 } from "./pages";
 import { ProfileLayout, ProfileOrders, Rewards } from "./pages/Profile";
 import { useAuthInit } from "./hooks/useAuthInit";
@@ -109,6 +110,7 @@ export default function App() {
           <Route path="menu-management" element={<MenuManagement />} />
           <Route path="ingredients" element={<Ingredients />} />
           <Route path="notifications" element={<Notifications />} />
+          <Route path="staff-management" element={<StaffManagement />} />
         </Route>
       </Routes>
     </>

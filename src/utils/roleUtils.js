@@ -57,3 +57,12 @@ export function isAdminUser(user) {
   const role = String(user.role).toLowerCase();
   return role === ROLES.ADMIN || role === ROLES.MANAGER || role === "role_admin";
 }
+
+/**
+ * Checks if a user is strictly an Admin (not a Manager).
+ */
+export function isSuperAdmin(user) {
+  if (!user || !user.role) return false;
+  const role = String(user.role).toLowerCase();
+  return role === ROLES.ADMIN || role === "role_admin";
+}
