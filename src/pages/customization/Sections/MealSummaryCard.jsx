@@ -30,12 +30,13 @@ const MealSummaryCard = () => {
   const handleAddToCart = () => {
     if (!isValid || !primaryItem) return;
 
-    const customizations = {};
-    customizations[primaryItem.id] = 100;
-
-    allAdditions.forEach((item) => {
-      customizations[item.id] = parseInt(item.grams) || 50;
-    });
+    const customizations = {
+      primary: { id: primaryItem.id, grams: 100 },
+      additions: allAdditions.map(item => ({
+        id: item.id,
+        grams: parseInt(item.grams) || 50
+      }))
+    };
 
     const cartItem = {
       id: `custom-${primaryItem.id}-${Date.now()}`,
