@@ -2,17 +2,19 @@ import React from "react";
 import { FaUtensils } from "react-icons/fa6";
 import { FiCheckCircle, FiXCircle, FiClock, FiHash } from "react-icons/fi";
 import { formatOrderTime } from "../../../utils/orderHelpers";
+import { NON_CANCELLABLE_ORDER_STATUSES } from "../../../constants";
 
 
-const OrderCard = ({ order }) => {
+const OrderCard = ({ order, onCancelOrder }) => {
   const getStatusIcon = (status) => {
     switch (status?.toUpperCase()) {
+      case "PROCESSING":
       case "PENDING":
       case "PREPARING":
         return (
           <span className="flex items-center gap-1.5 text-amber-600">
             <FiClock className="w-4 h-4 animate-pulse" />
-            <span className="text-sm font-medium">Preparing</span>
+            <span className="text-sm font-medium">Processing</span>
           </span>
         );
       case "CONFIRMED":
@@ -69,7 +71,7 @@ const OrderCard = ({ order }) => {
         </div>
 
         {/* Bottom row: Time + Quantity + Status */}
-        <div className="flex items-center gap-4 text-gray-500">
+        <div className="flex items-center gap-4 text-gray-500 flex-wrap">
           <span className="text-sm">{friendlyTime}</span>
 
           {order.quantity && (
@@ -91,6 +93,19 @@ const OrderCard = ({ order }) => {
           )}
 
           {getStatusIcon(order.status)}
+
+          {/* Cancel Button */}
+          {onCancelOrder && !NON_CANCELLABLE_ORDER_STATUSES.includes(order.status?.toUpperCase()) && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onCancelOrder(order.id);
+              }}
+              className="ml-auto text-sm text-red-500 hover:text-red-700 font-semibold underline cursor-pointer bg-transparent border-none p-0"
+            >
+              Cancel
+            </button>
+          )}
         </div>
       </div>
 

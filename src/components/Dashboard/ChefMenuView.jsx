@@ -9,7 +9,7 @@ import {
   isMenuItemActive,
 } from "../../hooks/dashboard/useMenuItems";
 import { useTrendingMenus } from "../../hooks/dashboard/useDashboard";
-import { FiEdit2, FiPlus, FiTrash2 } from "react-icons/fi";
+import { FiEdit2, FiPlus, FiTrash2, FiTag, FiCheckSquare, FiLayers } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 import EmptyState from "./shared/EmptyState";
@@ -18,7 +18,11 @@ import ConfirmModal from "./shared/ConfirmModal";
 import DishDetailsModal from "./shared/DishDetailsModal";
 import MetricRingCard from "./shared/MetricRingCard";
 import InactiveMenuModal from "./shared/InactiveMenuModal";
+import EditMealModal from "./shared/EditMealModal";
+import DiscountModal from "./shared/DiscountModal";
+import BulkDiscountModal from "./shared/BulkDiscountModal";
 import { sortItems } from "../../utils/sortItems";
+import { calculateDiscountedPrice } from "../../utils/discountUtils";
 
 // ── Sort columns — defined outside the component so they are never recreated ──
 const MENU_SORT_COLS = [
@@ -28,10 +32,10 @@ const MENU_SORT_COLS = [
   { key: "calories", label: "Calories" },
   { key: "protein", label: "Protein" },
   { key: "sugar", label: "Sugar" },
-  { key: "price", label: "Price (EGP)" },
+  { key: "price", label: "Price" },
 ];
 
-const TABLE_HEADERS = ["Meal", "Category", "Fat", "Cal", "Pro", "Sug", "Price (EGP)", "Actions"];
+const TABLE_HEADERS = ["Meal", "Category", "Fat", "Cal", "Pro", "Sug", "Price", "Actions"];
 
 function ChefMenuView() {
   const [activeTab, setActiveTab] = useState("All Menu");
@@ -40,6 +44,12 @@ function ChefMenuView() {
   const [deletingId, setDeletingId] = useState(null);
   const [viewingItem, setViewingItem] = useState(null);
   const [isInactiveModalOpen, setIsInactiveModalOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  
+  // New Modals
+  const [editingMeal, setEditingMeal] = useState(null);
+  const [discountMeal, setDiscountMeal] = useState(null);
+  const [isBulkDiscountModalOpen, setIsBulkDiscountModalOpen] = useState(false);
 
   const navigate = useNavigate();
   const { mutate: deleteItem } = useDeleteMenuItem();
@@ -49,6 +59,31 @@ function ChefMenuView() {
     if (!deletingId) return;
     deleteItem(deletingId);
     setDeletingId(null);
+  };
+
+  const toggleSelection = (id, e) => {
+    e.stopPropagation();
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) newSelected.delete(id);
+    else newSelected.add(id);
+    setSelectedIds(newSelected);
+  };
+
+  const toggleSelectAll = (e, itemsToSelect) => {
+    e.stopPropagation();
+    const allSelected = itemsToSelect.length > 0 && itemsToSelect.every(item => selectedIds.has(item.id));
+    
+    if (allSelected) {
+      // Deselect these items
+      const newSelected = new Set(selectedIds);
+      itemsToSelect.forEach(item => newSelected.delete(item.id));
+      setSelectedIds(newSelected);
+    } else {
+      // Select these items
+      const newSelected = new Set(selectedIds);
+      itemsToSelect.forEach(item => newSelected.add(item.id));
+      setSelectedIds(newSelected);
+    }
   };
 
   // ── Data fetching ──────────────────────────────────────────────────────────
@@ -155,6 +190,30 @@ function ChefMenuView() {
         <div className="flex-1 flex flex-col gap-6 w-full min-w-0">
           <div className="bg-white rounded-3xl shadow-sm relative pb-10">
 
+            {/* Bulk Action Bar (Shows if items selected) */}
+            {selectedIds.size > 0 && (
+              <div className="bg-purple-50 px-5 py-3 border-b border-purple-100 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+                <div className="flex items-center gap-3 text-purple-700 font-bold text-[13px]">
+                  <FiCheckSquare size={18} />
+                  <span>{selectedIds.size} meal{selectedIds.size > 1 ? 's' : ''} selected</span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSelectedIds(new Set())}
+                    className="px-4 py-1.5 text-[12px] font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                  <button
+                    onClick={() => setIsBulkDiscountModalOpen(true)}
+                    className="flex items-center gap-2 px-4 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-[12px] font-bold rounded-lg transition-colors cursor-pointer shadow-sm"
+                  >
+                    <FiLayers size={14} /> Bulk Discount
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Tab bar + sort */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between px-5 pt-4 pb-3 border-b border-gray-100 gap-3 sm:gap-0">
               <div className="flex items-center gap-2 overflow-x-auto">
@@ -195,9 +254,17 @@ function ChefMenuView() {
 
             {/* Table */}
             <div className="overflow-x-auto relative">
-              <table className="w-full border-collapse min-w-[700px]">
+              <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b border-gray-100">
+                    <th className="px-5 py-3 w-10 text-left">
+                      <input 
+                        type="checkbox" 
+                        className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+                        checked={filtered.length > 0 && filtered.every(item => selectedIds.has(item.id))}
+                        onChange={(e) => toggleSelectAll(e, filtered)}
+                      />
+                    </th>
                     {TABLE_HEADERS.map((h) => (
                       <th key={h} className="px-5 py-3 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wide">
                         {h === "Actions" ? "" : h}
@@ -223,6 +290,14 @@ function ChefMenuView() {
                       onClick={() => setViewingItem(item)}
                       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setViewingItem(item); } }}
                     >
+                      <td className="px-5 py-3.5" onClick={(e) => e.stopPropagation()}>
+                        <input 
+                          type="checkbox"
+                          className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+                          checked={selectedIds.has(item.id)}
+                          onChange={(e) => toggleSelection(item.id, e)}
+                        />
+                      </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-xl bg-orange-100 overflow-hidden shrink-0">
@@ -236,7 +311,14 @@ function ChefMenuView() {
                             )}
                           </div>
                           <div>
-                            <p className="text-[13px] font-bold text-[#1a1a1a] m-0">{item.name}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="text-[13px] font-bold text-[#1a1a1a] m-0">{item.name}</p>
+                              {item.hasDiscount && item.discountPercentage > 0 && (
+                                <span className="bg-orange-100 text-orange-600 text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider">
+                                  -{item.discountPercentage}%
+                                </span>
+                              )}
+                            </div>
                             <span className="text-[10px] font-semibold text-orange-400 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-0.5 group-hover:translate-y-0 inline-block">
                               Click to view details →
                             </span>
@@ -248,15 +330,35 @@ function ChefMenuView() {
                       <td className="px-5 py-3.5 text-[12px] text-green-600 font-semibold">{item.calories ?? "-"}</td>
                       <td className="px-5 py-3.5 text-[12px] text-green-600 font-semibold">{item.protein ?? "-"}</td>
                       <td className="px-5 py-3.5 text-[12px] text-green-600 font-semibold">{item.sugar ?? "-"}</td>
-                      <td className="px-5 py-3.5 text-[13px] font-bold text-orange-500">{item.price} EGP</td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex flex-col">
+                          {item.hasDiscount && item.discountPercentage > 0 ? (
+                            <>
+                              <span className="text-[10px] text-gray-400 line-through font-medium">${item.price}</span>
+                              <span className="text-[13px] font-bold text-green-600">
+                                ${calculateDiscountedPrice(item.price, item.discountPercentage)}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-[13px] font-bold text-orange-500">${item.price}</span>
+                          )}
+                        </div>
+                      </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={(e) => { e.stopPropagation(); navigate("/dashboard/recipe-builder", { state: { editMeal: item } }); }}
+                            onClick={(e) => { e.stopPropagation(); setEditingMeal(item); }}
                             className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-orange-50 text-gray-500 hover:text-orange-500 rounded-lg text-[12px] font-bold border border-gray-100 transition-all cursor-pointer shadow-sm"
                             title={`Edit ${item.name}`}
                           >
                             <FiEdit2 size={14} /> Edit
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setDiscountMeal(item); }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-purple-50 text-gray-500 hover:text-purple-600 rounded-lg text-[12px] font-bold border border-gray-100 transition-all cursor-pointer shadow-sm"
+                            title={`Discount ${item.name}`}
+                          >
+                            <FiTag size={14} /> Discount
                           </button>
                           <button
                             onClick={(e) => { e.stopPropagation(); setDeletingId(item.id); }}
@@ -310,6 +412,25 @@ function ChefMenuView() {
         isOpen={isInactiveModalOpen}
         onClose={() => setIsInactiveModalOpen(false)}
         inactiveItems={inactiveItems}
+      />
+
+      <EditMealModal
+        isOpen={!!editingMeal}
+        onClose={() => setEditingMeal(null)}
+        meal={editingMeal}
+      />
+
+      <DiscountModal
+        isOpen={!!discountMeal}
+        onClose={() => setDiscountMeal(null)}
+        meal={discountMeal}
+      />
+
+      <BulkDiscountModal
+        isOpen={isBulkDiscountModalOpen}
+        onClose={() => setIsBulkDiscountModalOpen(false)}
+        selectedMeals={activeItems.filter(item => selectedIds.has(item.id))}
+        onClearSelection={() => setSelectedIds(new Set())}
       />
     </div>
   );
