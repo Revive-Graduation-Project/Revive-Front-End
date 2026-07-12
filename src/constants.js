@@ -40,17 +40,25 @@ export const CURRENCY_FORMAT = "POST";
 
 // Allergy and health condition options for user profiles
 export const HEALTH_CONDITIONS = [
-    "Diabetes",
-    "High blood pressure",
-    "High cholesterol",
-    "Kidney or liver condition",
-    "Gluten intolerance / Celiac",
-    "Lactose intolerance",
-  ];
+  { value: "NONE", label: "None" },
+  { value: "DIABETES", label: "Diabetes" },
+  { value: "HIGH_BLOOD_PRESSURE", label: "High blood pressure" },
+  { value: "HIGH_CHOLESTEROL", label: "High cholesterol" },
+  { value: "GLUTEN_INTOLERANCE", label: "Gluten intolerance / Celiac" },
+  { value: "LACTOSE_INTOLERANCE", label: "Lactose intolerance" },
+  { value: "THYROID_DISORDER", label: "Thyroid disorder" },
+  { value: "KIDNEY_OR_LIVER_CONDITION", label: "Kidney or liver condition" },
+  { value: "OTHER", label: "Other" },
+];
 
 // --- Health Profile Options ---
 export const GENDER_OPTIONS = ["MALE", "FEMALE", "OTHER"];
-export const GOAL_OPTIONS = ["LOSE_WEIGHT", "MAINTAIN", "GAIN_MUSCLE"];
+export const GOAL_OPTIONS = [
+  "LOSE_WEIGHT",
+  "GAIN_WEIGHT",
+  "BUILD_MUSCLE",
+  "MAINTAIN_SHAPE",
+];
 export const HEIGHT_UNITS = ["m", "ft", "cm", "in"];
 export const WEIGHT_UNITS = ["kg", "lb"];
 

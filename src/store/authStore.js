@@ -69,10 +69,13 @@ const useAuthStore = create(
 
           const rawUser = data.user ?? {
             id: data.userId,
-            email: data.emailString,
+            email: data.emailString || data.email,
+            emailString: data.emailString || data.email,
             role: data.role,
             firstName: data.firstName,
             lastName: data.lastName,
+            fullName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
+            name: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
           };
 
           const user =
@@ -82,9 +85,12 @@ const useAuthStore = create(
               ? {
                   id: rawUser.id,
                   email: rawUser.email,
+                  emailString: rawUser.emailString || rawUser.email,
                   role: rawUser.role,
                   firstName: rawUser.firstName,
                   lastName: rawUser.lastName,
+                  fullName: rawUser.fullName,
+                  name: rawUser.name,
                 }
               : null;
 
@@ -154,10 +160,13 @@ const useAuthStore = create(
 
             const rawUser = {
               id: data.userId,
-              email: data.emailString,
+              email: data.emailString || data.email,
+              emailString: data.emailString || data.email,
               role: data.role,
               firstName: data.firstName,
               lastName: data.lastName,
+              fullName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
+              name: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
             };
 
             set({

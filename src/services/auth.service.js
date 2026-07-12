@@ -15,6 +15,11 @@ export const logoutService = async () => {
   return api.post("/auth/logout");
 };
 
+// Delete auth user account
+export const deleteAuthUser = (id) => {
+  return api.delete(`/auth/users/${id}`);
+};
+
 // ============================================================
 // Restore session — DEDUPED
 // ============================================================

@@ -3,12 +3,14 @@ import { FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store";
-import { isStaffUser } from "../../utils/roleUtils";
+import { isStaffUser, isKitchenOnlyUser } from "../../utils/roleUtils";
+import { getProfile } from "../../services/clientProfileService";
 
 function Login() {
   const { login, loading, error } = useAuthStore();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [localError, setLocalError] = useState(null);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -17,18 +19,35 @@ function Login() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setLocalError(null);
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLocalError(null);
     await login(formData);
     const { isAuthenticated, user } = useAuthStore.getState();
     if (isAuthenticated) {
-      if (isStaffUser(user)) {
+      if (isKitchenOnlyUser(user)) {
+        navigate("/dashboard/live-kitchen");
+      } else if (isStaffUser(user)) {
         navigate("/dashboard");
       } else {
-        navigate("/");
+        try {
+          if (user?.id) {
+            const res = await getProfile(user.id);
+            if (!res?.data) {
+              throw new Error("Profile not found");
+            }
+          }
+          navigate("/");
+        } catch (err) {
+          await useAuthStore.getState().logout(false);
+          setLocalError(
+            "Your account profile has been deleted. Please sign up to create a new account."
+          );
+        }
       }
     }
   };
@@ -103,11 +122,12 @@ function Login() {
                 </Link>
               </div>
 
-              {error && (
+              {(localError || error) && (
                 <p className="text-red-500 text-xs text-center">
-                  {typeof error === "string"
-                    ? error
-                    : "Login failed, please try again"}
+                  {localError ||
+                    (typeof error === "string"
+                      ? error
+                      : "Login failed, please try again")}
                 </p>
               )}
 

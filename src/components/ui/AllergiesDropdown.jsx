@@ -2,12 +2,12 @@ import { HEALTH_CONDITIONS } from "../../constants";
 function AllergiesDropdown({ selected = [], onChange }) {
 
   const handleToggle = (option) => {
-    if (option === "None") {
-      onChange(["None"]);
+    if (option === "NONE" || option === "None") {
+      onChange(["NONE"]);
       return;
     }
 
-    const withoutNone = selected.filter((s) => s !== "None");
+    const withoutNone = selected.filter((s) => s !== "NONE" && s !== "None");
 
     if (withoutNone.includes(option)) {
       onChange(withoutNone.filter((s) => s !== option));
@@ -24,20 +24,24 @@ function AllergiesDropdown({ selected = [], onChange }) {
 
       <div className="border border-orange rounded-2xl p-4">
         <div className="grid grid-cols-1 gap-2 text-sm">
-          {HEALTH_CONDITIONS.map((option, index) => (
-            <label
-              key={index}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <input
-                type="checkbox"
-                className="accent-orange w-4 h-4"
-                checked={selected.includes(option)}
-                onChange={() => handleToggle(option)}
-              />
-              {option}
-            </label>
-          ))}
+          {HEALTH_CONDITIONS.map((option, index) => {
+            const val = typeof option === "object" ? option.value : option;
+            const lbl = typeof option === "object" ? option.label : option;
+            return (
+              <label
+                key={val || index}
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  className="accent-orange w-4 h-4"
+                  checked={selected.includes(val)}
+                  onChange={() => handleToggle(val)}
+                />
+                {lbl}
+              </label>
+            );
+          })}
         </div>
       </div>
     </div>

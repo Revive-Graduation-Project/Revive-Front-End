@@ -34,19 +34,6 @@ export default function Orders() {
   }))
 );
 
-  useEffect(() => {
-    fetchMyOrders();
-  }, [fetchMyOrders]);
-
-  useEffect(() => {
-    if (trackingOrder) {
-      const interval = setInterval(() => {
-        fetchMyOrders();
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [trackingOrder, fetchMyOrders]);
-
   const mergedOrdersList = useMemo(
     () => getMergedOrders(),
     [getMergedOrders, myOrders, lastOrder]
@@ -61,6 +48,19 @@ export default function Orders() {
     () => getTrackingOrder(),
     [getTrackingOrder, myOrders, lastOrder]
   );
+
+  useEffect(() => {
+    fetchMyOrders();
+  }, [fetchMyOrders]);
+
+  useEffect(() => {
+    if (trackingOrder) {
+      const interval = setInterval(() => {
+        fetchMyOrders();
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [trackingOrder, fetchMyOrders]);
 
   const handleCancelOrder = async (orderId) => {
     const result = await cancelMyOrder(orderId);

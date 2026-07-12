@@ -15,11 +15,17 @@ vi.mock("../../store", () => ({
     }),
 }));
 
+import { MemoryRouter } from "react-router";
+
 describe("Profile", () => {
   it("renders the join date from the profile data", () => {
-    render(<Profile />);
+    render(
+      <MemoryRouter>
+        <Profile />
+      </MemoryRouter>
+    );
 
     expect(screen.getByText(/Join date/i)).toBeTruthy();
-    expect(screen.getByText(/2024-01-15/i)).toBeTruthy();
+    expect(screen.getByText(/15 Jan 2024/i)).toBeTruthy();
   });
 });
