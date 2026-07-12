@@ -17,10 +17,10 @@ const OrderTracking = ({ order, onCancelOrder }) => {
 
   const getActiveStepIndex = () => {
     const s = order?.status?.toLowerCase() || "";
-    if (s === "ready") return 3;
+    if (s === "ready" || s === "completed") return 3;
     if (s === "preparing") return 2;
-    if (s === "confirmed") return 1;
-    if (s === "pending") return 0;
+    if (s === "confirmed" || s === "paid") return 1;
+    if (s === "pending" || s === "awaiting_payment" || s === "cancellation_pending") return 0;
     return 0;
   };
 
@@ -199,42 +199,75 @@ const OrderTracking = ({ order, onCancelOrder }) => {
       </div>
 
       {/* ── Status Card ── */}
-      <div
-        className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-xl px-5 py-4"
-        style={{ backgroundColor: "#e8f5e9", border: "1px solid #c8e6c9" }}
-      >
-        {/* Left: icon + text */}
-        <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div
-            className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-            style={{ backgroundColor: "#2e7d32" }}
-          >
-            {/* reuse the same icon already defined in timelineSteps */}
-            <span className="text-white text-lg">
-              {React.cloneElement(activeStep.icon, {
-                className: "text-white text-base",
-              })}
-            </span>
-          </div>
-          <div className="min-w-0">
-            <p className="font-bold text-green-700">
-              {activeStep.statusTitle}
-            </p>
-            <p className="text-sm text-gray-500 mt-0.5">
-              {activeStep.subtitle}
-            </p>
-          </div>
-        </div>
-
-        {/* Right: button — full width on mobile, auto on desktop */}
-        <button
-          onClick={() => setShowOrderDetails(true)}
-          className="w-full sm:w-auto text-sm font-medium px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-colors whitespace-nowrap cursor-pointer shrink-0"
-          style={{ color: "#333" }}
+      {order?.status?.toUpperCase() === "CANCELLATION_PENDING" ? (
+        <div
+          className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-xl px-5 py-4"
+          style={{ backgroundColor: "#fff3e0", border: "1px solid #ffe0b2" }}
         >
-          View Order
-        </button>
-      </div>
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+              style={{ backgroundColor: "#f57c00" }}
+            >
+              <span className="text-white text-base">
+                <FaClock />
+              </span>
+            </div>
+            <div className="min-w-0">
+              <p className="font-bold text-orange-800">
+                Cancellation Pending
+              </p>
+              <p className="text-sm text-orange-700 mt-0.5">
+                Waiting for kitchen approval to cancel your order...
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowOrderDetails(true)}
+            className="w-full sm:w-auto text-sm font-medium px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-colors whitespace-nowrap cursor-pointer shrink-0"
+            style={{ color: "#333" }}
+          >
+            View Order
+          </button>
+        </div>
+      ) : (
+        <div
+          className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-xl px-5 py-4"
+          style={{ backgroundColor: "#e8f5e9", border: "1px solid #c8e6c9" }}
+        >
+          {/* Left: icon + text */}
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+              style={{ backgroundColor: "#2e7d32" }}
+            >
+              {/* reuse the same icon already defined in timelineSteps */}
+              <span className="text-white text-lg">
+                {React.cloneElement(activeStep.icon, {
+                  className: "text-white text-base",
+                })}
+              </span>
+            </div>
+            <div className="min-w-0">
+              <p className="font-bold text-green-700">
+                {activeStep.statusTitle}
+              </p>
+              <p className="text-sm text-gray-500 mt-0.5">
+                {activeStep.subtitle}
+              </p>
+            </div>
+          </div>
+
+          {/* Right: button — full width on mobile, auto on desktop */}
+          <button
+            onClick={() => setShowOrderDetails(true)}
+            className="w-full sm:w-auto text-sm font-medium px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-colors whitespace-nowrap cursor-pointer shrink-0"
+            style={{ color: "#333" }}
+          >
+            View Order
+          </button>
+        </div>
+      )}
 
       {/* ── Bottom Two-Column: Timeline + Policy ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">

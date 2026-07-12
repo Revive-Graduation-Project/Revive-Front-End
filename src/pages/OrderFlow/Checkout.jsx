@@ -44,6 +44,7 @@ export default function Checkout() {
               buttonText="Continue"
               buttonLink="#"
               showItems={true}
+              showPointsRedemption={true}
               onEdit={() => navigate("/cart")}
             />
           </div>

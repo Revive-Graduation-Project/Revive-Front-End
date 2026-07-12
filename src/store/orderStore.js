@@ -12,6 +12,7 @@ import { MAX_QUANTITY, DELIVERY_FEE, SUBMIT_DELAY } from "../constants";
 import { placeOrder } from "../services/order.service";
 import queryClient from "../lib/queryClient";
 import useUIStore from "./uiStore";
+import { useToastStore } from "./toastStore";
 
 /**
  * ============================================================================
@@ -75,6 +76,8 @@ const useOrderStore = create(
       isCartDrawerOpen: false,
       /** @type {string} Optional user-provided order note/instruction */
       note: "",
+      /** @type {number} Points user wants to redeem */
+      pointsToRedeem: 0,
       
       /** 
        * Customer shipping and contact information.
@@ -282,6 +285,12 @@ const useOrderStore = create(
        */
       setNote: (note) => set({ note }),
 
+      /** 
+       * Sets points to redeem
+       * @param {number} points 
+       */
+      setPointsToRedeem: (points) => set({ pointsToRedeem: points }),
+
       /**
        * Bulk updates customer delivery information.
        * @param {Partial<Object>} details - Specific fields to update
@@ -312,17 +321,19 @@ const useOrderStore = create(
       },
 
       /** 
-       * Returns price + delivery.
+       * Returns price + delivery minus points discount.
        * @returns {number} 
        */
       getTotalWithDelivery: () => {
-        const { totalAmount } = get();
+        const { totalAmount, pointsToRedeem } = get();
         const deliveryFee = get().getDeliveryFee();
-        return totalAmount + deliveryFee;
+        const discount = pointsToRedeem === 100 ? 10 : pointsToRedeem === 200 ? 20 : pointsToRedeem === 300 ? 30 : 0;
+        return totalAmount + deliveryFee - discount;
       },
 
       /** Manually clear the global error state */
       clearError: () => set({ error: null }),
+      setError: (error) => set({ error }),
 
       clearMyOrdersError: () => set({ myOrdersError: null }),
 
@@ -442,12 +453,13 @@ const useOrderStore = create(
 
           // Make real API request to place the order
           const response = await placeOrder({
-             items: [...state.items],
+             items: state.items.map(i => ({ mealId: Number(i.id), quantity: i.quantity })),
              totalAmount: state.totalAmount,
              deliveryFee: state.getDeliveryFee(),
              finalTotal: totalWithDelivery,
              customerDetails: state.customerDetails,
-             paymentMethod: state.paymentMethod,
+             paymentMethod: state.paymentMethod === 'credit_card' ? 'CREDIT_CARD' : 'CASH',
+             points: state.pointsToRedeem,
              note: state.note
           });
 
@@ -493,14 +505,23 @@ const useOrderStore = create(
             category: "Orders",
           });
 
-          return true;
+          return { success: true, clientSecret: response.data?.stripeClientSecret, orderId: newOrder.id };
         } catch (err) {
           console.error("[ORDER] submission failed:", err);
+          
+          const errorMsg = err.response?.data?.message || err.message;
+          if (errorMsg && errorMsg.toLowerCase().includes("stock")) {
+             useToastStore.getState().addToast({
+                 type: 'error',
+                 message: 'Some items in your cart are no longer available. Please return to your cart to adjust your order.'
+             });
+          }
+
           set({ 
             loading: false, 
-            error: err.message || "Failed to place order. Please try again." 
+            error: errorMsg || "Failed to place order. Please try again." 
           });
-          return false;
+          return { success: false, error: errorMsg };
         }
       },
     }),
@@ -510,6 +531,7 @@ const useOrderStore = create(
       partialize: (state) => ({
         items: state.items,
         note: state.note,
+        pointsToRedeem: state.pointsToRedeem,
         customerDetails: state.customerDetails,
         paymentMethod: state.paymentMethod,
         savedCard: state.savedCard,

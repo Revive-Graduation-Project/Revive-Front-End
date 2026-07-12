@@ -38,6 +38,15 @@ export default function Orders() {
     fetchMyOrders();
   }, [fetchMyOrders]);
 
+  useEffect(() => {
+    if (trackingOrder) {
+      const interval = setInterval(() => {
+        fetchMyOrders();
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [trackingOrder, fetchMyOrders]);
+
   const mergedOrdersList = useMemo(
     () => getMergedOrders(),
     [getMergedOrders, myOrders, lastOrder]

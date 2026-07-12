@@ -2,6 +2,8 @@ import { useState } from "react";
 import { FiChevronDown, FiLock } from "react-icons/fi";
 import { useNavigate } from "react-router";
 import { formatCurrency } from "../../utils/formatters";
+import { useOrderStore } from "../../store";
+import useLoyaltyStore from "../../store/loyaltyStore";
 
 /**
  * OrderSummary Component
@@ -21,10 +23,16 @@ export default function OrderSummary({
   buttonText = "Checkout",
   buttonLink = "/checkout",
   showItems = false,
+  showPointsRedemption = false,
   onEdit
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
+
+  const pointsToRedeem = useOrderStore((state) => state.pointsToRedeem);
+  const setPointsToRedeem = useOrderStore((state) => state.setPointsToRedeem);
+  const availablePoints = useLoyaltyStore((state) => state.points);
+  const discountAmount = pointsToRedeem === 100 ? 10 : pointsToRedeem === 200 ? 20 : pointsToRedeem === 300 ? 30 : 0;
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 sticky top-24">
@@ -93,6 +101,30 @@ export default function OrderSummary({
           <span>Delivery</span>
           <span className="font-medium">{formatCurrency(delivery)}</span>
         </div>
+        
+        {discountAmount > 0 && (
+          <div className="flex justify-between text-green-600">
+            <span>Points Discount</span>
+            <span className="font-medium">-{formatCurrency(discountAmount)}</span>
+          </div>
+        )}
+
+        {showPointsRedemption && availablePoints >= 100 && (
+           <div className="mt-4 pt-4 border-t border-gray-100">
+             <label className="block text-sm font-medium text-gray-700 mb-2">Redeem Points (Available: {availablePoints})</label>
+             <select 
+               value={pointsToRedeem} 
+               onChange={(e) => setPointsToRedeem(Number(e.target.value))}
+               className="w-full border-gray-300 rounded-md shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm p-2 border bg-white"
+             >
+               <option value={0}>Do not redeem points</option>
+               <option value={100} disabled={availablePoints < 100}>100 Points ($10 Off)</option>
+               <option value={200} disabled={availablePoints < 200}>200 Points ($20 Off)</option>
+               <option value={300} disabled={availablePoints < 300}>300 Points ($30 Off)</option>
+             </select>
+           </div>
+        )}
+
         <div className="border-t border-gray-200 pt-3 flex justify-between text-lg font-bold">
           <span className="text-green-600">Total</span>
           <span className="text-orange-500">{formatCurrency(total)}</span>

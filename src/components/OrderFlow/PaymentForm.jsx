@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useOrderStore } from "../../store";
-import Modal from "../ui/Modal";
-import AddCardForm from "./AddCardForm";
 import PaymentMethodSelector from "./Payment/PaymentMethodSelector";
+import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
 
 /**
  * PaymentForm Component
@@ -28,42 +27,41 @@ export default function PaymentForm() {
   const error = useOrderStore((state) => state.error);
   const paymentMethod = useOrderStore((state) => state.paymentMethod);
   const setPaymentMethod = useOrderStore((state) => state.setPaymentMethod);
-  const saveCard = useOrderStore((state) => state.saveCard);
-  const savedCard = useOrderStore((state) => state.savedCard);
-
-  const [isAddCardOpen, setIsAddCardOpen] = useState(false);
-
-  const handleMethodSelect = (method) => {
-    setPaymentMethod(method);
-    if (method === "credit_card" && !savedCard) {
-      setIsAddCardOpen(true);
-    }
-  };
-
-  const handleAddCard = (details) => {
-    // In a real app, validation and tokenization happen here
-    // Save masked details to store
-    const maskedDetails = {
-        ...details,
-        cardNumber: `**** **** **** ${details.cardNumber.slice(-4)}`
-    };
-    saveCard(maskedDetails);
-    
-    setIsAddCardOpen(false);
-    setPaymentMethod("credit_card"); // Ensure it's selected
-  };
+  const [isProcessing, setIsProcessing] = useState(false);
+  const stripe = useStripe();
+  const elements = useElements();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Check if card is required but not added
-    if (paymentMethod === "credit_card" && !savedCard) {
-        setIsAddCardOpen(true);
-        return;
+    if (paymentMethod === "credit_card" && (!stripe || !elements)) {
+      return;
     }
 
-    const success = await submitOrder();
-    if (success) navigate("/thanks");
+    setIsProcessing(true);
+    const result = await submitOrder();
+
+    if (result?.success) {
+       if (paymentMethod === "credit_card" && result.clientSecret) {
+           const { error } = await stripe.confirmCardPayment(result.clientSecret, {
+              payment_method: {
+                 card: elements.getElement(CardElement),
+                 // Ideally pass customer details here:
+                 // billing_details: { name: "..." }
+              }
+           });
+           
+           if (error) {
+              useOrderStore.getState().setError(error.message);
+              setIsProcessing(false);
+              return;
+           }
+       }
+       setIsProcessing(false);
+       navigate("/thanks");
+    } else {
+       setIsProcessing(false);
+    }
   };
 
   return (
@@ -74,12 +72,6 @@ export default function PaymentForm() {
         <PaymentMethodSelector 
             paymentMethod={paymentMethod}
             setPaymentMethod={setPaymentMethod}
-            savedCard={savedCard}
-            onAddCard={() => setIsAddCardOpen(true)}
-            onEditCard={() => {
-                setPaymentMethod("credit_card");
-                setIsAddCardOpen(true);
-            }}
         />
 
         {/* Error Message */}
@@ -92,28 +84,15 @@ export default function PaymentForm() {
         {/* Action Button */}
         <button
           type="submit"
-          disabled={loading}
-          className={`w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg py-4 rounded-full transition-colors shadow-lg shadow-orange-500/20 transform active:scale-[0.99] transition-transform ${
-            loading ? "opacity-70 cursor-not-allowed" : "cursor-pointer"
+          disabled={loading || isProcessing}
+          className={`w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg py-4 rounded-full transition-colors shadow-lg shadow-orange-500/20 transform active:scale-[0.99] ${
+            (loading || isProcessing) ? "opacity-70 cursor-not-allowed" : "cursor-pointer"
           }`}
         >
-          {loading ? "Processing..." : "Confirm payment"}
+          {loading || isProcessing ? "Processing..." : "Confirm payment"}
         </button>
 
       </form>
-      
-      {/* Add Card Modal */}
-      <Modal 
-        isOpen={isAddCardOpen} 
-        onClose={() => setIsAddCardOpen(false)}
-        title="Add card"
-      >
-         <AddCardForm 
-           onCancel={() => setIsAddCardOpen(false)}
-           onSubmit={handleAddCard}
-           loading={false}
-         />
-      </Modal>
     </div>
   );
 }
