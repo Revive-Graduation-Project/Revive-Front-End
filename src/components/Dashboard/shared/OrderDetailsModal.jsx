@@ -4,16 +4,18 @@ import StatusBadge from "./StatusBadge";
 export default function OrderDetailsModal({ isOpen, onClose, order, showCustomerInfo }) {
   if (!isOpen || !order) return null;
 
-  // Handle parsing items: it might be an array of strings (Live Kitchen) or a comma-separated string (Orders view).
+  // Handle parsing items: it might be an array of objects (orderItems), array of strings (Live Kitchen), or a comma-separated string.
   let dishesList = [];
-  if (Array.isArray(order.items)) {
+  if (Array.isArray(order.orderItems) && order.orderItems.length > 0) {
+    dishesList = order.orderItems.map(item => `${item.quantity || 1}x ${item.name || "Item"}`);
+  } else if (Array.isArray(order.items)) {
     dishesList = order.items;
-  } else if (typeof order.name === 'string') {
+  } else if (typeof order.name === 'string' && order.name.includes(',')) {
     dishesList = order.name.split(',').map(d => d.trim());
   } else if (typeof order.items === 'string') {
     dishesList = order.items.split(',').map(d => d.trim());
   } else {
-    dishesList = ["Custom Order"];
+    dishesList = [order.name || "Custom Order"];
   }
 
   // Fallback data for customer details if missing

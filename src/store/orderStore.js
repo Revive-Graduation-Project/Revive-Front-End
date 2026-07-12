@@ -453,13 +453,17 @@ const useOrderStore = create(
 
           // Make real API request to place the order
           const response = await placeOrder({
-             items: state.items.map(i => ({ mealId: Number(i.id), quantity: i.quantity })),
+             items: state.items.map(i => ({
+               mealId: Number(i.id),
+               quantity: i.quantity,
+               ...(i.customizations && Object.keys(i.customizations).length > 0 ? { customizations: i.customizations } : {})
+             })),
              totalAmount: state.totalAmount,
              deliveryFee: state.getDeliveryFee(),
              finalTotal: totalWithDelivery,
              customerDetails: state.customerDetails,
              paymentMethod: state.paymentMethod === 'credit_card' ? 'CREDIT_CARD' : 'CASH',
-             points: state.pointsToRedeem,
+             points: state.pointsToRedeem || 0,
              note: state.note
           });
 

@@ -4,7 +4,6 @@ import {
   useRealtimeKitchen,
   useUpdateKitchenStatus,
   useActiveTickets,
-  useUpdateTicketStatus,
 } from "../../hooks/dashboard/useKitchenOrders";
 import { KanbanCardSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
@@ -22,17 +21,16 @@ function LiveKitchenView() {
   const [orderToMarkDone, setOrderToMarkDone] = useState(null);
   const [orderToRevert, setOrderToRevert] = useState(null);
 
-  // ── Kitchen-service state ──
-  const [ticketConfirm, setTicketConfirm] = useState(null); // { ticketId, status, label }
+  // ── Ticket confirm state ── { orderId, status, label }
+  const [ticketConfirm, setTicketConfirm] = useState(null);
 
   const { boards, isFetching, error, refetch } = useRealtimeKitchen();
   const { mutate: updateStatus } = useUpdateKitchenStatus();
 
   // ── Kitchen-service hooks ──
   const { data: tickets, isLoading: ticketsLoading, error: ticketsError, refetch: refetchTickets, isFetching: ticketsFetching } = useActiveTickets();
-  const { mutate: mutateTicketStatus } = useUpdateTicketStatus();
 
-  // ── Action handler — routes to confirmation modals for destructive actions ──
+  // ── Kanban action handler — routes destructive actions to confirmation modals ──
   const handleAction = useCallback((orderId, nextStatus) => {
     if (nextStatus === "cancelled") { setOrderToCancel(orderId); return; }
     if (nextStatus === "done") { setOrderToMarkDone(orderId); return; }
@@ -43,9 +41,48 @@ function LiveKitchenView() {
   const confirmMarkDone = () => { if (orderToMarkDone) { updateStatus({ orderId: orderToMarkDone, nextStatus: "done" }); setOrderToMarkDone(null); } };
   const confirmRevert = () => { if (orderToRevert) { updateStatus({ orderId: orderToRevert, nextStatus: "ready" }); setOrderToRevert(null); } };
 
-  const handleTicketAction = useCallback((ticketId, status, label) => {
-    setTicketConfirm({ ticketId, status, label });
+  // ── Ticket table action handler ──
+  // All ticket actions go through confirmation, then use the SAME updateStatus
+  // (which updates the order + syncs the ticket) so both views stay in sync.
+  const handleTicketAction = useCallback((orderId, status, label) => {
+    setTicketConfirm({ orderId, status, label });
   }, []);
+
+  const confirmTicketAction = () => {
+    if (ticketConfirm) {
+      updateStatus({ orderId: ticketConfirm.orderId, nextStatus: ticketConfirm.status.toLowerCase() });
+      setTicketConfirm(null);
+    }
+  };
+
+  // ── Build a unified tickets list from Kanban board + API tickets ──
+  // Map board column keys to the status labels used in the table
+  const BOARD_STATUS_MAP = { queue: "Queue", preparing: "Preparing", ready: "Ready", done: "Done" };
+
+  // Synthesize ticket-shaped objects from ALL Kanban board columns
+  const boardTickets = Object.entries(BOARD_STATUS_MAP).flatMap(([colKey, statusLabel]) =>
+    (boards[colKey] || []).map(order => {
+      const numericId = String(order.orderId || order.id).replace('#', '');
+      return {
+        id: `board-${colKey}-${numericId}`,
+        orderId: numericId,
+        status: statusLabel,
+        createdAt: order.createdAt || order.time || new Date().toISOString(),
+        assignedChefId: null,
+        chefDisplayName: "",
+        chefStation: "UNASSIGNED",
+        chefStatus: "ACTIVE",
+        items: order.items || [],
+      };
+    })
+  );
+
+  // Merge: prefer real API tickets when they exist, fill gaps with board-synthesized ones
+  const apiTicketOrderIds = new Set((tickets || []).map(t => String(t.orderId)));
+  const mergedTickets = [
+    ...(tickets || []),
+    ...boardTickets.filter(bt => !apiTicketOrderIds.has(bt.orderId)),
+  ];
 
   const doneCount = boards.done?.length ?? 0;
 
@@ -129,21 +166,21 @@ function LiveKitchenView() {
           )}
 
           {/* ══════════════════════════════════════════════════════
-              SECTION: Kitchen Service — Active Tickets
+              SECTION: Kitchen Tickets Table
           ═══════════════════════════════════════════════════════ */}
           <KitchenTicketsTable
-            tickets={tickets}
+            tickets={mergedTickets}
             isLoading={ticketsLoading}
             error={ticketsError}
             isFetching={ticketsFetching}
-            onRetry={refetchTickets}
+            onRetry={() => { refetchTickets(); refetch(); }}
             onAction={handleTicketAction}
           />
 
         </div>
       </div>
 
-      {/* ── Confirm modals ── */}
+      {/* ── Kanban confirm modals ── */}
       <ConfirmModal
         isOpen={!!orderToCancel}
         onClose={() => setOrderToCancel(null)}
@@ -174,21 +211,16 @@ function LiveKitchenView() {
       <ConfirmModal
         isOpen={!!ticketConfirm}
         onClose={() => setTicketConfirm(null)}
-        onConfirm={() => {
-          if (ticketConfirm) {
-            mutateTicketStatus({ ticketId: ticketConfirm.ticketId, status: ticketConfirm.status });
-            setTicketConfirm(null);
-          }
-        }}
-        title={ticketConfirm?.label || "Update Status?"}
-        message={`Are you sure you want to move ticket #${ticketConfirm?.ticketId} to ${ticketConfirm?.status}?`}
+        onConfirm={confirmTicketAction}
+        title={ticketConfirm?.label || "Update Ticket"}
+        message={`Are you sure you want to change this order to "${ticketConfirm?.status}"?`}
         confirmLabel={ticketConfirm?.label || "Confirm"}
         confirmClassName={
-          ticketConfirm?.status?.toUpperCase() === "CANCELLED" || ticketConfirm?.status?.toUpperCase() === "CANCELED"
+          ticketConfirm?.status?.toLowerCase() === "cancelled" || ticketConfirm?.status?.toLowerCase() === "canceled"
             ? "bg-rose-600 hover:bg-rose-700 shadow-lg shadow-rose-500/30"
-            : ticketConfirm?.status?.toUpperCase() === "READY" || ticketConfirm?.status?.toUpperCase() === "PREPARING"
-            ? "bg-[#F97316] hover:bg-orange-600 shadow-lg shadow-orange-500/30"
-            : "bg-[#16A34A] hover:bg-green-700 shadow-lg shadow-green-500/30"
+            : ticketConfirm?.status?.toLowerCase() === "ready" || ticketConfirm?.status?.toLowerCase() === "preparing"
+              ? "bg-[#F97316] hover:bg-orange-600 shadow-lg shadow-orange-500/30"
+              : "bg-[#16A34A] hover:bg-green-700 shadow-lg shadow-green-500/30"
         }
       />
 
