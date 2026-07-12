@@ -1,8 +1,7 @@
 import React from "react";
 import { FaUtensils } from "react-icons/fa6";
 import { FiCheckCircle, FiXCircle, FiClock, FiHash } from "react-icons/fi";
-import { formatOrderTime } from "../../../utils/orderHelpers";
-import { NON_CANCELLABLE_ORDER_STATUSES } from "../../../constants";
+import { formatOrderTime, isOrderCancellable } from "../../../utils/orderHelpers";
 
 
 const OrderCard = ({ order, onCancelOrder }) => {
@@ -95,7 +94,7 @@ const OrderCard = ({ order, onCancelOrder }) => {
           {getStatusIcon(order.status)}
 
           {/* Cancel Button */}
-          {onCancelOrder && !NON_CANCELLABLE_ORDER_STATUSES.includes(order.status?.toUpperCase()) && (
+          {onCancelOrder && isOrderCancellable(order) && (
             <button
               onClick={(e) => {
                 e.stopPropagation();

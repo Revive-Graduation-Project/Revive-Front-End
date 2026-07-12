@@ -1,6 +1,6 @@
 import {
   ACTIVE_TRACKING_ORDER_STATUSES,
-  NON_CANCELLABLE_ORDER_STATUSES,
+  CANCELLABLE_ORDER_STATUSES,
 } from "../constants";
 
 const normalizeStatus = (status) => status?.toUpperCase?.() || "";
@@ -51,8 +51,8 @@ export const pickTrackingOrder = (orders = [], lastOrder) => {
 };
 
 export const isOrderCancellable = (order) => {
-  if (!order) return false;
-  return !NON_CANCELLABLE_ORDER_STATUSES.includes(normalizeStatus(order.status));
+  if (!order || !order.status) return false;
+  return CANCELLABLE_ORDER_STATUSES.includes(normalizeStatus(order.status));
 };
 
 export const parseTimestamp = (val) => {
