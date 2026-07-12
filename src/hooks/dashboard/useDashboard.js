@@ -15,7 +15,7 @@ export const dashboardKeys = {
   metrics:        () => ["dashboard", "metrics"],
   revenue:        (period) => ["dashboard", "revenue", period],
   categories:     () => ["dashboard", "categories"],
-  ordersOverview: () => ["dashboard", "orders-overview"],
+  ordersOverview: (period) => ["dashboard", "orders-overview", period],
   orderTypes:     () => ["dashboard", "order-types"],
   trending:       () => ["dashboard", "trending"],
   inventory:      () => ["dashboard", "inventory"],
@@ -35,8 +35,8 @@ export function useTopCategories() {
   return useQuery({ queryKey: dashboardKeys.categories(), queryFn: getTopCategories });
 }
 
-export function useOrdersOverview() {
-  return useQuery({ queryKey: dashboardKeys.ordersOverview(), queryFn: getOrdersOverview });
+export function useOrdersOverview(period = "This Week") {
+  return useQuery({ queryKey: dashboardKeys.ordersOverview(period), queryFn: () => getOrdersOverview(period) });
 }
 
 export function useOrderTypes() {

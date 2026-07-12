@@ -68,6 +68,22 @@ const useLoyaltyStore = create(
       },
 
       /**
+       * Sync points from historical orders idempotently
+       * @param {Array} orders
+       */
+      syncFromOrders: (orders = []) => {
+        if (!Array.isArray(orders)) return;
+        orders.forEach((order) => {
+          if (!order || order.status === "CANCELED") return;
+          const total = Number(order.finalTotal || order.totalPrice || order.totalAmount || 0);
+          const earned = Math.floor(total / 5);
+          if (earned > 0 && order.id) {
+            get().earnPoints(earned, `order-${order.id}`);
+          }
+        });
+      },
+
+      /**
        * Redeem loyalty points
        * @param {number} amount
        * @param {string} [transactionId]

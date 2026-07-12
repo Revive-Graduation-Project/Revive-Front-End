@@ -1,3 +1,4 @@
+import { useState } from "react";
 import DashboardHeader from "./DashboardHeader";
 import MetricCards from "./MetricCards";
 import RevenueChart from "./RevenueChart";
@@ -6,7 +7,6 @@ import OrdersOverviewChart from "./shared/OrdersOverviewChart";
 import OrderTypes from "./OrderTypes";
 import TrendingMenus from "./TrendingMenus";
 import InventoryAlerts from "./InventoryAlerts";
-import RecentActivity from "./RecentActivity";
 import CustomerReviews from "./CustomerReviews";
 
 import {
@@ -17,7 +17,6 @@ import {
   useOrderTypes,
   useTrendingMenus,
   useInventoryAlerts,
-  useRecentActivity,
   useCustomerReviews,
 } from "../../hooks/dashboard/useDashboard";
 
@@ -25,14 +24,16 @@ import { MetricCardSkeleton, ChartSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
 
 function DashboardView() {
+  const [overviewPeriod, setOverviewPeriod] = useState("This Week");
+  const [revenuePeriod, setRevenuePeriod] = useState("This Month");
+
   const { data: metrics,        isLoading: loadingMetrics, error: errMetrics } = useDashboardMetrics();
-  const { data: revenue,        isLoading: loadingRev,     error: errRev     } = useRevenueData();
+  const { data: revenue,        isLoading: loadingRev,     error: errRev     } = useRevenueData(revenuePeriod);
   const { data: categories,     isLoading: loadingCats,    error: errCats    } = useTopCategories();
-  const { data: ordersOverview, isLoading: loadingOrdOv,   error: errOrdOv   } = useOrdersOverview();
+  const { data: ordersOverview, isLoading: loadingOrdOv,   error: errOrdOv   } = useOrdersOverview(overviewPeriod);
   const { data: orderTypes,     isLoading: loadingTypes,   error: errTypes   } = useOrderTypes();
   const { data: trending,       isLoading: loadingTrend,   error: errTrend   } = useTrendingMenus();
   const { data: inventory,      isLoading: loadingInv,     error: errInv     } = useInventoryAlerts();
-  const { data: activity,       isLoading: loadingAct,     error: errAct     } = useRecentActivity();
   const { data: reviews,        isLoading: loadingRevw,    error: errRevw    } = useCustomerReviews();
 
   const safeMetrics = errMetrics ? {} : (metrics || {});
@@ -42,7 +43,6 @@ function DashboardView() {
   const safeOrderTypes = errTypes ? [] : (orderTypes || []);
   const safeTrending = errTrend ? [] : (trending || []);
   const safeInventory = errInv ? {} : (inventory || {});
-  const safeActivity = errAct ? [] : (activity || []);
   const safeReviews = errRevw ? [] : (reviews || []);
 
   return (
@@ -64,12 +64,12 @@ function DashboardView() {
             )}
             
             <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
-              {loadingRev ? <ChartSkeleton height={320} /> : <RevenueChart data={safeRevenue} totalRevenue={safeMetrics?.totalRevenue?.value} />}
+              {loadingRev ? <ChartSkeleton height={320} /> : <RevenueChart data={safeRevenue} totalRevenue={safeMetrics?.totalRevenue?.value} period={revenuePeriod} onPeriodChange={setRevenuePeriod} />}
               {loadingCats ? <ChartSkeleton height={320} /> : <TopCategories data={safeCategories} />}
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
-              {loadingOrdOv ? <ChartSkeleton height={280} /> : <OrdersOverviewChart data={safeOrdersOverview} />}
+              {loadingOrdOv ? <ChartSkeleton height={280} /> : <OrdersOverviewChart data={safeOrdersOverview} period={overviewPeriod} onPeriodChange={setOverviewPeriod} />}
               {loadingTypes ? <ChartSkeleton height={280} /> : <OrderTypes data={safeOrderTypes} />}
             </div>
             
@@ -77,9 +77,8 @@ function DashboardView() {
           </div>
 
           {/* Right Column */}
-          <div className="w-full xl:w-[340px] flex flex-col gap-6">
+          <div className="w-full xl:w-[280px] shrink-0 flex flex-col gap-6">
             {loadingTrend ? <ChartSkeleton height={280} /> : <TrendingMenus data={safeTrending} />}
-            {loadingAct ? <ChartSkeleton height={380} /> : <RecentActivity data={safeActivity} />}
           </div>
         </div>
 

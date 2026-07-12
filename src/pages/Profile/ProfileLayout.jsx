@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Outlet } from "react-router";
 import Sidebar from "./components/Sidebar";
-import { useProfileStore } from "../../store";
+import { useProfileStore, useAuthStore, useOrderStore } from "../../store";
 import { LoadingSpinner } from "../../components";
 import {
   LuClipboard,
@@ -13,7 +13,7 @@ import {
 import { useShallow } from "zustand/shallow";
 
 export default function ProfileLayout() {
-
+  const authUser = useAuthStore((state) => state.user) || {};
   const { user, loading, error, fetchProfile } = useProfileStore(
     useShallow((state) => ({
       user: state.user,
@@ -28,6 +28,7 @@ export default function ProfileLayout() {
     if (!user && !loading && !error) {
       fetchProfile();
     }
+    useOrderStore.getState().fetchMyOrders();
     return () => {
       mounted = false;
     };
@@ -41,25 +42,43 @@ export default function ProfileLayout() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-8 text-red-500">
-        Error: {error}
-      </div>
-    );
-  }
-
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-8 text-gray-500">
-        No profile data available.
+      <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center">
+        <div className="bg-white p-8 rounded-2xl shadow-md max-w-md border border-gray-100">
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            Profile Not Found
+          </h3>
+          <p className="text-sm text-gray-600 mb-6">
+            Your profile appears to have been deleted or does not exist.
+          </p>
+          <button
+            onClick={() => useAuthStore.getState().logout()}
+            className="bg-(--color-orange) hover:bg-orange-500 text-white px-6 py-2 rounded-full text-sm font-semibold transition cursor-pointer"
+          >
+            Log Out
+          </button>
+        </div>
       </div>
     );
   }
 
-  const displayName = user?.name || user?.fullName || "Your Name";
+  const displayName =
+    authUser?.fullName ||
+    authUser?.name ||
+    [authUser?.firstName, authUser?.lastName].filter(Boolean).join(" ") ||
+    user?.name ||
+    user?.fullName ||
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
+    "Your Name";
   const avatar =
-    user?.avatar || user?.photo || "/images/avatar-placeholder.jpeg";
+    authUser?.profilePictureUrl ||
+    authUser?.avatar ||
+    authUser?.photo ||
+    user?.profilePictureUrl ||
+    user?.avatar ||
+    user?.photo ||
+    "/images/avatar-placeholder.jpeg";
 
   const sidebarLinks = [
     {

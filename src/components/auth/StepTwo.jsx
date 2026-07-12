@@ -48,8 +48,8 @@ function StepTwo({ formData, onChange, onNext, onBack, error }) {
               <input
                 type="radio"
                 name="gender"
-                value="male"
-                checked={formData.gender === "male"}
+                value="MALE"
+                checked={formData.gender === "MALE"}
                 onChange={onChange}
               />{" "}
               Male
@@ -58,8 +58,8 @@ function StepTwo({ formData, onChange, onNext, onBack, error }) {
               <input
                 type="radio"
                 name="gender"
-                value="female"
-                checked={formData.gender === "female"}
+                value="FEMALE"
+                checked={formData.gender === "FEMALE"}
                 onChange={onChange}
               />{" "}
               Female
@@ -77,7 +77,7 @@ function StepTwo({ formData, onChange, onNext, onBack, error }) {
                 type="radio"
                 name="exercisesRegularly"
                 value="true"
-                checked={formData.exercisesRegularly === "true"}
+                checked={formData.exercisesRegularly === "true" || formData.exercisesRegularly === true}
                 onChange={onChange}
               />{" "}
               Yes
@@ -87,7 +87,7 @@ function StepTwo({ formData, onChange, onNext, onBack, error }) {
                 type="radio"
                 name="exercisesRegularly"
                 value="false"
-                checked={formData.exercisesRegularly === "false"}
+                checked={formData.exercisesRegularly === "false" || formData.exercisesRegularly === false}
                 onChange={onChange}
               />{" "}
               No
@@ -101,20 +101,20 @@ function StepTwo({ formData, onChange, onNext, onBack, error }) {
           </label>
           <div className="flex flex-col gap-1 text-sm">
             {[
-              "Lose Weight",
-              "Gain Weight",
-              "Build Muscle",
-              "Maintain Current Shape",
+              { value: "LOSE_WEIGHT", label: "Lose Weight" },
+              { value: "GAIN_WEIGHT", label: "Gain Weight" },
+              { value: "BUILD_MUSCLE", label: "Build Muscle" },
+              { value: "MAINTAIN_SHAPE", label: "Maintain Shape" },
             ].map((g) => (
-              <label key={g} className="flex items-center gap-1">
+              <label key={g.value} className="flex items-center gap-1">
                 <input
                   type="radio"
                   name="goal"
-                  value={g}
-                  checked={formData.goal === g}
+                  value={g.value}
+                  checked={formData.goal === g.value}
                   onChange={onChange}
                 />{" "}
-                {g}
+                {g.label}
               </label>
             ))}
           </div>

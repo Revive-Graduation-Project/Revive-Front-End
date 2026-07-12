@@ -5,14 +5,28 @@ import { Outlet, useNavigate } from "react-router-dom";
 import SideCartDrawer from "../components/OrderFlow/SideCartDrawer";
 import { Toaster } from "sonner";
 import { useAuthStore } from "../store";
-import { isStaffUser } from "../utils/roleUtils";
+import { isStaffUser, isSuperAdmin, isKitchenOnlyUser } from "../utils/roleUtils";
 
 function AppLayout() {
   const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated && isStaffUser(user)) {
+    if (!isAuthenticated || !user) return;
+
+    // 1. Admin can navigate to everything in the app (do not restrict or redirect)
+    if (isSuperAdmin(user)) {
+      return;
+    }
+
+    // 2. Chief can navigate to only Live Kitchen
+    if (isKitchenOnlyUser(user)) {
+      navigate('/dashboard/live-kitchen', { replace: true });
+      return;
+    }
+
+    // 3. Manager navigates to only the dashboard pages
+    if (isStaffUser(user)) {
       navigate('/dashboard', { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
