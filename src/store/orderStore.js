@@ -15,6 +15,7 @@ import {
 import { MAX_QUANTITY, DELIVERY_FEE, SUBMIT_DELAY } from "../constants";
 import { placeOrder } from "../services/order.service";
 import queryClient from "../lib/queryClient";
+import { getStripeErrorMessage } from "../utils/stripeErrorHandler";
 
 const isValidItem = (item) =>
   item &&
@@ -493,7 +494,7 @@ const useOrderStore = create(
           console.error("[ORDER] Stripe payment confirmation failed:", err);
           set({
             loading: false,
-            error: err.message || "Payment verification failed.",
+            error: getStripeErrorMessage(err),
           });
           return false;
         }

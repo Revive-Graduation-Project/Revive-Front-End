@@ -50,7 +50,7 @@ export default function PaymentForm() {
         setStripeError("Payment failed. Please try again or use a different card.");
       }
     } catch (err) {
-      setStripeError(err.message || "Card validation failed. Please try again.");
+      setStripeError(err.message || "Payment failed. Please try again.");
     }
   };
 
