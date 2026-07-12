@@ -14,7 +14,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-function OrdersOverviewChart({ data, period = "This Week", onPeriodChange }) {
+function OrdersOverviewChart({ data }) {
   const maxValue = Math.max(...data.map(d => d.orders));
 
   return (
@@ -28,7 +28,7 @@ function OrdersOverviewChart({ data, period = "This Week", onPeriodChange }) {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <TimeFilter defaultValue={period} onChange={onPeriodChange} />
+          <TimeFilter defaultValue="This Week" />
           <button className="text-gray-400 hover:text-gray-600 bg-transparent border-none cursor-pointer p-0">
             <FiMoreHorizontal size={16} />
           </button>

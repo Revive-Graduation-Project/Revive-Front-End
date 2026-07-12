@@ -1,12 +1,13 @@
 import { useState } from "react";
 import DashboardHeader from "./DashboardHeader";
 import TrendingMenus from "./TrendingMenus";
+import RecentActivity from "./RecentActivity";
 import {
   useOrdersMetrics,
   useOrders,
   useOrdersTrending,
 } from "../../hooks/dashboard/useOrders";
-import { useOrdersOverview } from "../../hooks/dashboard/useDashboard";
+import { useRecentActivity, useOrdersOverview } from "../../hooks/dashboard/useDashboard";
 import { FiShoppingBag, FiClock, FiCheckCircle } from "react-icons/fi";
 import { DashboardPageSkeleton } from "./shared/DashboardSkeleton";
 import ErrorState from "./shared/ErrorState";
@@ -82,16 +83,16 @@ function OrdersView() {
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("asc");
   const [viewingOrder, setViewingOrder] = useState(null);
-  const [overviewPeriod, setOverviewPeriod] = useState("This Week");
 
   // ── Data fetching ──────────────────────────────────────────────────────────
   const { data: metrics, isLoading: loadMetrics, error: errMetrics, refetch: refetchMetrics } = useOrdersMetrics();
   const { data: ordersResponse, isLoading: loadOrders, error: errOrders, refetch: refetchOrders } = useOrders();
   const { data: trending, isLoading: loadTrending, error: errTrending, refetch: refetchTrending } = useOrdersTrending();
-  const { data: ordersOverview, isLoading: loadOrdOv, error: errOrdOv, refetch: refetchOrdOv } = useOrdersOverview(overviewPeriod);
+  const { data: activity, isLoading: loadAct, error: errAct, refetch: refetchAct } = useRecentActivity();
+  const { data: ordersOverview, isLoading: loadOrdOv, error: errOrdOv, refetch: refetchOrdOv } = useOrdersOverview();
 
-  const isLoading = loadMetrics || loadOrders || loadTrending || loadOrdOv;
-  const hasError = errMetrics || errOrders || errTrending || errOrdOv;
+  const isLoading = loadMetrics || loadOrders || loadTrending || loadAct || loadOrdOv;
+  const hasError = errMetrics || errOrders || errTrending || errAct || errOrdOv;
 
   // ── Loading / error states ─────────────────────────────────────────────────
   if (isLoading) {
@@ -108,6 +109,7 @@ function OrdersView() {
       refetchMetrics();
       refetchOrders();
       refetchTrending();
+      refetchAct();
       refetchOrdOv();
     };
     return (
@@ -180,7 +182,7 @@ function OrdersView() {
           {/* Orders overview chart + daily goal */}
           {metrics && (
             <div className="grid grid-cols-1 xl:grid-cols-[1.6fr_1fr] gap-4">
-              <OrdersOverviewChart data={ordersOverview} period={overviewPeriod} onPeriodChange={setOverviewPeriod} />
+              <OrdersOverviewChart data={ordersOverview} />
 
               <div className="bg-white rounded-3xl p-6 shadow-sm flex flex-col justify-between border border-gray-50 relative h-[240px]">
                 <div className="flex justify-between items-start w-full">
@@ -290,8 +292,9 @@ function OrdersView() {
         </div>
 
         {/* ── Right sidebar ── */}
-        <div className="w-full xl:w-[280px] shrink-0 flex flex-col gap-6">
+        <div className="w-full xl:w-[320px] shrink-0 flex flex-col gap-6">
           <TrendingMenus data={trending} />
+          <RecentActivity data={activity} />
         </div>
       </div>
 

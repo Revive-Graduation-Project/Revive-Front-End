@@ -88,11 +88,7 @@ export function useUpdateKitchenStatus() {
         
         // Find the column the order is currently in
         for (const col of ["queue", "preparing", "ready", "done"]) {
-          idx = next[col].findIndex(
-            (o) =>
-              String(o.id).replace("#", "") === String(orderId).replace("#", "") ||
-              String(o.orderId) === String(orderId).replace("#", "")
-          );
+          idx = next[col].findIndex((o) => o.id === orderId);
           if (idx !== -1) {
             foundCol = col;
             break;

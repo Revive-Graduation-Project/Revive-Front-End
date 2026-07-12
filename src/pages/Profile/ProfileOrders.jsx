@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router";
 import OrderCard from "./components/OrderCard";
 import OrderTracking from "./components/OrderTracking";
 import { useOrderStore } from "../../store";
@@ -9,9 +8,7 @@ import { useShallow } from "zustand/shallow";
 
 
 export default function Orders() {
-  const [searchParams] = useSearchParams();
-  const initialTab = searchParams.get("tab") === "tracking" ? "tracking" : "history";
-  const [activeTab, setActiveTab] = useState(initialTab);
+  const [activeTab, setActiveTab] = useState("history");
 
   const {
   myOrders,
@@ -37,6 +34,19 @@ export default function Orders() {
   }))
 );
 
+  useEffect(() => {
+    fetchMyOrders();
+  }, [fetchMyOrders]);
+
+  useEffect(() => {
+    if (trackingOrder) {
+      const interval = setInterval(() => {
+        fetchMyOrders();
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [trackingOrder, fetchMyOrders]);
+
   const mergedOrdersList = useMemo(
     () => getMergedOrders(),
     [getMergedOrders, myOrders, lastOrder]
@@ -51,19 +61,6 @@ export default function Orders() {
     () => getTrackingOrder(),
     [getTrackingOrder, myOrders, lastOrder]
   );
-
-  useEffect(() => {
-    fetchMyOrders();
-  }, [fetchMyOrders]);
-
-  useEffect(() => {
-    if (trackingOrder) {
-      const interval = setInterval(() => {
-        fetchMyOrders();
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [trackingOrder, fetchMyOrders]);
 
   const handleCancelOrder = async (orderId) => {
     const result = await cancelMyOrder(orderId);

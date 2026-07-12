@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import usePaymentStore from "./paymentStore";
-import useLoyaltyStore from "./loyaltyStore";
 import { cancelOrder, getMyOrders } from "../services/order.service";
 import {
   groupOrdersByDate,
@@ -271,7 +270,6 @@ const useOrderStore = create(
           totalItems: 0,
           totalAmount: 0,
           note: "",
-          pointsToRedeem: 0,
           error: null,
         });
       },
@@ -356,14 +354,12 @@ const useOrderStore = create(
 
         try {
           const res = await getMyOrders();
-          const ordersData = res?.data || [];
-          useLoyaltyStore.getState().syncFromOrders(ordersData);
           set({
-            myOrders: ordersData,
+            myOrders: res?.data || [],
             myOrdersLoading: false,
             myOrdersError: null,
           });
-          return ordersData;
+          return res?.data || [];
         } catch (error) {
           console.error("Failed to fetch user orders:", error);
           set({
@@ -398,9 +394,6 @@ const useOrderStore = create(
 
         try {
           await cancelOrder(orderId);
-          if (get().lastOrder && String(get().lastOrder.id) === String(orderId)) {
-            set({ lastOrder: { ...get().lastOrder, status: "CANCELED" } });
-          }
           const orders = await get().fetchMyOrders();
           return {
             ok: true,
@@ -427,7 +420,9 @@ const useOrderStore = create(
        * Includes logic for:
        * 1. Empty cart validation
        * 2. Max order total cap ($10,000)
-       * 3. API request submission
+       * 3. Duplicate order prevention (shash comparison of items/qty)
+       * 4. API Simulation delay
+       * 5. Transaction logging
        * 
        * @async
        * @returns {Promise<boolean>} Success status
@@ -448,50 +443,38 @@ const useOrderStore = create(
             throw new Error("Order total exceeds limit of 10,000$.");
           }
 
+          // Validation: Duplicate Order Prevention
+          const currentHash = JSON.stringify(state.items.map(i => `${i.id}-${i.quantity}`));
+          const lastHash = state.lastOrder ? JSON.stringify(state.lastOrder.items.map(i => `${i.id}-${i.quantity}`)) : null;
+          
+          if (currentHash === lastHash) {
+            throw new Error("Wait! You just placed this exact order.");
+          }
+
           // Make real API request to place the order
           const response = await placeOrder({
-               items: state.items.map(i => {
-                 const isCustom = typeof i.id === "string" && i.id.startsWith("custom-");
-                 return { 
-                   mealId: isCustom ? null : Number(i.id), 
-                   quantity: i.quantity,
-                   ...(i.customizations && Object.keys(i.customizations).length > 0 ? { customizations: i.customizations } : {})
-                 };
-               }),
+             items: state.items.map(i => ({ mealId: Number(i.id), quantity: i.quantity })),
              totalAmount: state.totalAmount,
              deliveryFee: state.getDeliveryFee(),
              finalTotal: totalWithDelivery,
              customerDetails: state.customerDetails,
              paymentMethod: state.paymentMethod === 'credit_card' ? 'CREDIT_CARD' : 'CASH',
-             points: state.pointsToRedeem || 0,
+             points: state.pointsToRedeem,
              note: state.note
           });
 
-          const discount = state.pointsToRedeem === 100 ? 10 : state.pointsToRedeem === 200 ? 20 : state.pointsToRedeem === 300 ? 30 : 0;
-          const pointsEarned = Math.floor(totalWithDelivery / 5);
-
           const newOrder = {
-             id: response.data?.id || Math.floor(10000 + Math.random() * 90000).toString(),
-             date: response.data?.createdAt || new Date().toISOString(),
+             id: response.data.id || Math.floor(10000 + Math.random() * 90000).toString(),
+             date: response.data.createdAt || new Date().toISOString(),
              items: [...state.items],
              totalAmount: state.totalAmount,
              deliveryFee: state.getDeliveryFee(),
-             discount,
              finalTotal: totalWithDelivery,
-             pointsEarned,
              customerDetails: state.customerDetails,
              paymentMethod: state.paymentMethod,
              cardDetails: state.savedCard,
              note: state.note
           };
-
-          // Loyalty Rewards integration: Redeem used points & earn new points
-          if (state.pointsToRedeem > 0) {
-            useLoyaltyStore.getState().redeemPoints(state.pointsToRedeem, "redeem-" + newOrder.id);
-          }
-          if (pointsEarned > 0) {
-            useLoyaltyStore.getState().earnPoints(pointsEarned, "earn-" + newOrder.id);
-          }
 
           // Log to Payment Store for transaction history (PRD requirement)
           usePaymentStore.getState().addTransaction({

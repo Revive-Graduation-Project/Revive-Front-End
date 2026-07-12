@@ -1,13 +1,9 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { FaCheckCircle } from "react-icons/fa";
-import { useLoyaltyStore, useOrderStore } from "../../store";
+import { useLoyaltyStore } from "../../store";
 
 const Rewards = () => {
   const points = useLoyaltyStore((s) => s.points);
-
-  useEffect(() => {
-    useOrderStore.getState().fetchMyOrders();
-  }, []);
   return (
     <div className="space-y-6">
       {/* Header */}

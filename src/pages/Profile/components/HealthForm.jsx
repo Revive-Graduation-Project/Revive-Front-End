@@ -23,63 +23,31 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
     phoneNumber: initial.phoneNumber || "",
   });
 
-  const [errors, setErrors] = useState({ phone: "", age: "", height: "", weight: "" });
+  const [phoneError, setPhoneError] = useState("");
 
   const update = (field) => (e) => {
     const value =
       e.target.type === "checkbox" ? e.target.checked : e.target.value;
     setForm((s) => ({ ...s, [field]: value }));
-    setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
   const submit = () => {
-    const newErrors = { phone: "", age: "", height: "", weight: "" };
-    let hasError = false;
-
-    if (form.phoneNumber && !egyptianPhoneRegex.test(String(form.phoneNumber).trim())) {
-      newErrors.phone = "Please enter a valid Egyptian phone number (e.g. 01012345678)";
-      hasError = true;
-    }
-
-    if (form.age !== "" && form.age !== null) {
-      const ageNum = Number(form.age);
-      if (isNaN(ageNum) || ageNum < 1 || ageNum > 120) {
-        newErrors.age = "Age must be between 1 and 120";
-        hasError = true;
-      }
-    }
-
-    if (form.height !== "" && form.height !== null) {
-      const heightNum = Number(form.height);
-      if (isNaN(heightNum) || heightNum < 30 || heightNum > 300) {
-        newErrors.height = "Height must be between 30 and 300";
-        hasError = true;
-      }
-    }
-
-    if (form.weight !== "" && form.weight !== null) {
-      const weightNum = Number(form.weight);
-      if (isNaN(weightNum) || weightNum < 10 || weightNum > 400) {
-        newErrors.weight = "Weight must be between 10 and 400";
-        hasError = true;
-      }
-    }
-
-    if (hasError) {
-      setErrors(newErrors);
+    if (form.phoneNumber && !egyptianPhoneRegex.test(form.phoneNumber.trim())) {
+      setPhoneError(
+        "Please enter a valid Egyptian phone number (e.g. 01012345678)",
+      );
       return;
     }
-    setErrors({ phone: "", age: "", height: "", weight: "" });
+    setPhoneError("");
 
     const payload = {
-      ...(initial || {}),
       age: form.age === "" ? null : Number(form.age),
       gender: form.gender || null,
       exercisesRegularly: !!form.exercisesRegularly,
       height: form.height === "" ? null : Number(form.height),
-      heightUnit: form.heightUnit || "cm",
+      heightUnit: form.heightUnit || null,
       weight: form.weight === "" ? null : Number(form.weight),
-      weightUnit: form.weightUnit || "kg",
+      weightUnit: form.weightUnit || null,
       goal: form.goal || null,
       healthConditions: form.healthConditions || [],
       phoneNumber: form.phoneNumber?.trim() || null,
@@ -91,7 +59,6 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
   return (
     <div className="mt-2 bg-white rounded-lg p-3 shadow-sm">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-
         <div>
           <label className="text-xs font-medium text-gray-600">Age</label>
           <input
@@ -99,14 +66,8 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
             min="0"
             value={form.age}
             onChange={update("age")}
-            className={`w-full mt-1 px-3 py-2 text-sm border rounded-xl bg-gray-50 focus:bg-white focus:ring-2 outline-none transition-all ${errors.age
-                ? "border-red-400 focus:border-red-400 focus:ring-red-100"
-                : "border-gray-200 focus:border-green-400 focus:ring-green-100"
-              }`}
+            className="w-full mt-1 px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none transition-all"
           />
-          {errors.age && (
-            <p className="text-xs text-red-500 mt-1">{errors.age}</p>
-          )}
         </div>
 
         <div>
@@ -133,15 +94,19 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
           </label>
           <input
             value={form.phoneNumber}
-            onChange={update("phoneNumber")}
+            onChange={(e) => {
+              update("phoneNumber")(e);
+              setPhoneError("");
+            }}
             placeholder="01012345678"
-            className={`w-full mt-1 px-3 py-2 text-sm border rounded-xl bg-gray-50 focus:bg-white focus:ring-2 outline-none transition-all ${errors.phone
+            className={`w-full mt-1 px-3 py-2 text-sm border rounded-xl bg-gray-50 focus:bg-white focus:ring-2 outline-none transition-all ${
+              phoneError
                 ? "border-red-400 focus:border-red-400 focus:ring-red-100"
                 : "border-gray-200 focus:border-green-400 focus:ring-green-100"
-              }`}
+            }`}
           />
-          {errors.phone && (
-            <p className="text-xs text-red-500 mt-1">{errors.phone}</p>
+          {phoneError && (
+            <p className="text-xs text-red-500 mt-1">{phoneError}</p>
           )}
         </div>
 
@@ -153,10 +118,7 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
               min="0"
               value={form.height}
               onChange={update("height")}
-              className={`flex-1 px-3 py-2 text-sm border rounded-xl bg-gray-50 focus:bg-white focus:ring-2 outline-none transition-all ${errors.height
-                  ? "border-red-400 focus:border-red-400 focus:ring-red-100"
-                  : "border-gray-200 focus:border-green-400 focus:ring-green-100"
-                }`}
+              className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none transition-all"
             />
             <select
               value={form.heightUnit}
@@ -170,9 +132,6 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
               ))}
             </select>
           </div>
-          {errors.height && (
-            <p className="text-xs text-red-500 mt-1">{errors.height}</p>
-          )}
         </div>
 
         <div>
@@ -183,10 +142,7 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
               type="number"
               value={form.weight}
               onChange={update("weight")}
-              className={`flex-1 px-3 py-2 text-sm border rounded-xl bg-gray-50 focus:bg-white focus:ring-2 outline-none transition-all ${errors.weight
-                  ? "border-red-400 focus:border-red-400 focus:ring-red-100"
-                  : "border-gray-200 focus:border-green-400 focus:ring-green-100"
-                }`}
+              className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-green-400 focus:ring-2 focus:ring-green-100 outline-none transition-all"
             />
             <select
               value={form.weightUnit}
@@ -200,9 +156,6 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
               ))}
             </select>
           </div>
-          {errors.weight && (
-            <p className="text-xs text-red-500 mt-1">{errors.weight}</p>
-          )}
         </div>
 
         <div>
@@ -231,12 +184,10 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
           <div className="border border-orange-200 rounded-2xl p-4 mt-1 bg-orange-50">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {HEALTH_CONDITIONS.map((option, index) => {
-                const val = typeof option === "object" ? option.value : option;
-                const lbl = typeof option === "object" ? option.label : option;
-                const checked = (form.healthConditions || []).includes(val);
+                const checked = form.healthConditions.includes(option);
                 return (
                   <label
-                    key={val}
+                    key={option}
                     className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-white transition-colors"
                   >
                     <button
@@ -244,22 +195,24 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
                       onClick={(e) => {
                         e.preventDefault();
                         const current = form.healthConditions || [];
-                        const exists = current.includes(val);
+                        const exists = current.includes(option);
                         const next = exists
-                          ? current.filter((c) => c !== val)
-                          : [...current, val];
+                          ? current.filter((c) => c !== option)
+                          : [...current, option];
                         setForm((s) => ({ ...s, healthConditions: next }));
                       }}
                       aria-pressed={checked}
-                      className={`relative inline-flex h-6 w-11 items-center cursor-pointer rounded-full transition-colors ${checked ? "bg-orange-500" : "bg-gray-200"
-                        }`}
+                      className={`relative inline-flex h-6 w-11 items-center cursor-pointer rounded-full transition-colors ${
+                        checked ? "bg-orange-500" : "bg-gray-200"
+                      }`}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${checked ? "translate-x-6" : "translate-x-1"
-                          }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          checked ? "translate-x-6" : "translate-x-1"
+                        }`}
                       />
                     </button>
-                    <span className="text-sm text-gray-700">{lbl}</span>
+                    <span className="text-sm text-gray-700">{option}</span>
                   </label>
                 );
               })}
@@ -277,12 +230,14 @@ export default function HealthForm({ initial = {}, onCancel, onSave, saving }) {
               }))
             }
             aria-pressed={!!form.exercisesRegularly}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.exercisesRegularly ? "bg-green-500" : "bg-gray-200"
-              }`}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              form.exercisesRegularly ? "bg-green-500" : "bg-gray-200"
+            }`}
           >
             <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.exercisesRegularly ? "translate-x-6" : "translate-x-1"
-                }`}
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                form.exercisesRegularly ? "translate-x-6" : "translate-x-1"
+              }`}
             />
           </button>
           <label

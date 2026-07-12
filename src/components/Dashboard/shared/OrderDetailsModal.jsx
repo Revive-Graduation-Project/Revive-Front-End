@@ -4,18 +4,16 @@ import StatusBadge from "./StatusBadge";
 export default function OrderDetailsModal({ isOpen, onClose, order, showCustomerInfo }) {
   if (!isOpen || !order) return null;
 
-  // Handle parsing items: it might be an array of objects (orderItems), array of strings (Live Kitchen), or a comma-separated string.
+  // Handle parsing items: it might be an array of strings (Live Kitchen) or a comma-separated string (Orders view).
   let dishesList = [];
-  if (Array.isArray(order.orderItems) && order.orderItems.length > 0) {
-    dishesList = order.orderItems.map(item => `${item.quantity || 1}x ${item.name || "Item"}`);
-  } else if (Array.isArray(order.items)) {
+  if (Array.isArray(order.items)) {
     dishesList = order.items;
-  } else if (typeof order.name === 'string' && order.name.includes(',')) {
+  } else if (typeof order.name === 'string') {
     dishesList = order.name.split(',').map(d => d.trim());
   } else if (typeof order.items === 'string') {
     dishesList = order.items.split(',').map(d => d.trim());
   } else {
-    dishesList = [order.name || "Custom Order"];
+    dishesList = ["Custom Order"];
   }
 
   // Fallback data for customer details if missing
@@ -65,6 +63,28 @@ export default function OrderDetailsModal({ isOpen, onClose, order, showCustomer
                   <div>
                     <span className="block text-[11px] font-bold text-gray-400 uppercase tracking-wide">Name</span>
                     <span className="block text-[13px] font-semibold text-[#1a1a1a]">{customerName}</span>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm text-gray-400">
+                    <FiPhone size={14} />
+                  </div>
+                  <div>
+                    <span className="block text-[11px] font-bold text-gray-400 uppercase tracking-wide">Phone</span>
+                    <span className={`block text-[13px] font-semibold ${customerPhone ? "text-[#1a1a1a]" : "text-gray-400 italic"}`}>
+                      {customerPhone || "Not provided"}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm text-gray-400">
+                    <FiMapPin size={14} />
+                  </div>
+                  <div>
+                    <span className="block text-[11px] font-bold text-gray-400 uppercase tracking-wide">Delivery Address</span>
+                    <span className={`block text-[13px] font-semibold ${customerAddress ? "text-[#1a1a1a]" : "text-gray-400 italic"}`}>
+                      {customerAddress || "Not available"}
+                    </span>
                   </div>
                 </div>
               </div>

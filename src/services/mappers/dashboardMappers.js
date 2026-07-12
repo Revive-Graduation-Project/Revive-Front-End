@@ -89,18 +89,14 @@ export const mapOrders = (data) => {
   // Backend status enum → UI display label
   const STATUS_MAP = {
     PENDING:            "Pending",
-    QUEUED:             "Pending",
-    QUEUE:              "Pending",
     AWAITING_PAYMENT:   "Pending",
     PAID:               "Pending",
     CONFIRMED:          "Preparing",
     PREPARING:          "Preparing",
     CANCELLED:          "Cancelled",
-    CANCELED:           "Cancelled",
     READY_FOR_PICKUP:   "Ready",
     READY:              "Ready",
     COMPLETED:          "Done",
-    DONE:               "Done",
     DELIVERED:          "Done",
   };
 
@@ -153,29 +149,18 @@ export const mapKitchenOrders = (data) => {
   const defaultBoards = { queue: [], preparing: [], ready: [], done: [] };
   if (!data) return defaultBoards;
 
-  const mapOrder = (o) => {
-    const rawId = o.id || o._id || "";
-    const cleanId = String(rawId).startsWith("#") ? rawId : `#${rawId}`;
-    const numericId = String(rawId).replace("#", "");
-    const itemNamesList = Array.isArray(o.orderItems) && o.orderItems.length > 0
-      ? o.orderItems.map(i => `${i.quantity || 1}x ${i.name || "Item"}`)
-      : (Array.isArray(o.items) && typeof o.items[0] === "string" ? o.items : [String(o.name || `Order #${numericId}`)]);
-
-    return {
-      ...o,
-      id: cleanId,
-      orderId: numericId,
-      time: o.time || (o.createdAt ? new Date(o.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : ""),
-      name: o.name || (Array.isArray(o.orderItems) && o.orderItems[0]?.name) || `Order #${numericId}`,
-      items: itemNamesList,
-      notes: o.notes || o.note || "",
-      customer: o.customer || (o.customerDetails ? `${o.customerDetails.firstName || ""} ${o.customerDetails.lastName || ""}`.trim() : ""),
-      phone: o.phone || o.phoneNumber || o.customerDetails?.phone || o.customerPhone || "",
-      address: o.address || (o.customerDetails ? `${o.customerDetails.address || ""}, ${o.customerDetails.city || ""}` : ""),
-      startedAt: o.startedAt || null,
-      readyAt: o.readyAt || null,
-    };
-  };
+  const mapOrder = (o) => ({
+    id: o.id || o._id || "",
+    orderId: o.orderId || o.id || o._id || "",
+    time: o.time || "",
+    items: Array.isArray(o.items) ? o.items : [],
+    notes: o.notes || "",
+    customer: o.customer || (o.customerDetails ? `${o.customerDetails.firstName || ""} ${o.customerDetails.lastName || ""}`.trim() : ""),
+    phone: o.phone || o.phoneNumber || o.customerDetails?.phone || o.customerPhone || "",
+    address: o.address || (o.customerDetails ? `${o.customerDetails.address || ""}, ${o.customerDetails.city || ""}` : ""),
+    startedAt: o.startedAt || null,
+    readyAt: o.readyAt || null,
+  });
 
   return {
     queue: Array.isArray(data.queue) ? data.queue.map(mapOrder) : [],
@@ -186,12 +171,7 @@ export const mapKitchenOrders = (data) => {
 };
 
 export const mapKitchenTickets = (list) => {
-  let arr = list;
-  if (!Array.isArray(arr)) {
-    if (arr && Array.isArray(arr.content)) arr = arr.content;
-    else if (arr && Array.isArray(arr.tickets)) arr = arr.tickets;
-    else return [];
-  }
+  if (!Array.isArray(list)) return [];
   const STATUS_MAP = {
     QUEUED:    "Queue",
     PREPARING: "Preparing",
@@ -200,7 +180,7 @@ export const mapKitchenTickets = (list) => {
     CANCELED:  "Cancelled",
     CANCELLED: "Cancelled",
   };
-  return arr.map(ticket => ({
+  return list.map(ticket => ({
     ...ticket,
     id: ticket.id || ticket._id || "",
     orderId: ticket.orderId || ticket.id || "",

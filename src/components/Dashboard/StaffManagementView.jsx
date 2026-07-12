@@ -5,22 +5,10 @@ import { FiUserPlus, FiLock, FiMail, FiUser, FiBriefcase } from "react-icons/fi"
 import useAuthStore from "../../store/authStore";
 import { isSuperAdmin } from "../../utils/roleUtils";
 import { createStaff, createAdmin } from "../../services/auth.service";
-import {
-  useActiveTickets,
-  useUpdateChefStatus,
-  useUpdateChefStation,
-  useUpdateChefDisplayName,
-} from "../../hooks/dashboard/useKitchenOrders";
-import { ChefManagement } from "./LiveKitchen/ChefManagement";
 
 function StaffManagementView() {
   const { user } = useAuthStore();
   const isAdmin = isSuperAdmin(user);
-
-  const { data: tickets, isLoading: ticketsLoading, error: ticketsError } = useActiveTickets();
-  const { mutate: mutateChefStatus } = useUpdateChefStatus();
-  const { mutate: mutateChefStation } = useUpdateChefStation();
-  const { mutate: mutateChefName } = useUpdateChefDisplayName();
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -45,14 +33,10 @@ function StaffManagementView() {
 
     setIsSubmitting(true);
     try {
-      const payload = {
-        ...formData,
-        role: isAdmin ? formData.role : "CHEF",
-      };
-      if (payload.role === "ADMIN") {
-        await createAdmin(payload);
+      if (formData.role === "ADMIN") {
+        await createAdmin(formData);
       } else {
-        await createStaff(payload);
+        await createStaff(formData);
       }
       toast.success("Staff member created successfully!");
       setFormData({
@@ -69,22 +53,21 @@ function StaffManagementView() {
     }
   };
 
-  // Managers can only create CHEF (Chief). Admins can create ADMIN, MANAGER, CHEF.
+  // Managers can only create CHEF. Admins can create ADMIN, MANAGER, CHEF.
   const roleOptions = isAdmin
     ? [
-        { value: "CHEF", label: "Chief (Chef)" },
+        { value: "CHEF", label: "Chef" },
         { value: "MANAGER", label: "Manager" },
         { value: "ADMIN", label: "Admin" },
       ]
-    : [{ value: "CHEF", label: "Chief (Chef)" }];
+    : [{ value: "CHEF", label: "Chef" }];
 
   return (
     <div>
       <DashboardHeader title="Staff Management" />
 
-      <div className="px-4 sm:px-8 lg:px-12 py-8 max-w-[1200px] mx-auto flex flex-col gap-10">
-        <div className="max-w-[800px] mx-auto w-full flex flex-col gap-10">
-          <div className="text-center flex flex-col items-center">
+      <div className="px-4 sm:px-8 lg:px-12 py-8 max-w-[800px] mx-auto flex flex-col gap-10">
+        <div className="text-center flex flex-col items-center">
           <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
             <FiUserPlus size={32} className="text-orange-500" />
           </div>
@@ -204,19 +187,6 @@ function StaffManagementView() {
             </button>
           </form>
         </div>
-        </div>
-
-        {/* ══════════════════════════════════════════════════════
-            SECTION: Chef Management
-        ═══════════════════════════════════════════════════════ */}
-        <ChefManagement
-          tickets={tickets}
-          isLoading={ticketsLoading}
-          error={ticketsError}
-          onUpdateStatus={mutateChefStatus}
-          onUpdateStation={mutateChefStation}
-          onUpdateName={mutateChefName}
-        />
       </div>
     </div>
   );

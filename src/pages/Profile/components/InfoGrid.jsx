@@ -1,25 +1,12 @@
 import React from "react";
-import useAuthStore from "../../../store/authStore";
-import useLoyaltyStore from "../../../store/loyaltyStore";
 
 const pretty = {
   LOSE_WEIGHT: "Lose Weight",
-  GAIN_WEIGHT: "Gain Weight",
-  BUILD_MUSCLE: "Build Muscle",
-  MAINTAIN_SHAPE: "Maintain Shape",
   MAINTAIN: "Maintain",
   GAIN_MUSCLE: "Gain Muscle",
   MALE: "Male",
   FEMALE: "Female",
   OTHER: "Other",
-  NONE: "None",
-  DIABETES: "Diabetes",
-  HIGH_BLOOD_PRESSURE: "High blood pressure",
-  HIGH_CHOLESTEROL: "High cholesterol",
-  GLUTEN_INTOLERANCE: "Gluten intolerance / Celiac",
-  LACTOSE_INTOLERANCE: "Lactose intolerance",
-  THYROID_DISORDER: "Thyroid disorder",
-  KIDNEY_OR_LIVER_CONDITION: "Kidney or liver condition",
 };
 
 export default function InfoGrid({ user = {}, profile = {} }) {
@@ -41,28 +28,6 @@ export default function InfoGrid({ user = {}, profile = {} }) {
       ? profile.healthConditions
       : [];
   const phone = profile.phoneNumber || "-";
-  const storePoints = useLoyaltyStore((s) => s.points);
-  const loyaltyPoints = storePoints > 0 ? storePoints : (profile.loyaltyPoints ?? 0);
-  const authUser = useAuthStore((s) => s.user) || {};
-  const displayName =
-    authUser?.fullName ||
-    authUser?.name ||
-    [authUser?.firstName, authUser?.lastName].filter(Boolean).join(" ") ||
-    user?.fullName ||
-    user?.name ||
-    [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
-    profile?.fullName ||
-    profile?.name ||
-    [profile?.firstName, profile?.lastName].filter(Boolean).join(" ") ||
-    "-";
-  const displayEmail =
-    authUser?.emailString ||
-    authUser?.email ||
-    user?.emailString ||
-    user?.email ||
-    profile?.emailString ||
-    profile?.email ||
-    "-";
 
   return (
     <div>
@@ -70,16 +35,6 @@ export default function InfoGrid({ user = {}, profile = {} }) {
         Your Information
       </h4>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 text-gray-700">
-        <div className="flex justify-between">
-          <span className="text-sm text-gray-500">Name</span>
-          <span className="text-sm font-medium">{displayName}</span>
-        </div>
-
-        <div className="flex justify-between">
-          <span className="text-sm text-gray-500">Email</span>
-          <span className="text-sm">{displayEmail}</span>
-        </div>
-
         <div className="flex justify-between">
           <span className="text-sm text-gray-500">Age</span>
           <span className="text-sm">{age}</span>
@@ -114,11 +69,6 @@ export default function InfoGrid({ user = {}, profile = {} }) {
           <span className="text-sm text-gray-500">Goal</span>
           <span className="text-sm">{goal}</span>
         </div>
-
-        <div className="flex justify-between">
-          <span className="text-sm text-gray-500">Loyalty points</span>
-          <span className="text-sm font-semibold text-green-700">{loyaltyPoints} pts</span>
-        </div>
       </div>
 
       <hr className="w-1/3 mt-6 mb-3 text-gray-400" />
@@ -141,7 +91,7 @@ export default function InfoGrid({ user = {}, profile = {} }) {
                 key={condition}
                 className="px-3 py-1.5 rounded-full text-sm bg-white border border-orange-200 text-orange-700 shadow-sm"
               >
-                {pretty[condition] || condition}
+                {condition}
               </span>
             ))}
           </div>

@@ -88,24 +88,20 @@ function Signup() {
 
     try {
       await register({
-        firstName: formData.firstName?.trim(),
-        lastName: formData.lastName?.trim(),
-        email: formData.email?.trim(),
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
         password: formData.password,
-        phoneNumber: formData.phoneNumber?.trim(),
+        phoneNumber: formData.phoneNumber,
         age: Number(formData.age),
         gender: formData.gender,
-        exercisesRegularly:
-          formData.exercisesRegularly === "true" ||
-          formData.exercisesRegularly === true,
+        exercisesRegularly: formData.exercisesRegularly === "true",
         height: Number(formData.height),
-        heightUnit: formData.heightUnit || "cm",
+        heightUnit: formData.heightUnit,
         weight: Number(formData.weight),
-        weightUnit: formData.weightUnit || "kg",
+        weightUnit: formData.weightUnit,
         goal: formData.goal,
-        healthConditions: Array.isArray(formData.healthConditions)
-          ? formData.healthConditions
-          : [],
+        healthConditions: formData.healthConditions,
       });
 
       navigate("/auth/login");

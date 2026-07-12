@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { FaCheck, FaUtensils, FaBoxOpen, FaClock } from "react-icons/fa6";
-import { isOrderCancellable, formatOrderTime, parseTimestamp } from "../../../utils/orderHelpers";
+import { isOrderCancellable, formatOrderTime } from "../../../utils/orderHelpers";
 import OrderDetailsModal from "./OrderDetailsModal";
 import { toast } from "sonner";
 
@@ -85,18 +85,28 @@ const OrderTracking = ({ order, onCancelOrder }) => {
   const activeStep = timelineSteps[activeStepIndex];
 
   const friendlyTime = useMemo(() => {
-    return formatOrderTime(order?.time || order?.createdAt);
+    if (order?.time) return order.time;
+    return order?.createdAt ? formatOrderTime(order.createdAt) : "--:--";
   }, [order?.time, order?.createdAt]);
 
   const estimatedDeliveryTime = useMemo(() => {
-    const date = parseTimestamp(order?.time || order?.createdAt);
-    if (!date) return "--:--";
-    date.setMinutes(date.getMinutes() + 25);
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
+    if (order?.time) {
+      const [hours, minutes] = order.time.split(":").map(Number);
+      const newHours = (hours + 1) % 24;
+      return `${newHours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
+    }
+    if (!order?.createdAt) return "--:--";
+    try {
+      const date = new Date(order.createdAt);
+      date.setHours(date.getHours() + 1);
+      return date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    } catch {
+      return "--:--";
+    }
   }, [order?.time, order?.createdAt]);
 
   const handleCancelOrder = async () => {

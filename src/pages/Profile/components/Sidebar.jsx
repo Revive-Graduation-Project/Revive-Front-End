@@ -8,15 +8,7 @@ export default function Sidebar({ avatar, name, links = [] }) {
       <div className="rounded-2xl overflow-hidden shadow-lg" style={{ backgroundColor: "#ff9b00" }}>
         <div className="text-center text-white relative">
           <div className="w-28 h-28 rounded-full mx-auto mt-10 overflow-hidden border-4 border-white bg-white">
-            <img
-              src={avatar || "/images/avatar-placeholder.jpeg"}
-              alt="avatar"
-              className="object-cover w-full h-full"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "/images/avatar-placeholder.jpeg";
-              }}
-            />
+            <img src={avatar} alt="avatar" className="object-cover w-full h-full" />
           </div>
           <h3 className="mt-6 font-semibold text-lg text-black">{name}</h3>
         </div>

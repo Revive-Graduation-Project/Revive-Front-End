@@ -30,28 +30,21 @@ const MealSummaryCard = () => {
   const handleAddToCart = () => {
     if (!isValid || !primaryItem) return;
 
-    const customizations = {
-      primary: { id: primaryItem.id, grams: 100 },
-      additions: allAdditions.map(item => ({
-        id: item.id,
-        grams: parseInt(item.grams) || 50
-      }))
-    };
+    const customizations = {};
+    customizations[primaryItem.id] = 100;
+
+    allAdditions.forEach((item) => {
+      customizations[item.id] = parseInt(item.grams) || 50;
+    });
 
     const cartItem = {
       id: `custom-${primaryItem.id}-${Date.now()}`,
       name: `Custom ${primaryItem.name} Bowl`,
       price: totalPricePerBowl,
-      image: "/images/custom-bowl.png",
+      image: primaryItem.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80",
       mealId: null,
       customizations,
-      comment,
-      nutrients: Object.entries(nutrition).map(([key, val]) => ({
-        nutrientName: key.charAt(0).toUpperCase() + key.slice(1),
-        value: val,
-        unitName: key === 'calories' ? 'kcal' : 'G'
-      })),
-      ingredients: [primaryItem, ...allAdditions]
+      comment
     };
 
     addItem(cartItem, quantity);
