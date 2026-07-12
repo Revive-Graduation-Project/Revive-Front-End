@@ -38,28 +38,71 @@ export const getDashboardMetrics = async () => {
   });
 };
 
-export const getRevenueData = async () => {
+export const getRevenueData = async (period = "This Month") => {
   const orders = await getOrders().catch(() => []);
-  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  const revenueByMonth = {};
+  const now = new Date();
 
-  orders.forEach(o => {
-    // Use preserved ISO createdAt from mapOrders
-    if (isOrderDone(o) && o.createdAt) {
-      const date = new Date(o.createdAt);
-      if (!isNaN(date.getTime())) {
-        const key = MONTHS[date.getMonth()];
-        revenueByMonth[key] = (revenueByMonth[key] || 0) + (o.total || 0);
-      }
+  // Filter orders by period
+  const filtered = orders.filter(o => {
+    if (!isOrderDone(o) || !o.createdAt) return false;
+    const d = new Date(o.createdAt);
+    if (isNaN(d.getTime())) return false;
+
+    if (period === "This Day") {
+      return d.toDateString() === now.toDateString();
+    } else if (period === "This Week") {
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay());
+      startOfWeek.setHours(0,0,0,0);
+      return d >= startOfWeek;
+    } else if (period === "This Month") {
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    } else if (period === "This Year") {
+      return d.getFullYear() === now.getFullYear();
     }
+    return true;
   });
 
-  const result = Object.entries(revenueByMonth).map(([month, rev]) => ({
-    month,
-    revenue: Math.round(rev), // exact EGP amount
-  }));
+  let result;
 
-  // Minimal fallback only when truly no orders exist
+  if (period === "This Day") {
+    const buckets = ["12 AM", "4 AM", "8 AM", "12 PM", "4 PM", "8 PM"];
+    const counts = { "12 AM": 0, "4 AM": 0, "8 AM": 0, "12 PM": 0, "4 PM": 0, "8 PM": 0 };
+    filtered.forEach(o => {
+      const h = new Date(o.createdAt).getHours();
+      const key = h < 4 ? "12 AM" : h < 8 ? "4 AM" : h < 12 ? "8 AM" : h < 16 ? "12 PM" : h < 20 ? "4 PM" : "8 PM";
+      counts[key] += (o.total || 0);
+    });
+    result = buckets.map(b => ({ month: b, revenue: Math.round(counts[b]) }));
+  } else if (period === "This Week") {
+    const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    const counts = { Sun:0, Mon:0, Tue:0, Wed:0, Thu:0, Fri:0, Sat:0 };
+    filtered.forEach(o => {
+      const d = new Date(o.createdAt);
+      counts[DAYS[d.getDay()]] += (o.total || 0);
+    });
+    result = DAYS.map(d => ({ month: d, revenue: Math.round(counts[d]) }));
+  } else if (period === "This Month") {
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const buckets = Array.from({ length: daysInMonth }, (_, i) => String(i + 1));
+    const counts = {};
+    buckets.forEach(b => counts[b] = 0);
+    filtered.forEach(o => {
+      const d = String(new Date(o.createdAt).getDate());
+      if (counts[d] !== undefined) counts[d] += (o.total || 0);
+    });
+    result = buckets.map(b => ({ month: b, revenue: Math.round(counts[b]) }));
+  } else {
+    // This Year
+    const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const counts = { Jan:0, Feb:0, Mar:0, Apr:0, May:0, Jun:0, Jul:0, Aug:0, Sep:0, Oct:0, Nov:0, Dec:0 };
+    filtered.forEach(o => {
+      const m = new Date(o.createdAt).getMonth();
+      counts[MONTHS[m]] += (o.total || 0);
+    });
+    result = MONTHS.map(m => ({ month: m, revenue: Math.round(counts[m]) }));
+  }
+
   return Mappers.mapRevenueData(
     result.length ? result : [{ month: "—", income: 0, revenue: 0, expense: 0 }]
   );
@@ -78,21 +121,92 @@ export const getTopCategories = async () => {
   }));
   return Mappers.mapTopCategories(data);
 };
-export const getOrdersOverview = async () => {
+export const getOrdersOverview = async (period = "This Week") => {
   const orders = await getOrders().catch(() => []);
+  const now = new Date();
+  
+  // Filter orders based on the selected period
+  const filteredOrders = orders.filter(o => {
+    if (!o.createdAt) return false;
+    const d = new Date(o.createdAt);
+    if (isNaN(d.getTime())) return false;
+    
+    if (period === "This Day") {
+      return d.toDateString() === now.toDateString();
+    } else if (period === "This Week") {
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay());
+      startOfWeek.setHours(0,0,0,0);
+      return d >= startOfWeek;
+    } else if (period === "This Month") {
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    } else if (period === "This Year") {
+      return d.getFullYear() === now.getFullYear();
+    }
+    return true; // fallback
+  });
+
+  if (period === "This Day") {
+    // 4-hour intervals
+    const buckets = ["12 AM", "4 AM", "8 AM", "12 PM", "4 PM", "8 PM"];
+    const counts = { "12 AM": 0, "4 AM": 0, "8 AM": 0, "12 PM": 0, "4 PM": 0, "8 PM": 0 };
+    filteredOrders.forEach(o => {
+      const h = new Date(o.createdAt).getHours();
+      if (h < 4) counts["12 AM"]++;
+      else if (h < 8) counts["4 AM"]++;
+      else if (h < 12) counts["8 AM"]++;
+      else if (h < 16) counts["12 PM"]++;
+      else if (h < 20) counts["4 PM"]++;
+      else counts["8 PM"]++;
+    });
+    const currentHour = now.getHours();
+    let currentBucket = "12 AM";
+    if (currentHour >= 20) currentBucket = "8 PM";
+    else if (currentHour >= 16) currentBucket = "4 PM";
+    else if (currentHour >= 12) currentBucket = "12 PM";
+    else if (currentHour >= 8) currentBucket = "8 AM";
+    else if (currentHour >= 4) currentBucket = "4 AM";
+    
+    return buckets.map(b => ({ day: b, orders: counts[b], highlight: b === currentBucket }));
+  }
+
+  if (period === "This Month") {
+    // Days of the month 1-31
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const buckets = Array.from({ length: daysInMonth }, (_, i) => String(i + 1));
+    const counts = {};
+    buckets.forEach(b => counts[b] = 0);
+
+    filteredOrders.forEach(o => {
+      const d = String(new Date(o.createdAt).getDate());
+      if (counts[d] !== undefined) counts[d]++;
+    });
+    
+    const todayDate = String(now.getDate());
+    return buckets.map(b => ({ day: b, orders: counts[b], highlight: b === todayDate }));
+  }
+
+  if (period === "This Year") {
+    const buckets = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const counts = { Jan:0, Feb:0, Mar:0, Apr:0, May:0, Jun:0, Jul:0, Aug:0, Sep:0, Oct:0, Nov:0, Dec:0 };
+    filteredOrders.forEach(o => {
+      const m = new Date(o.createdAt).getMonth();
+      counts[buckets[m]]++;
+    });
+    const currentBucket = buckets[now.getMonth()];
+    return buckets.map(b => ({ day: b, orders: counts[b], highlight: b === currentBucket }));
+  }
+
+  // Default: This Week
   const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   const counts = { Sun:0, Mon:0, Tue:0, Wed:0, Thu:0, Fri:0, Sat:0 };
 
-  orders.forEach(o => {
-    if (o.createdAt) {
-      const d = new Date(o.createdAt);
-      if (!isNaN(d.getTime())) {
-        counts[DAYS[d.getDay()]]++;
-      }
-    }
+  filteredOrders.forEach(o => {
+    const d = new Date(o.createdAt);
+    counts[DAYS[d.getDay()]]++;
   });
 
-  const todayKey = DAYS[new Date().getDay()];
+  const todayKey = DAYS[now.getDay()];
   return DAYS.map(day => ({
     day,
     orders:    counts[day],
@@ -179,10 +293,10 @@ export const getRecentActivity = () => {
     return Promise.resolve([]);
   }
 };
-export const getCustomerReviews    = () => Promise.resolve([
-  { id: 1, name: "Sarah K.", rating: 5, comment: "The food was amazing and arrived super fast! Loved the new menu layout.", time: "10 mins ago", avatar: "" },
-  { id: 2, name: "Mike R.", rating: 4, comment: "Great burger, but fries could be a bit crispier. Good service overall.", time: "1 hour ago", avatar: "" },
-  { id: 3, name: "Emily D.", rating: 5, comment: "Best healthy food option in town. Highly recommend the avocado salad!", time: "3 hours ago", avatar: "" }
+export const getCustomerReviews = () => Promise.resolve([
+  { id: 1, name: "Sarah K.", rating: 5, text: "The food was amazing and arrived super fast! Loved the new menu layout.", date: "10 mins ago", avatar: "", image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+  { id: 2, name: "Mike R.", rating: 4, text: "Great burger, but fries could be a bit crispier. Good service overall.", date: "1 hour ago", avatar: "", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+  { id: 3, name: "Emily D.", rating: 5, text: "Best healthy food option in town. Highly recommend the avocado salad!", date: "3 hours ago", avatar: "", image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" }
 ]);
 
 // ── Orders ────────────────────────────────────────────────────────
@@ -246,7 +360,11 @@ export const getOrders = (params = {}) =>
 
 const ADMIN_ORDER_STATUS_MAP = {
   queue: "PENDING",
+  queued: "PENDING",
   pending: "PENDING",
+  awaiting_payment: "AWAITING_PAYMENT",
+  paid: "PAID",
+  confirmed: "CONFIRMED",
   preparing: "PREPARING",
   ready: "READY",
   done: "DONE",
@@ -266,27 +384,61 @@ export const getKitchenOrders = async () => {
   const orders = await getOrders().catch(() => []);
   const queue = [], preparing = [], ready = [], done = [];
   orders.forEach(o => {
-    const status = o.status?.toUpperCase() || "PENDING";
-    if (status === "PENDING" || status === "AWAITING_PAYMENT" || status === "PAID") queue.push(o);
-    else if (status === "PREPARING") preparing.push(o);
-    else if (status === "READY" || status === "READY_FOR_PICKUP") ready.push(o);
-    else if (status === "COMPLETED" || status === "DELIVERED" || status === "CONFIRMED") done.push(o);
+    const status = (o.status || "").toUpperCase();
+    if (
+      status === "PENDING" ||
+      status === "AWAITING_PAYMENT" ||
+      status === "PAID" ||
+      status === "CONFIRMED" ||
+      status === "QUEUED" ||
+      status === "QUEUE"
+    ) {
+      queue.push(o);
+    } else if (status === "PREPARING") {
+      preparing.push(o);
+    } else if (status === "READY" || status === "READY_FOR_PICKUP") {
+      ready.push(o);
+    } else if (
+      status === "DONE" ||
+      status === "COMPLETED" ||
+      status === "DELIVERED"
+    ) {
+      done.push(o);
+    }
   });
   return Mappers.mapKitchenOrders({ queue, preparing, ready, done });
 };
-export const updateKitchenStatus = (orderId, status) => updateOrderStatus(orderId, status);
+export const updateKitchenStatus = async (orderId, status) => {
+  const numericId = String(orderId).replace('#', '');
+  const result = await updateOrderStatus(numericId, status);
+  // Synchronize with active kitchen tickets if present
+  try {
+    const tickets = await getActiveKitchenTickets().catch(() => []);
+    const matchingTicket = tickets.find(t => String(t.orderId) === numericId || String(t.id) === numericId);
+    if (matchingTicket && matchingTicket.id) {
+      await updateTicketStatus(matchingTicket.id, status).catch(() => {});
+    }
+  } catch (_e) {}
+  return result;
+};
 
 // ── Kitchen Service (tickets + chef management) ───────────────────
 const TICKET_BACKEND_STATUS_MAP = {
+  queue:     "QUEUED",
   Queue:     "QUEUED",
-  Preparing: "PREPARING",
-  Ready:     "READY",
-  Done:      "DONE",
-  Cancelled: "CANCELED",
   QUEUED:    "QUEUED",
+  preparing: "PREPARING",
+  Preparing: "PREPARING",
   PREPARING: "PREPARING",
+  ready:     "READY",
+  Ready:     "READY",
   READY:     "READY",
+  done:      "DONE",
+  Done:      "DONE",
   DONE:      "DONE",
+  cancelled: "CANCELED",
+  canceled:  "CANCELED",
+  Cancelled: "CANCELED",
   CANCELED:  "CANCELED",
 };
 
@@ -294,7 +446,11 @@ export const getActiveKitchenTickets = () =>
   api.get("/api/kitchen/tickets/active").then(r => Mappers.mapKitchenTickets(r.data));
 
 export const updateTicketStatus = (ticketId, status) => {
-  const backendStatus = TICKET_BACKEND_STATUS_MAP[status] || status?.toUpperCase() || "QUEUED";
+  const backendStatus =
+    TICKET_BACKEND_STATUS_MAP[status] ||
+    TICKET_BACKEND_STATUS_MAP[String(status).toLowerCase()] ||
+    status?.toUpperCase() ||
+    "QUEUED";
   return api.patch(`/api/kitchen/tickets/${ticketId}/status`, { status: backendStatus }).then(r => r.data);
 };
 

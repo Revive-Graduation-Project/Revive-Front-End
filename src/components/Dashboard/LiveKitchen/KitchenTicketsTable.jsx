@@ -20,9 +20,9 @@ export function KitchenTicketsTable({ tickets, isLoading, error, isFetching, onR
   const tabFiltered = activeTab === "All"
     ? [...allTickets]
     : allTickets.filter((t) => {
-        if (activeTab === "Cancelled") return t.status === "Cancelled" || t.status === "CANCELED" || t.status === "CANCELLED";
-        return t.status === activeTab;
-      });
+      if (activeTab === "Cancelled") return t.status === "Cancelled" || t.status === "CANCELED" || t.status === "CANCELLED";
+      return t.status === activeTab;
+    });
   const totalCount = allTickets.length;
   const countsByStatus = allTickets.reduce((acc, t) => {
     const key = (t.status === "CANCELED" || t.status === "CANCELLED") ? "Cancelled" : t.status;
@@ -78,6 +78,8 @@ export function KitchenTicketsTable({ tickets, isLoading, error, isFetching, onR
                 </tr>
               ) : tabFiltered.map((ticket) => {
                 const flow = STATUS_FLOW[ticket.status] || STATUS_FLOW[ticket.status?.toUpperCase()];
+                // Always use the orderId for status changes so the Kanban board + ticket stay in sync
+                const actionId = ticket.orderId || ticket.id;
                 return (
                   <tr key={ticket.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="py-3.5 px-4 text-[13px] font-bold text-[#1a1a1a]">#{ticket.id}</td>
@@ -89,14 +91,14 @@ export function KitchenTicketsTable({ tickets, isLoading, error, isFetching, onR
                         {(ticket.status === "Queue" || ticket.status === "QUEUED") && isAdmin && (
                           <button
                             type="button"
-                            onClick={() => onAction(ticket.id, "Cancelled", "Cancel Ticket")}
+                            onClick={() => onAction(actionId, "cancelled", "Cancel Ticket")}
                             className="px-3 py-1.5 rounded-xl text-[12px] font-bold transition-all shadow-sm cursor-pointer border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"
                           >
                             Cancel
                           </button>
                         )}
                         {flow ? (
-                          <button type="button" onClick={() => onAction(ticket.id, flow.next, flow.label)}
+                          <button type="button" onClick={() => onAction(actionId, flow.next.toLowerCase(), flow.label)}
                             className={`px-4 py-1.5 rounded-xl text-[12px] font-bold transition-all shadow-sm cursor-pointer border-none ${getTicketActionStyle(ticket.status)}`}>
                             {flow.label}
                           </button>
@@ -104,7 +106,7 @@ export function KitchenTicketsTable({ tickets, isLoading, error, isFetching, onR
                           isAdmin ? (
                             <button
                               type="button"
-                              onClick={() => onAction(ticket.id, "Ready", "Move back to Ready")}
+                              onClick={() => onAction(actionId, "ready", "Move back to Ready")}
                               className="px-3 py-1.5 rounded-xl text-[12px] font-bold transition-all shadow-sm cursor-pointer border border-gray-200 bg-gray-100 text-gray-600 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200 flex items-center gap-1"
                             >
                               <span className="font-extrabold">&lt;</span> Ready
@@ -116,7 +118,7 @@ export function KitchenTicketsTable({ tickets, isLoading, error, isFetching, onR
                           isAdmin ? (
                             <button
                               type="button"
-                              onClick={() => onAction(ticket.id, "Queue", "Restore to Queue")}
+                              onClick={() => onAction(actionId, "queue", "Restore to Queue")}
                               className="px-3 py-1.5 rounded-xl text-[12px] font-bold transition-all shadow-sm cursor-pointer border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center gap-1"
                             >
                               <span className="font-extrabold">&lt;</span> Queue
