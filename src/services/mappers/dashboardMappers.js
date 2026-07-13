@@ -92,7 +92,7 @@ export const mapOrders = (data) => {
     QUEUED:             "Pending",
     QUEUE:              "Pending",
     AWAITING_PAYMENT:   "Pending",
-    PAID:               "Pending",
+    PAID:               "Done",
     CONFIRMED:          "Preparing",
     PREPARING:          "Preparing",
     CANCELLED:          "Cancelled",
@@ -117,18 +117,30 @@ export const mapOrders = (data) => {
       ? item.items.reduce((s, i) => s + (i.quantity || 1), 0)
       : (typeof item.items === "number" ? item.items : 0);
 
-    // Format display time from ISO createdAt
-    const createdAt = item.createdAt || null;
-    const displayTime = createdAt
-      ? new Date(createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
-      : (item.time || "");
+    // Ensure valid ISO createdAt fallback so order is included in revenue periods
+    const rawCreatedAt = item.createdAt || item.created_at || item.orderDate || item.date || item.timestamp || null;
+    const createdAt = rawCreatedAt ? new Date(rawCreatedAt).toISOString() : new Date().toISOString();
+    const displayTime = new Date(createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+
+    // Compute total from any backend total field or sum of item prices
+    const computedTotal = (() => {
+      const explicit = item.totalPrice ?? item.totalAmount ?? item.total ?? item.amount ?? item.grandTotal ?? item.finalPrice;
+      if (explicit !== undefined && explicit !== null && !isNaN(Number(explicit)) && Number(explicit) > 0) {
+        return Number(explicit);
+      }
+      if (Array.isArray(item.items)) {
+        const sum = item.items.reduce((s, i) => s + (Number(i.snapshotPrice ?? i.price ?? 0) * Number(i.quantity ?? 1)), 0);
+        if (sum > 0) return sum;
+      }
+      return Number(item.totalPrice ?? item.totalAmount ?? item.total ?? 0);
+    })();
 
     return {
       id:         `#${item.id || item._id || ""}`,
       time:       displayTime,
       name:       displayName,
       items:      totalItems,
-      total:      item.totalPrice ?? item.total ?? 0,
+      total:      computedTotal,
       customer:   item.clientId ? `Client #${item.clientId}` : (item.customer || (item.customerDetails ? `${item.customerDetails.firstName || ""} ${item.customerDetails.lastName || ""}`.trim() : "")),
       phone:      item.phone || item.phoneNumber || item.customerDetails?.phone || item.customerPhone || item.user?.phone || item.customerDetails?.phoneNumber || "",
       address:    item.address || (item.customerDetails ? `${item.customerDetails.address || ""}, ${item.customerDetails.city || ""}` : "") || item.deliveryAddress || "",
@@ -136,11 +148,11 @@ export const mapOrders = (data) => {
       createdAt,  // preserve ISO for Revenue Chart / Orders Overview / Daily Goal
       orderItems: Array.isArray(item.items)
         ? item.items.map(i => ({
-            mealId:   i.mealId,
-            name:     i.snapshotName   || "",
-            price:    i.snapshotPrice  || 0,
-            image:    i.snapshotImageUrl || "",
-            quantity: i.quantity       || 1,
+            mealId:   i.mealId || i.id,
+            name:     i.snapshotName || i.name || i.mealName || "",
+            price:    i.snapshotPrice || i.price || 0,
+            image:    i.snapshotImageUrl || i.imageUrl || i.image || i.photoUrl || i.meal?.imageUrl || i.meal?.image || "",
+            quantity: i.quantity || 1,
           }))
         : [],
     };

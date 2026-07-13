@@ -1,5 +1,5 @@
 import { FiStar } from "react-icons/fi";
-import { BiSpreadsheet } from "react-icons/bi";
+import { BiSpreadsheet, BiRestaurant } from "react-icons/bi";
 import { MdAttachMoney } from "react-icons/md";
 import TimeFilter from "./shared/TimeFilter";
 
@@ -42,13 +42,19 @@ function TrendingMenus({ data }) {
             </div>
 
             {/* Image */}
-            <div className="w-full h-[120px] rounded-[20px] overflow-hidden bg-orange-50 relative">
-              <img
-                src={item.image}
-                alt={item.name}
-                className="w-full h-full object-cover"
-                onError={(e) => { e.currentTarget.style.display = "none"; }}
-              />
+            <div className="w-full h-[120px] rounded-[20px] overflow-hidden bg-orange-50 relative flex items-center justify-center">
+              <div className="flex flex-col items-center justify-center text-orange-300 gap-1 p-2 text-center">
+                <BiRestaurant size={28} />
+                <span className="text-[11px] font-medium text-orange-400 line-clamp-1">{item.name}</span>
+              </div>
+              {item.image ? (
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-full h-full object-cover absolute inset-0 z-10"
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                />
+              ) : null}
             </div>
 
             {/* Footer: Orders and Revenue */}
