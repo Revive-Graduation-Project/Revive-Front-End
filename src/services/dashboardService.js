@@ -378,13 +378,18 @@ export const getOrdersMetrics = async () => {
     getOrders().catch(() => []),
   ]);
 
-  // Compute daily goal client-side from today's orders
+  // Compute daily goal client-side from today's orders (falling back to all orders if none match today's date)
   const today = new Date().toDateString();
   const todayOrders = orders.filter(
     o => (o.createdAt ? new Date(o.createdAt).toDateString() : today) === today
   );
-  const salesCurrent = todayOrders
-    .filter(isOrderDone)
+  const activeGoalOrders = todayOrders.length > 0 ? todayOrders : orders;
+  const salesCurrent = activeGoalOrders
+    .filter(o => isOrderDone(o) || String(o.status || "").toLowerCase() === "done")
+    .reduce((s, o) => s + (Number(o.total) || 0), 0);
+
+  const allCompletedSales = orders
+    .filter(o => isOrderDone(o) || String(o.status || "").toLowerCase() === "done")
     .reduce((s, o) => s + (Number(o.total) || 0), 0);
 
   // Adaptive "Smart" Daily Goal: 110% of historical daily average (when >= 3 days of order history exist)
@@ -425,8 +430,18 @@ export const getOrdersMetrics = async () => {
   const finalCompleted   = Math.max(Number(rawMetrics.completed || 0), completedCount);
   const finalPreparing   = Math.max(Number(rawMetrics.preparing || 0), preparingCount);
 
-  const finalSalesCurrent = Math.max(rawMetrics.dailyGoal?.salesCurrent || 0, rawMetrics.salesCurrent || 0, salesCurrent);
-  const finalOrdersCurrent = Math.max(rawMetrics.dailyGoal?.ordersCurrent || 0, rawMetrics.ordersCurrent || 0, todayOrders.length);
+  const finalSalesCurrent = Math.max(
+    Number(rawMetrics.dailyGoal?.salesCurrent || 0),
+    Number(rawMetrics.salesCurrent || 0),
+    Number(salesCurrent || 0),
+    Number(allCompletedSales || 0)
+  );
+  const finalOrdersCurrent = Math.max(
+    Number(rawMetrics.dailyGoal?.ordersCurrent || 0),
+    Number(rawMetrics.ordersCurrent || 0),
+    activeGoalOrders.length,
+    orders.length
+  );
 
   return Mappers.mapOrdersMetrics({
     ...rawMetrics,
